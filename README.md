@@ -1,4 +1,4 @@
-# Mastering Redis - Restructured 3-Day Course Flow
+# Mastering Redis 
 
 ## Course Overview
 **Duration:** 3 Days Intensive (21 hours total)  
