@@ -1,81 +1,203 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Content1 - Introduction to Redis & Insurance Architecture</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.css">
     <style>
+        .title-block {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .title-block h1 {
+            font-size: 1.8em;
+            margin: 10px 0;
+        }
+        
+        .title-block p {
+            font-size: 1em;
+            margin: 10px 0;
+        }
+        
+        .session-header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .session-header h2 {
+            font-size: 1.5em;
+            margin: 5px 0;
+        }
+        
+        .highlight-box {
+            background: #e3f2fd;
+            border-left: 5px solid #2196f3;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 0.85em;
+        }
+        
+        .command-box {
+            background: #1e1e1e;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 8px 0;
+            overflow-x: auto;
+            font-size: 0.8em;
+        }
+        
+        .command-category {
+            background: #f5f5f5;
+            border: 2px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .performance-metric {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 8px 0;
+            text-align: center;
+            font-weight: bold;
+            border: 2px solid #ddd;
+            font-size: 0.9em;
+        }
+        
+        .two-column {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .two-column > div {
+            flex: 1;
+        }
+        
+        .architecture-diagram {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.8em;
+        }
+        
         .reveal .slides section {
             text-align: left;
         }
-        .reveal h1, .reveal h2, .reveal h3 {
-            color: #2c3e50;
-        }
-        .reveal .title-slide {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            color: #2c3e50;
+        
+        .reveal h1 {
+            font-size: 1.8em;
+            margin: 0.3em 0;
             text-align: center;
         }
-        .reveal .session-header {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            color: #2c3e50;
-            text-align: center;
-            padding: 20px;
-        }
-        .reveal .lab-callout {
-            background: #3498db;
-            color: white;
-            text-align: center;
-            padding: 30px;
-            border-radius: 10px;
-            font-size: 1.2em;
-        }
-        .reveal .two-column {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-        .reveal .architecture-diagram {
-            text-align: center;
-            background: #ecf0f1;
-            padding: 20px;
-            border-radius: 8px;
-        }
-        .reveal ul {
-            font-size: 0.8em;
-            line-height: 1.3;
-            margin: 15px 0;
-        }
-        .reveal .comparison-table {
-            font-size: 0.7em;
-            width: 100%;
-            margin: 15px 0;
-        }
-        .reveal .comparison-table th {
-            background-color: #34495e;
-            color: white;
-            padding: 8px;
-        }
-        .reveal .comparison-table td {
-            padding: 6px;
-            border-bottom: 1px solid #bdc3c7;
-        }
+        
         .reveal h2 {
-            font-size: 1.5em;
-            margin-bottom: 20px;
+            font-size: 1.4em;
+            margin: 0.3em 0;
+            text-align: center;
         }
+        
         .reveal h3 {
-            font-size: 1.2em;
-            margin-bottom: 15px;
+            font-size: 1.1em;
+            margin: 0.2em 0;
+            text-align: center;
         }
-        .reveal .highlight-box {
-            background: #e8f6f3;
-            border-left: 4px solid #1abc9c;
-            padding: 12px;
+        
+        .reveal ul {
+            font-size: 0.7em;
+            line-height: 1.2;
+        }
+        
+        .reveal li {
+            margin: 3px 0;
+        }
+        
+        .reveal .slides {
+            zoom: 0.75;
+        }
+        
+        .reveal section {
+            height: 100vh;
+            overflow: hidden;
+            padding: 10px;
+        }
+        
+        .lab-callout {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: #333;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
             margin: 15px 0;
+            border: 3px solid #ff6b6b;
+        }
+        
+        .lab-callout h2 {
+            font-size: 1.4em;
+            margin: 8px 0;
+        }
+        
+        .lab-callout p {
             font-size: 0.9em;
+            margin: 8px 0;
+        }
+        
+        .redis-vs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 0.8em;
+        }
+        
+        .redis-vs-table th, .redis-vs-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .redis-vs-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        
+        .scrollable-content {
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+            margin: 10px 0;
+        }
+        
+        .scrollable-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .scrollable-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .scrollable-content::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        
+        .scrollable-content::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
     </style>
 </head>
@@ -83,34 +205,41 @@
     <div class="reveal">
         <div class="slides">
             <!-- Title Slide -->
-            <section class="title-slide">
-                <h1>Mastering Redis</h1>
-                <h2>Content1: Introduction to Redis & Insurance Architecture</h2>
-                <p><strong>Day 1 - Session 1</strong></p>
-                <p>Redis Fundamentals for Insurance Systems</p>
+            <section>
+                <div class="title-block">
+                    <h1>Introduction to Redis & Enterprise Architecture</h1>
+                    <p>
+                        <strong>Session 1</strong> • Redis Mastering Course<br>
+                        Fundamentals for Business Systems
+                    </p>
+                </div>
             </section>
 
-            <!-- Session Header -->
-            <section class="session-header">
-                <h2>Session Overview</h2>
-                <div class="two-column">
-                    <div>
-                        <h3>Learning Objectives</h3>
-                        <ul>
-                            <li>Understand Redis core concepts</li>
-                            <li>Explore insurance technology positioning</li>
-                            <li>Compare Redis vs traditional databases</li>
-                            <li>Review Redis architecture benefits</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3>Coverage Topics</h3>
-                        <ul>
-                            <li>What is Redis?</li>
-                            <li>Insurance industry use cases</li>
-                            <li>Performance characteristics</li>
-                            <li>Memory management</li>
-                        </ul>
+            <!-- Session Overview -->
+            <section>
+                <div class="session-header">
+                    <h2>Session Overview</h2>
+                </div>
+                <div class="scrollable-content">
+                    <div class="two-column">
+                        <div>
+                            <h3>Learning Objectives</h3>
+                            <ul>
+                                <li>Understand Redis core concepts and architecture</li>
+                                <li>Explore enterprise technology positioning</li>
+                                <li>Master fundamental Redis commands</li>
+                                <li>Compare Redis vs traditional databases</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3>Coverage Topics</h3>
+                            <ul>
+                                <li>What is Redis and why use it?</li>
+                                <li>Enterprise use cases and benefits</li>
+                                <li>Essential Redis commands reference</li>
+                                <li>Performance characteristics</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -118,368 +247,360 @@
             <!-- What is Redis? -->
             <section>
                 <h2>What is Redis?</h2>
-                <div class="highlight-box">
-                    <strong>Redis</strong> = <strong>RE</strong>mote <strong>DI</strong>ctionary <strong>S</strong>erver
-                </div>
-                <ul>
-                    <li><strong>In-memory data structure store</strong> - All data stored in RAM for ultra-fast access</li>
-                    <li><strong>NoSQL key-value database</strong> - Simple, flexible data model</li>
-                    <li><strong>Multi-purpose platform</strong> - Database, cache, message broker, streaming engine</li>
-                    <li><strong>Open-source</strong> - BSD licensed, widely adopted</li>
-                    <li><strong>Single-threaded</strong> - Atomic operations, consistent data</li>
-                </ul>
-            </section>
-
-            <!-- Redis in Insurance Technology Stack -->
-            <section>
-                <h2>Redis in Insurance Technology Stack</h2>
-                <div class="architecture-diagram">
-                    <h3>Modern Insurance Architecture</h3>
-                    <div style="font-family: monospace; font-size: 0.8em; line-height: 1.5;">
-                        Customer Portal ↔ API Gateway ↔ Microservices<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↕<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>Redis Layer</strong><br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↕<br>
-                        Database Layer (PostgreSQL/MongoDB)
+                <div class="scrollable-content">
+                    <div class="highlight-box">
+                        <strong>Redis</strong> = <strong>RE</strong>mote <strong>DI</strong>ctionary <strong>S</strong>erver
                     </div>
-                </div>
-                <ul>
-                    <li><strong>Caching layer</strong> - Reduce database load for policy lookups</li>
-                    <li><strong>Session storage</strong> - Customer portal authentication</li>
-                    <li><strong>Real-time processing</strong> - Claims notifications, quotes</li>
-                    <li><strong>API rate limiting</strong> - Protect against abuse</li>
-                </ul>
-            </section>
-
-            <!-- Redis vs Traditional SQL Databases - Part 1 -->
-            <section>
-                <h2>Redis vs Traditional SQL Databases</h2>
-                <table class="comparison-table">
-                    <thead>
-                        <tr>
-                            <th>Feature</th>
-                            <th>Redis</th>
-                            <th>Traditional SQL</th>
-                            <th>Insurance Use Case</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Storage</strong></td>
-                            <td>In-memory</td>
-                            <td>Disk-based</td>
-                            <td>Fast quote calculations</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Performance</strong></td>
-                            <td>Sub-millisecond</td>
-                            <td>Milliseconds</td>
-                            <td>Real-time claims processing</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Data Model</strong></td>
-                            <td>Key-value, NoSQL</td>
-                            <td>Relational, ACID</td>
-                            <td>Flexible policy data</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
-
-            <!-- Redis vs Traditional SQL Databases - Part 2 -->
-            <section>
-                <h2>Redis vs Traditional SQL Databases (cont.)</h2>
-                <table class="comparison-table">
-                    <thead>
-                        <tr>
-                            <th>Feature</th>
-                            <th>Redis</th>
-                            <th>Traditional SQL</th>
-                            <th>Insurance Use Case</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Scalability</strong></td>
-                            <td>Horizontal</td>
-                            <td>Vertical</td>
-                            <td>Peak enrollment periods</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Use Case</strong></td>
-                            <td>Caching, sessions</td>
-                            <td>Persistent storage</td>
-                            <td>Complement each other</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="highlight-box" style="margin-top: 30px;">
-                    <strong>Key Insight:</strong> Redis and traditional databases work together in insurance systems - Redis provides speed, SQL provides durability.
-                </div>
-            </section>
-
-            <!-- Performance Characteristics - Part 1 -->
-            <section>
-                <h2>Performance Characteristics for Insurance</h2>
-                <h3>Claims Processing Performance</h3>
-                <ul>
-                    <li><strong>100,000+ ops/sec</strong> - Handle peak claim volumes</li>
-                    <li><strong>O(1) lookups</strong> - Instant policy verification</li>
-                    <li><strong>Atomic operations</strong> - Consistent claim state</li>
-                    <li><strong>Pub/Sub messaging</strong> - Real-time notifications</li>
-                </ul>
-            </section>
-
-            <!-- Performance Characteristics - Part 2 -->
-            <section>
-                <h2>Performance Characteristics (cont.)</h2>
-                <h3>Policy Management Performance</h3>
-                <ul>
-                    <li><strong>Sub-ms response</strong> - Fast quote generation</li>
-                    <li><strong>Bulk operations</strong> - Batch policy updates</li>
-                    <li><strong>TTL expiration</strong> - Auto-cleanup quotes</li>
-                    <li><strong>Memory efficiency</strong> - Optimize premium data</li>
-                </ul>
-                <div class="highlight-box">
-                    <strong>Result:</strong> Insurance systems can handle 10x more concurrent users with Redis caching.
-                </div>
-            </section>
-
-            <!-- Single-threaded Architecture Benefits -->
-            <section>
-                <h2>Single-threaded Architecture Benefits</h2>
-                <div class="highlight-box">
-                    Redis uses a single-threaded event loop for command processing
-                </div>
-                <h3>Insurance Transaction Benefits:</h3>
-                <ul>
-                    <li><strong>Atomic operations</strong> - No race conditions in premium calculations</li>
-                    <li><strong>Predictable performance</strong> - Consistent response times for quotes</li>
-                    <li><strong>Simple debugging</strong> - Easier to troubleshoot claim processing</li>
-                    <li><strong>No locks needed</strong> - Eliminates deadlock scenarios</li>
-                </ul>
-            </section>
-
-            <!-- Memory Management -->
-            <section>
-                <h2>Memory Management for Insurance Data</h2>
-                <h3>Customer Data Optimization</h3>
-                <ul>
-                    <li><strong>Efficient encoding</strong> - Compress policy numbers</li>
-                    <li><strong>TTL strategies</strong> - Auto-expire temp quotes</li>
-                    <li><strong>Memory policies</strong> - Handle peak loads</li>
-                    <li><strong>Data structures</strong> - Choose optimal types</li>
-                </ul>
-                <h3>Policy Cache Management</h3>
-                <ul>
-                    <li><strong>LRU eviction</strong> - Remove old policies</li>
-                    <li><strong>Memory monitoring</strong> - Track usage patterns</li>
-                </ul>
-            </section>
-
-            <!-- Client-Server Communication -->
-            <section>
-                <h2>Client-Server Communication</h2>
-                <h3>RESP Protocol Introduction</h3>
-                <div class="highlight-box">
-                    <strong>RESP</strong> = <strong>RE</strong>dis <strong>S</strong>erialization <strong>P</strong>rotocol
-                </div>
-                <ul>
-                    <li><strong>Binary-safe protocol</strong> - Handle policy documents safely</li>
-                    <li><strong>Simple text format</strong> - Easy debugging and monitoring</li>
-                    <li><strong>Command pipelining</strong> - Batch insurance operations</li>
-                    <li><strong>Pub/Sub support</strong> - Real-time claim notifications</li>
-                    <li><strong>Cross-platform</strong> - Works on Windows and Mac</li>
-                </ul>
-                <p><em>We'll explore RESP in detail in the next session</em></p>
-            </section>
-
-            <!-- Insurance Industry Use Cases - Part 1 -->
-            <section>
-                <h2>Insurance Industry Redis Use Cases</h2>
-                <div class="two-column">
-                    <div>
-                        <h3>Session Management</h3>
-                        <ul>
-                            <li>Customer portal sessions</li>
-                            <li>Agent authentication</li>
-                            <li>Multi-device login tracking</li>
-                            <li>Secure session expiration</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3>Rate Limiting</h3>
-                        <ul>
-                            <li>API call throttling</li>
-                            <li>Quote request limits</li>
-                            <li>Fraud prevention</li>
-                            <li>Resource protection</li>
-                        </ul>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Insurance Industry Use Cases - Part 2 -->
-            <section>
-                <h2>Insurance Industry Redis Use Cases (cont.)</h2>
-                <div class="two-column">
-                    <div>
-                        <h3>Caching Strategies</h3>
-                        <ul>
-                            <li>Policy lookup acceleration</li>
-                            <li>Premium calculation cache</li>
-                            <li>Customer profile cache</li>
-                            <li>Claims history cache</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3>Real-time Processing</h3>
-                        <ul>
-                            <li>Claims status updates</li>
-                            <li>Instant quote generation</li>
-                            <li>Fraud detection alerts</li>
-                            <li>Agent notifications</li>
-                        </ul>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Redis Data Types - Part 1 -->
-            <section>
-                <h2>Redis Data Types for Insurance</h2>
-                <table class="comparison-table">
-                    <thead>
-                        <tr>
-                            <th>Data Type</th>
-                            <th>Description</th>
-                            <th>Insurance Use Case</th>
-                            <th>Example</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Strings</strong></td>
-                            <td>Simple key-value</td>
-                            <td>Policy numbers, customer IDs</td>
-                            <td>policy:12345 → "ACTIVE"</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Hashes</strong></td>
-                            <td>Field-value maps</td>
-                            <td>Customer profiles</td>
-                            <td>customer:567 → {name, age, risk}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Lists</strong></td>
-                            <td>Ordered collections</td>
-                            <td>Claims processing queues</td>
-                            <td>claims:pending → [claim1, claim2]</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
-
-            <!-- Redis Data Types - Part 2 -->
-            <section>
-                <h2>Redis Data Types for Insurance (cont.)</h2>
-                <table class="comparison-table">
-                    <thead>
-                        <tr>
-                            <th>Data Type</th>
-                            <th>Description</th>
-                            <th>Insurance Use Case</th>
-                            <th>Example</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Sets</strong></td>
-                            <td>Unique collections</td>
-                            <td>Risk categories</td>
-                            <td>high-risk → {customer1, customer3}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Sorted Sets</strong></td>
-                            <td>Scored collections</td>
-                            <td>Premium leaderboards</td>
-                            <td>premiums → [(agent1, 50000)]</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="highlight-box" style="margin-top: 30px;">
-                    <strong>Today's Focus:</strong> We'll start with Strings and explore advanced data types in upcoming sessions.
-                </div>
-            </section>
-
-            <!-- Redis Deployment Options -->
-            <section>
-                <h2>Redis Deployment Options for Insurance</h2>
-                <h3>Development & Testing</h3>
-                <ul>
-                    <li><strong>Docker containers</strong> - Local development</li>
-                    <li><strong>Single instance</strong> - Testing scenarios</li>
-                    <li><strong>Redis Insight</strong> - GUI monitoring</li>
-                    <li><strong>CLI tools</strong> - Command line access</li>
-                </ul>
-                <h3>Production Deployment</h3>
-                <ul>
-                    <li><strong>Redis Cluster</strong> - High availability</li>
-                    <li><strong>Redis Sentinel</strong> - Automatic failover</li>
-                    <li><strong>Cloud services</strong> - AWS ElastiCache, Azure</li>
-                </ul>
-            </section>
-
-            <!-- Course Environment Setup -->
-            <section>
-                <h2>Our Course Environment</h2>
-                <div class="architecture-diagram">
-                    <h3>Development Stack</h3>
-                    <div style="font-family: monospace; font-size: 0.9em;">
-                        Visual Studio Code<br>
-                        ↓<br>
-                        Docker Desktop<br>
-                        ↓<br>
-                        Redis Container + Redis Insight<br>
-                        ↓<br>
-                        JavaScript/Node.js Integration
-                    </div>
-                </div>
-                <ul>
-                    <li><strong>Cross-platform</strong> - Works on Windows and Mac</li>
-                    <li><strong>Containerized</strong> - Consistent environment for all</li>
-                    <li><strong>Production-ready</strong> - Real-world configuration</li>
-                    <li><strong>Insurance-focused</strong> - Relevant sample data</li>
-                </ul>
-            </section>
-
-            <!-- Lab Introduction Callout -->
-            <section class="lab-callout">
-                <h2>🧪 Hands-on Lab Time!</h2>
-                <h3>Lab 1: Redis Environment & CLI for Insurance Systems</h3>
-                <p><strong>Duration:</strong> 45 minutes</p>
-                <p><strong>Objective:</strong> Master Redis environment setup and basic CLI navigation for insurance applications</p>
-                <div style="margin-top: 30px;">
-                    <p><strong>What you'll do:</strong></p>
-                    <ul style="text-align: left; display: inline-block;">
-                        <li>Explore pre-configured Docker Redis environment</li>
-                        <li>Navigate Redis Insight GUI with insurance data</li>
-                        <li>Execute basic Redis CLI commands</li>
-                        <li>Test connections and basic operations</li>
+                    <ul>
+                        <li><strong>In-memory data structure store</strong> - All data stored in RAM for ultra-fast access</li>
+                        <li><strong>NoSQL key-value database</strong> - Simple, flexible data model</li>
+                        <li><strong>Multi-purpose platform</strong> - Database, cache, message broker, streaming engine</li>
+                        <li><strong>Open-source</strong> - BSD licensed, widely adopted in enterprise</li>
+                        <li><strong>Single-threaded</strong> - Atomic operations, consistent data</li>
+                        <li><strong>Persistent</strong> - Optional data persistence to disk</li>
                     </ul>
                 </div>
             </section>
 
+            <!-- Redis in Enterprise Technology Stack -->
+            <section>
+                <h2>Redis in Enterprise Technology Stack</h2>
+                <div class="scrollable-content">
+                    <div class="architecture-diagram">
+                        <h3>Modern Enterprise Architecture</h3>
+                        <div style="font-size: 0.85em; line-height: 1.6;">
+                            <strong>Frontend Layer:</strong> Web Apps, Mobile Apps, APIs<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+                            <strong>Application Layer:</strong> Microservices, Business Logic<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+                            <strong>Caching Layer:</strong> <span style="color: #e74c3c; font-weight: bold;">→ REDIS ←</span> (Session, Cache, Queue)<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+                            <strong>Data Layer:</strong> PostgreSQL, MySQL, MongoDB<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+                            <strong>Storage Layer:</strong> File Systems, Object Storage
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Performance Comparison -->
+            <section>
+                <h2>Performance: Redis vs Traditional Databases</h2>
+                <div class="scrollable-content">
+                    <div class="performance-metric">
+                        <h3>Speed Comparison</h3>
+                        Redis: ~100,000+ ops/sec | PostgreSQL: ~1,000-5,000 ops/sec
+                    </div>
+                    
+                    <table class="redis-vs-table">
+                        <tr>
+                            <th>Feature</th>
+                            <th>Redis</th>
+                            <th>Traditional RDBMS</th>
+                        </tr>
+                        <tr>
+                            <td><strong>Storage</strong></td>
+                            <td>In-Memory (RAM)</td>
+                            <td>Disk-based</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Speed</strong></td>
+                            <td>Sub-millisecond</td>
+                            <td>Milliseconds to seconds</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Data Model</strong></td>
+                            <td>Key-Value + Data Structures</td>
+                            <td>Tables with Relations</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Scaling</strong></td>
+                            <td>Horizontal (Clustering)</td>
+                            <td>Primarily Vertical</td>
+                        </tr>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Essential Redis Commands - Connection -->
+            <section>
+                <h2>Essential Redis Commands: Connection & Info</h2>
+                <div class="scrollable-content">
+                    <div class="command-category">
+                        <h3>🔌 Connection Commands</h3>
+                        <div class="command-box">
+PING                    # Test connection to Redis server
+PING "Hello"           # Test with custom message
+SELECT 2               # Switch to database 2 (0-15 available)
+AUTH "password"        # Authenticate with password
+                        </div>
+                    </div>
+                    
+                    <div class="command-category">
+                        <h3>📊 Server Information Commands</h3>
+                        <div class="command-box">
+INFO                   # Get server information
+INFO server            # Server-specific info
+CONFIG GET "*"         # Show all configuration
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Essential Redis Commands - Keys -->
+            <section>
+                <h2>Essential Redis Commands: Key Management</h2>
+                <div class="scrollable-content">
+                    <div class="command-category">
+                        <h3>🔑 Key Operations</h3>
+                        <div class="command-box">
+KEYS *                 # List all keys (use cautiously!)
+SCAN 0                 # Safely iterate through keys
+EXISTS key1            # Check if key exists
+TYPE keyname           # Get data type of key
+DEL key1               # Delete one key
+                        </div>
+                    </div>
+                    
+                    <div class="command-category">
+                        <h3>⏰ Key Expiration (TTL)</h3>
+                        <div class="command-box">
+EXPIRE key 300         # Set expiration in seconds
+TTL key                # Get remaining time to live
+PERSIST key            # Remove expiration from key
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Essential Redis Commands - Strings -->
+            <section>
+                <h2>Essential Redis Commands: String Operations</h2>
+                <div class="scrollable-content">
+                    <div class="command-category">
+                        <h3>📝 Basic String Commands</h3>
+                        <div class="command-box">
+SET key value          # Set string value
+GET key                # Get string value
+MSET key1 val1 key2 val2  # Set multiple keys
+MGET key1 key2 key3    # Get multiple keys
+SETNX key value        # Set only if key doesn't exist
+                        </div>
+                    </div>
+                    
+                    <div class="command-category">
+                        <h3>🔢 Numeric Operations</h3>
+                        <div class="command-box">
+INCR counter           # Increment by 1
+DECR counter           # Decrement by 1
+INCRBY counter 5       # Increment by specified amount
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Essential Redis Commands - Advanced String -->
+            <section>
+                <h2>Essential Redis Commands: Advanced Strings</h2>
+                <div class="scrollable-content">
+                    <div class="command-category">
+                        <h3>✂️ String Manipulation</h3>
+                        <div class="command-box">
+APPEND key " suffix"   # Append to string
+STRLEN key             # Get string length
+GETRANGE key 0 4       # Get substring (positions 0-4)
+SETRANGE key 5 "text"  # Replace part of string
+                        </div>
+                    </div>
+                    
+                    <div class="command-category">
+                        <h3>🎯 Conditional Operations</h3>
+                        <div class="command-box">
+SET key value NX       # Set only if key doesn't exist
+SET key value XX       # Set only if key exists
+SET key value EX 300   # Set with 300 second expiration
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Essential Redis Commands - Database -->
+            <section>
+                <h2>Essential Redis Commands: Database Operations</h2>
+                <div class="scrollable-content">
+                    <div class="command-category">
+                        <h3>🗄️ Database Management</h3>
+                        <div class="command-box">
+FLUSHDB               # Clear current database
+FLUSHALL              # Clear all databases
+DBSIZE                # Get number of keys in current database
+RENAME oldkey newkey  # Rename a key
+                        </div>
+                    </div>
+                    
+                    <div class="command-category">
+                        <h3>📈 Monitoring & Debugging</h3>
+                        <div class="command-box">
+MONITOR               # Real-time command monitoring
+SLOWLOG GET 10        # Get 10 slowest commands
+CLIENT LIST           # List connected clients
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Enterprise Use Cases -->
+            <section>
+                <h2>Enterprise Use Cases for Redis</h2>
+                <div class="scrollable-content">
+                    <div class="two-column">
+                        <div>
+                            <h3>🚀 Performance Optimization</h3>
+                            <ul>
+                                <li><strong>Application Caching</strong> - Reduce database load</li>
+                                <li><strong>Session Storage</strong> - Fast user session management</li>
+                                <li><strong>API Response Caching</strong> - Cache expensive API calls</li>
+                                <li><strong>Database Query Results</strong> - Cache frequent queries</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3>🔄 Real-time Features</h3>
+                            <ul>
+                                <li><strong>Message Queues</strong> - Async task processing</li>
+                                <li><strong>Pub/Sub Messaging</strong> - Real-time notifications</li>
+                                <li><strong>Live Analytics</strong> - Real-time dashboards</li>
+                                <li><strong>Gaming Leaderboards</strong> - Live scoring systems</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Redis Data Types Overview -->
+            <section>
+                <h2>Redis Data Types Overview</h2>
+                <div class="scrollable-content">
+                    <div class="command-category">
+                        <h3>🏗️ Available Data Structures</h3>
+                        <div style="font-size: 0.7em; line-height: 1.3;">
+                            <strong>1. Strings</strong> - Simple key-value pairs, most versatile<br>
+                            <strong>2. Hashes</strong> - Field-value pairs, perfect for objects<br>
+                            <strong>3. Lists</strong> - Ordered collections, great for queues<br>
+                            <strong>4. Sets</strong> - Unordered unique collections<br>
+                            <strong>5. Sorted Sets</strong> - Scored members, rankings<br>
+                            <strong>6. Streams</strong> - Append-only logs for events
+                        </div>
+                    </div>
+                    
+                    <div class="highlight-box">
+                        <strong>Today's Focus:</strong> Strings and Keys, then progress through all data types.
+                    </div>
+                </div>
+            </section>
+
+            <!-- Memory & Performance -->
+            <section>
+                <h2>Memory Management & Performance</h2>
+                <div class="scrollable-content">
+                    <div class="two-column">
+                        <div>
+                            <h3>🧠 Memory Considerations</h3>
+                            <ul>
+                                <li><strong>RAM Requirements</strong> - Size dataset appropriately</li>
+                                <li><strong>Memory Policies</strong> - Handle memory limits gracefully</li>
+                                <li><strong>Data Expiration</strong> - Use TTL for temporary data</li>
+                                <li><strong>Compression</strong> - Redis automatically optimizes storage</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3>⚡ Performance Tips</h3>
+                            <ul>
+                                <li><strong>Batch Operations</strong> - Use MGET/MSET for multiple keys</li>
+                                <li><strong>Avoid KEYS</strong> - Use SCAN for key discovery</li>
+                                <li><strong>Pipeline Commands</strong> - Reduce network round trips</li>
+                                <li><strong>Choose Right Data Type</strong> - Match structure to use case</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lab Introduction Callout -->
+            <section>
+                <div class="lab-callout">
+                    <h2>🧪 Lab 1: Redis Environment & CLI</h2>
+                    <p>
+                        <strong>Duration: 45 minutes</strong>
+                    </p>
+                    <p>Set up Redis with Docker, explore Redis CLI commands, and practice essential operations using Redis Insight GUI.</p>
+                    <p>
+                        <strong>What you'll do:</strong> Install Redis, connect via CLI, practice commands, and explore Redis Insight interface.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Why Redis for Enterprise -->
+            <section>
+                <h2>Why Redis for Enterprise Applications?</h2>
+                <div class="scrollable-content">
+                    <div class="performance-metric">
+                        <h3>Business Impact</h3>
+                        Faster applications = Better user experience = Higher revenue
+                    </div>
+                    
+                    <div class="two-column">
+                        <div>
+                            <h3>✅ Benefits</h3>
+                            <ul>
+                                <li><strong>Speed</strong> - Sub-millisecond response times</li>
+                                <li><strong>Scalability</strong> - Handle millions of operations/second</li>
+                                <li><strong>Flexibility</strong> - Multiple data structures in one system</li>
+                                <li><strong>Reliability</strong> - Enterprise-grade stability</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3>⚠️ Considerations</h3>
+                            <ul>
+                                <li><strong>Memory Cost</strong> - RAM is more expensive than disk</li>
+                                <li><strong>Data Volatility</strong> - In-memory means potential data loss</li>
+                                <li><strong>Complexity</strong> - Adds another component to manage</li>
+                                <li><strong>Monitoring</strong> - Need proper observability</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Next Steps -->
+            <section>
+                <div class="session-header">
+                    <h2>What's Coming Next</h2>
+                </div>
+                <div class="scrollable-content">
+                    <div style="font-size: 0.8em;">
+                        <h3>Session Progression</h3>
+                        <ul>
+                            <li><strong>Lab 1</strong> - Hands-on Redis setup and CLI practice</li>
+                            <li><strong>Session 2</strong> - RESP Protocol deep dive</li>
+                            <li><strong>Lab 2</strong> - Protocol analysis and monitoring</li>
+                            <li><strong>Sessions 3+</strong> - Advanced data structures and enterprise patterns</li>
+                        </ul>
+                        
+                        <div class="highlight-box" style="margin-top: 15px;">
+                            <strong>Remember:</strong> All commands covered today will be practiced in Lab 1.
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
     <script>
         Reveal.initialize({
             hash: true,
-            controls: true,
-            progress: true,
-            center: false,
             transition: 'slide',
+            transitionSpeed: 'default',
             backgroundTransition: 'fade'
         });
     </script>
