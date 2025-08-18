@@ -1,0 +1,30 @@
+{
+  "name": "lab12-advanced-patterns",
+  "version": "1.0.0",
+  "description": "Advanced Redis Patterns for Enterprise Applications",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node tests/test-all.js",
+    "test-cache": "node tests/test-cache.js",
+    "test-cache-aside": "node src/cache-patterns.js",
+    "test-locking": "node tests/test-locking.js",
+    "test-queue": "node tests/test-queue.js",
+    "test-performance": "node tests/test-performance.js",
+    "benchmark": "node benchmarks/run-benchmarks.js",
+    "load-data": "node scripts/load-enterprise-data.js",
+    "monitor": "node monitoring/monitor.js",
+    "dev": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "redis": "^4.6.0",
+    "generic-pool": "^3.9.0",
+    "uuid": "^9.0.0",
+    "dotenv": "^16.0.0",
+    "chalk": "^4.1.2",
+    "cli-table3": "^0.6.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.0"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "lab10-advanced-caching-patterns",
+  "version": "1.0.0",
+  "description": "Advanced caching patterns with Redis and JavaScript",
+  "main": "src/cache-aside-pattern.js",
+  "scripts": {
+    "start": "node src/cache-aside-pattern.js",
+    "cache-aside": "node src/cache-aside-pattern.js",
+    "write-through": "node src/write-through-pattern.js",
+    "invalidation": "node src/cache-invalidation.js",
+    "benchmark": "node performance-tests/cache-benchmark.js",
+    "test": "npm run cache-aside && npm run write-through && npm run invalidation && npm run benchmark"
+  },
+  "keywords": [
+    "redis",
+    "cache",
+    "caching-patterns",
+    "performance"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "redis": "^4.6.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2"
+  }
+}

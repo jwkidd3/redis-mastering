@@ -1,0 +1,106 @@
+# Insurance Redis CLI Examples
+# Copy and paste these commands into redis-cli for practice
+
+# === POLICY OPERATIONS ===
+# View all policies
+KEYS policy:*
+
+# Get specific policy details
+GET policy:INS001
+GET policy:INS002
+
+# Check if policy exists
+EXISTS policy:INS999
+
+# Get policy data type
+TYPE policy:INS001
+
+# === CUSTOMER OPERATIONS ===
+# Customer information retrieval
+GET customer:CUST001
+MGET customer:CUST001 customer:CUST002 customer:CUST003
+
+# Customer login tracking
+INCR customer:CUST001:login_count
+GET customer:CUST001:login_count
+
+# === CLAIMS PROCESSING ===
+# View all claims
+KEYS claim:*
+
+# Claim status checking
+GET claim:CLM001
+GET claim:CLM002
+
+# Claims counter management
+SET daily:claims_submitted 0
+INCR daily:claims_submitted
+INCRBY daily:claims_submitted 5
+
+# === QUOTE MANAGEMENT ===
+# Create temporary quotes with expiration
+SETEX quote:AUTO:Q100 300 "BMW X5 - Premium: $1,800/year"
+SETEX quote:HOME:Q200 600 "Beach House - Premium: $2,500/year"
+
+# Check quote expiration
+TTL quote:AUTO:Q100
+TTL quote:HOME:Q200
+
+# === AGENT PERFORMANCE ===
+# Agent data retrieval
+GET agent:AG001
+KEYS agent:*
+
+# Performance counters
+SET agent:AG001:policies_sold 25
+INCR agent:AG001:policies_sold
+
+# === PREMIUM CALCULATIONS ===
+# Premium tracking
+SET policy:INS001:premium 1200
+INCRBY policy:INS001:premium 100
+GET policy:INS001:premium
+
+# Daily premium collection
+SET premium:collected:today 0
+INCRBY premium:collected:today 1200
+INCRBY premium:collected:today 800
+GET premium:collected:today
+
+# === BATCH OPERATIONS ===
+# Multiple policy lookup (customer portal scenario)
+MGET policy:INS001 policy:INS002 policy:INS003
+
+# Batch customer updates
+MSET customer:CUST001:last_login "2024-08-18" customer:CUST002:last_login "2024-08-18"
+
+# === PATTERN MATCHING ===
+# Find customer-specific data
+KEYS customer:CUST001:*
+
+# Find all quotes
+KEYS quote:*
+
+# Production-safe scanning
+SCAN 0 MATCH policy:* COUNT 10
+
+# === MONITORING & DEBUG ===
+# Database information
+DBSIZE
+INFO memory
+INFO stats
+
+# Key information
+STRLEN policy:INS001
+TTL quote:AUTO:Q100
+EXISTS policy:INS999
+
+# === CLEANUP OPERATIONS ===
+# Remove expired quotes
+DEL quote:AUTO:Q100
+
+# Remove test data
+DEL test:*
+
+# Clear specific pattern (be careful!)
+# EVAL "return redis.call('del', unpack(redis.call('keys', ARGV[1])))" 0 test:*

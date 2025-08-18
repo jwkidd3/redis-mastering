@@ -1,0 +1,34 @@
+{
+  "name": "lab15-microservices-integration",
+  "version": "1.0.0",
+  "description": "Lab 15: Simple Microservices Pattern with Redis integration",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "start:policy": "node services/policy-service/index.js",
+    "start:claims": "node services/claims-service/index.js",
+    "start:customer": "node services/customer-service/index.js",
+    "start:all": "npm-run-all --parallel start:policy start:claims start:customer",
+    "test": "node tests/test-integration.js",
+    "load-data": "bash scripts/load-sample-data.sh",
+    "monitor": "node src/monitor.js",
+    "dev": "nodemon src/index.js"
+  },
+  "keywords": ["redis", "microservices", "caching", "javascript", "distributed"],
+  "author": "Redis Training",
+  "license": "MIT",
+  "dependencies": {
+    "redis": "^4.6.0",
+    "express": "^4.18.2",
+    "axios": "^1.6.0",
+    "dotenv": "^16.0.3",
+    "uuid": "^9.0.0",
+    "body-parser": "^1.20.2",
+    "morgan": "^1.10.0",
+    "chalk": "^4.1.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20",
+    "npm-run-all": "^4.1.5"
+  }
+}

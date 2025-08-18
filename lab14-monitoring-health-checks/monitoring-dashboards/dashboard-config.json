@@ -1,0 +1,61 @@
+{
+  "dashboards": [
+    {
+      "id": "business-operations",
+      "name": "Business Operations Dashboard",
+      "refresh_interval": 5000,
+      "panels": [
+        {
+          "type": "gauge",
+          "title": "Memory Usage",
+          "metric": "redis_memory_usage_bytes",
+          "thresholds": {
+            "warning": 75,
+            "critical": 90
+          }
+        },
+        {
+          "type": "counter",
+          "title": "Policy Lookups",
+          "metric": "policy_lookups_total",
+          "aggregation": "sum"
+        },
+        {
+          "type": "histogram",
+          "title": "Operation Latency",
+          "metric": "redis_operation_duration_seconds",
+          "buckets": [0.001, 0.005, 0.01, 0.05, 0.1]
+        },
+        {
+          "type": "table",
+          "title": "Queue Status",
+          "metrics": [
+            "claims:pending",
+            "claims:processing",
+            "notifications:queue"
+          ]
+        }
+      ]
+    }
+  ],
+  "alerts": [
+    {
+      "name": "High Memory Usage",
+      "condition": "redis_memory_usage_bytes > max_memory * 0.9",
+      "severity": "critical",
+      "notification": "email,slack"
+    },
+    {
+      "name": "Queue Backlog",
+      "condition": "queue_length{queue_name='claims:pending'} > 100",
+      "severity": "warning",
+      "notification": "slack"
+    },
+    {
+      "name": "Low Cache Hit Rate",
+      "condition": "cache_hit_rate < 0.8",
+      "severity": "info",
+      "notification": "email"
+    }
+  ]
+}

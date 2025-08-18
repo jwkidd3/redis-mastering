@@ -1,0 +1,23 @@
+{
+  "name": "lab11-session-security",
+  "version": "1.0.0",
+  "description": "Session Management and Security for Business Systems",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node tests/test-security.js",
+    "dev": "nodemon src/index.js",
+    "load-data": "./scripts/load-security-data.sh"
+  },
+  "dependencies": {
+    "redis": "^4.6.0",
+    "express": "^4.18.0",
+    "bcrypt": "^5.1.0",
+    "jsonwebtoken": "^9.0.0",
+    "uuid": "^9.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.0"
+  }
+}

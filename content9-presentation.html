@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content 9 - Advanced Redis Features</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.min.css">
+    <style>
+        .reveal {
+            font-family: "Source Sans Pro", Helvetica, sans-serif;
+        }
+        .reveal h1, .reveal h2, .reveal h3 {
+            color: #333;
+            text-transform: none;
+            line-height: 1.2;
+        }
+        .title-slide {
+            background-color: #e0e0e0 !important;
+        }
+        .title-slide h1, .title-slide h2, .title-slide h3, .title-slide p {
+            color: #333 !important;
+        }
+        .session-header {
+            background-color: #e0e0e0 !important;
+        }
+        .session-header h2 {
+            color: #333 !important;
+        }
+        .reveal pre {
+            width: 100%;
+            font-size: 0.55em;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        .reveal pre code {
+            max-height: 450px;
+            padding: 15px;
+        }
+        .lab-callout {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 1.2em;
+        }
+        .highlight-box {
+            background-color: #f0f8ff;
+            border-left: 5px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .reveal ul, .reveal ol {
+            display: block;
+            margin-left: 1em;
+            font-size: 0.9em;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8em;
+        }
+        .comparison-table th {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+        }
+        .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .reveal .slides section {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .content-fit {
+            font-size: 0.85em;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+            <!-- Title Slide -->
+            <section class="title-slide">
+                <h1>Content 9</h1>
+                <h2>Advanced Redis Features</h2>
+                <p>Bitmaps, HyperLogLog, and Geospatial Data</p>
+            </section>
+
+            <!-- Session Header -->
+            <section class="session-header">
+                <h2>Session Overview</h2>
+                <ul>
+                    <li>Redis Bitmaps for Efficient Data Storage</li>
+                    <li>HyperLogLog for Cardinality Estimation</li>
+                    <li>Geospatial Commands and Indexes</li>
+                    <li>Real-world Use Cases</li>
+                    <li>Performance Optimization Strategies</li>
+                </ul>
+            </section>
+
+            <!-- Bitmaps Section -->
+            <section class="session-header">
+                <h2>Redis Bitmaps</h2>
+                <p>Space-Efficient Binary Data Storage</p>
+            </section>
+
+            <section>
+                <h3>Understanding Bitmaps</h3>
+                <div class="content-fit">
+                    <ul>
+                        <li>Bitmaps are not a distinct data type</li>
+                        <li>String operations on bit-level data</li>
+                        <li>Each bit represents a boolean value</li>
+                        <li>Extremely memory efficient for certain use cases</li>
+                    </ul>
+                    <div class="highlight-box">
+                        <strong>Key Advantage:</strong> Store millions of boolean values in minimal space
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3>Bitmap Operations</h3>
+                <pre><code class="language-javascript">// Setting and getting bits
+await redis.setbit('user:active:2024', 1000, 1);
+const isActive = await redis.getbit('user:active:2024', 1000);
+
+// Counting set bits
+const activeCount = await redis.bitcount('user:active:2024');
+
+// Finding first set bit
+const firstActive = await redis.bitpos('user:active:2024', 1);</code></pre>
+            </section>
+
+            <section>
+                <h3>Bitmap Logical Operations</h3>
+                <pre><code class="language-javascript">// AND operation - users active in both periods
+await redis.bitop('AND', 'active:both', 
+    'active:january', 'active:february');
+
+// OR operation - users active in either period
+await redis.bitop('OR', 'active:either', 
+    'active:january', 'active:february');
+
+// XOR operation - users active in only one period
+await redis.bitop('XOR', 'active:diff', 
+    'active:january', 'active:february');</code></pre>
+            </section>
+
+            <section>
+                <h3>Bitmap Use Cases</h3>
+                <div class="content-fit">
+                    <ul>
+                        <li><strong>User Activity Tracking:</strong> Daily active users</li>
+                        <li><strong>Feature Flags:</strong> Enable/disable features per user</li>
+                        <li><strong>Permissions:</strong> User access control matrices</li>
+                        <li><strong>Analytics:</strong> Event occurrence tracking</li>
+                    </ul>
+                    <div class="highlight-box">
+                        <strong>Memory Example:</strong> 1 million users = ~122KB for daily tracking
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lab 1 Callout -->
+            <section>
+                <div class="lab-callout">
+                    <h2>🧪 Lab 1: Bitmap Analytics</h2>
+                    <p>Build a user activity tracking system</p>
+                    <p><strong>Duration: 45 minutes</strong></p>
+                </div>
+            </section>
+
+            <!-- HyperLogLog Section -->
+            <section class="session-header">
+                <h2>HyperLogLog</h2>
+                <p>Probabilistic Cardinality Estimation</p>
+            </section>
+
+            <section>
+                <h3>What is HyperLogLog?</h3>
+                <div class="content-fit">
+                    <ul>
+                        <li>Probabilistic data structure</li>
+                        <li>Estimates unique element count</li>
+                        <li>Uses only 12KB per key (maximum)</li>
+                        <li>Standard error of 0.81%</li>
+                    </ul>
+                    <div class="highlight-box">
+                        <strong>Perfect for:</strong> Counting unique visitors, distinct queries, unique IPs
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3>HyperLogLog Commands</h3>
+                <pre><code class="language-javascript">// Add elements to HyperLogLog
+await redis.pfadd('unique:visitors:today', 
+    'user:1001', 'user:1002', 'user:1003');
+
+// Get cardinality estimate
+const uniqueCount = await redis.pfcount('unique:visitors:today');
+console.log(`Unique visitors: ${uniqueCount}`);
+
+// Merge multiple HyperLogLogs
+await redis.pfmerge('unique:visitors:week', 
+    'visitors:mon', 'visitors:tue', 'visitors:wed');</code></pre>
+            </section>
+
+            <section>
+                <h3>HyperLogLog vs Set Comparison</h3>
+                <table class="comparison-table">
+                    <tr>
+                        <th>Aspect</th>
+                        <th>HyperLogLog</th>
+                        <th>Set</th>
+                    </tr>
+                    <tr>
+                        <td>Memory Usage</td>
+                        <td>12KB max</td>
+                        <td>Linear growth</td>
+                    </tr>
+                    <tr>
+                        <td>Accuracy</td>
+                        <td>~99.2%</td>
+                        <td>100%</td>
+                    </tr>
+                    <tr>
+                        <td>Element Retrieval</td>
+                        <td>Not possible</td>
+                        <td>Supported</td>
+                    </tr>
+                    <tr>
+                        <td>Use Case</td>
+                        <td>Counting only</td>
+                        <td>Full operations</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section>
+                <h3>HyperLogLog Real-World Example</h3>
+                <pre><code class="language-javascript">class UniqueVisitorTracker {
+    constructor(redis) {
+        this.redis = redis;
+    }
+    
+    async trackVisitor(page, visitorId) {
+        const key = `visitors:${page}:${new Date().toISOString().split('T')[0]}`;
+        await this.redis.pfadd(key, visitorId);
+    }
+    
+    async getUniqueCount(page, date) {
+        const key = `visitors:${page}:${date}`;
+        return await this.redis.pfcount(key);
+    }
+    
+    async getWeeklyUnique(page) {
+        const days = this.getLastSevenDays();
+        const keys = days.map(d => `visitors:${page}:${d}`);
+        const mergedKey = `visitors:${page}:week`;
+        await this.redis.pfmerge(mergedKey, ...keys);
+        return await this.redis.pfcount(mergedKey);
+    }
+}</code></pre>
+            </section>
+
+            <!-- Lab 2 Callout -->
+            <section>
+                <div class="lab-callout">
+                    <h2>🧪 Lab 2: Unique Visitor Counting</h2>
+                    <p>Implement HyperLogLog for analytics</p>
+                    <p><strong>Duration: 45 minutes</strong></p>
+                </div>
+            </section>
+
+            <!-- Geospatial Section -->
+            <section class="session-header">
+                <h2>Geospatial Data</h2>
+                <p>Location-Based Operations in Redis</p>
+            </section>
+
+            <section>
+                <h3>Geospatial Indexes</h3>
+                <div class="content-fit">
+                    <ul>
+                        <li>Store latitude/longitude coordinates</li>
+                        <li>Find nearby locations</li>
+                        <li>Calculate distances between points</li>
+                        <li>Search within radius or bounding box</li>
+                    </ul>
+                    <div class="highlight-box">
+                        <strong>Implementation:</strong> Uses sorted sets with geohash encoding
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3>Basic Geospatial Operations</h3>
+                <pre><code class="language-javascript">// Add locations
+await redis.geoadd('stores', 
+    -122.4194, 37.7749, 'store:sf',
+    -118.2437, 34.0522, 'store:la',
+    -73.9857, 40.7580, 'store:ny'
+);
+
+// Get coordinates
+const coords = await redis.geopos('stores', 'store:sf');
+console.log(`SF Store: ${coords[0]}`);
+
+// Calculate distance
+const distance = await redis.geodist('stores', 
+    'store:sf', 'store:la', 'km');
+console.log(`Distance: ${distance} km`);</code></pre>
+            </section>
+
+            <section>
+                <h3>Radius Searches</h3>
+                <pre><code class="language-javascript">// Find locations within radius of coordinates
+const nearby = await redis.georadius('stores',
+    -122.4194, 37.7749,  // longitude, latitude
+    100,                   // radius
+    'km',                  // unit
+    'WITHDIST',           // include distance
+    'WITHCOORD',          // include coordinates
+    'COUNT', 10,          // limit results
+    'ASC'                 // sort by distance
+);
+
+// Find locations near a member
+const nearStore = await redis.georadiusbymember('stores',
+    'store:sf',
+    500,
+    'km'
+);</code></pre>
+            </section>
+
+            <section>
+                <h3>Geospatial Search (Redis 6.2+)</h3>
+                <pre><code class="language-javascript">// More flexible search with GEOSEARCH
+const results = await redis.geosearch('stores',
+    'FROMLONLAT', -122.4194, 37.7749,
+    'BYRADIUS', 100, 'km',
+    'WITHDIST',
+    'WITHCOORD',
+    'COUNT', 10
+);
+
+// Store search results
+await redis.geosearchstore('nearby:sf', 'stores',
+    'FROMLONLAT', -122.4194, 37.7749,
+    'BYRADIUS', 100, 'km'
+);</code></pre>
+            </section>
+
+            <section>
+                <h3>Geospatial Use Cases</h3>
+                <div class="content-fit">
+                    <ul>
+                        <li><strong>Store Locator:</strong> Find nearest locations</li>
+                        <li><strong>Delivery Services:</strong> Driver-to-customer matching</li>
+                        <li><strong>Social Apps:</strong> Nearby users or events</li>
+                        <li><strong>Fleet Management:</strong> Vehicle tracking</li>
+                        <li><strong>Real Estate:</strong> Property searches by area</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section>
+                <h3>Complete Geospatial Example</h3>
+                <pre><code class="language-javascript">class StoreLocator {
+    constructor(redis) {
+        this.redis = redis;
+        this.key = 'stores:locations';
+    }
+    
+    async addStore(storeId, longitude, latitude, metadata) {
+        // Add to geospatial index
+        await this.redis.geoadd(this.key, longitude, latitude, storeId);
+        
+        // Store metadata separately
+        await this.redis.hset(`store:${storeId}`, metadata);
+    }
+    
+    async findNearby(longitude, latitude, radius = 10) {
+        const results = await this.redis.georadius(
+            this.key, longitude, latitude, radius, 'km',
+            'WITHDIST', 'WITHCOORD', 'COUNT', 20, 'ASC'
+        );
+        
+        // Enrich with metadata
+        const stores = [];
+        for (const [id, dist, coords] of results) {
+            const metadata = await this.redis.hgetall(`store:${id}`);
+            stores.push({ id, distance: dist, coords, ...metadata });
+        }
+        return stores;
+    }
+}</code></pre>
+            </section>
+
+            <!-- Lab 3 Callout -->
+            <section>
+                <div class="lab-callout">
+                    <h2>🧪 Lab 3: Location-Based Services</h2>
+                    <p>Build a store locator with geospatial data</p>
+                    <p><strong>Duration: 45 minutes</strong></p>
+                </div>
+            </section>
+
+            <!-- Combined Features Section -->
+            <section class="session-header">
+                <h2>Combining Advanced Features</h2>
+                <p>Real-World Integration Patterns</p>
+            </section>
+
+            <section>
+                <h3>Analytics Dashboard Example</h3>
+                <pre><code class="language-javascript">class AnalyticsDashboard {
+    constructor(redis) {
+        this.redis = redis;
+    }
+    
+    async trackUserActivity(userId, action, location) {
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Bitmap for daily active users
+        await this.redis.setbit(`active:${today}`, userId, 1);
+        
+        // HyperLogLog for unique actions
+        await this.redis.pfadd(`actions:${action}:${today}`, userId);
+        
+        // Geospatial for location tracking
+        if (location) {
+            await this.redis.geoadd(`locations:${today}`, 
+                location.lng, location.lat, `user:${userId}`);
+        }
+    }
+    
+    async getDailyStats(date) {
+        return {
+            activeUsers: await this.redis.bitcount(`active:${date}`),
+            uniqueActions: await this.redis.pfcount(`actions:*:${date}`),
+            locationClusters: await this.findClusters(date)
+        };
+    }
+}</code></pre>
+            </section>
+
+            <section>
+                <h3>Performance Optimization Tips</h3>
+                <div class="content-fit">
+                    <ul>
+                        <li><strong>Bitmaps:</strong> Use offsets wisely, consider splitting large ranges</li>
+                        <li><strong>HyperLogLog:</strong> Batch additions with PFADD for efficiency</li>
+                        <li><strong>Geospatial:</strong> Index only active locations, use appropriate precision</li>
+                        <li><strong>Memory:</strong> Monitor usage with MEMORY USAGE command</li>
+                        <li><strong>Expiration:</strong> Set TTL on temporal data structures</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section>
+                <h3>Memory Efficiency Comparison</h3>
+                <table class="comparison-table">
+                    <tr>
+                        <th>Data Type</th>
+                        <th>Use Case</th>
+                        <th>Memory for 1M items</th>
+                    </tr>
+                    <tr>
+                        <td>Bitmap</td>
+                        <td>Boolean flags</td>
+                        <td>~122 KB</td>
+                    </tr>
+                    <tr>
+                        <td>HyperLogLog</td>
+                        <td>Unique counting</td>
+                        <td>12 KB</td>
+                    </tr>
+                    <tr>
+                        <td>Geospatial</td>
+                        <td>Location data</td>
+                        <td>~48 MB</td>
+                    </tr>
+                    <tr>
+                        <td>Regular Set</td>
+                        <td>Unique items</td>
+                        <td>~84 MB</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section>
+                <h3>Redis Insight for Advanced Features</h3>
+                <div class="content-fit">
+                    <ul>
+                        <li><strong>Bitmap Visualization:</strong> View bit patterns and density</li>
+                        <li><strong>HyperLogLog Monitoring:</strong> Track cardinality estimates</li>
+                        <li><strong>Geospatial Browser:</strong> Map visualization of locations</li>
+                        <li><strong>Memory Analysis:</strong> Identify optimization opportunities</li>
+                    </ul>
+                    <div class="highlight-box">
+                        Use Redis Insight's profiler to monitor command patterns
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3>Best Practices Summary</h3>
+                <div class="content-fit">
+                    <ul>
+                        <li>Choose the right data structure for your use case</li>
+                        <li>Consider memory vs accuracy trade-offs</li>
+                        <li>Use pipelining for bulk operations</li>
+                        <li>Implement proper key naming conventions</li>
+                        <li>Monitor and profile regularly</li>
+                        <li>Document your data models</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Summary -->
+            <section class="session-header">
+                <h2>Module Summary</h2>
+                <div class="content-fit">
+                    <ul>
+                        <li>✅ Mastered Bitmap operations for efficient boolean storage</li>
+                        <li>✅ Implemented HyperLogLog for cardinality estimation</li>
+                        <li>✅ Built location-based features with Geospatial commands</li>
+                        <li>✅ Understood memory optimization strategies</li>
+                        <li>✅ Integrated multiple advanced features</li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/highlight.min.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            plugins: [RevealHighlight],
+            slideNumber: true,
+            width: 1200,
+            height: 700,
+            margin: 0.04,
+            minScale: 0.2,
+            maxScale: 2.0,
+            center: true,
+            autoSlide: 0,
+            controls: true,
+            progress: true,
+            history: true
+        });
+    </script>
+</body>
+</html>

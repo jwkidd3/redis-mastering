@@ -1,0 +1,28 @@
+{
+  "name": "lab7-customer-profiles-policy-management",
+  "version": "1.0.0",
+  "description": "Customer and Policy Management System using Redis Hashes",
+  "main": "test-connection.js",
+  "scripts": {
+    "test-connection": "node test-connection.js",
+    "test-customer": "node test-customer.js",
+    "test-policy": "node test-policy.js",
+    "test-integration": "node test-integration.js",
+    "benchmark": "node benchmark.js",
+    "dev": "nodemon"
+  },
+  "keywords": [
+    "redis",
+    "hash",
+    "customer-management",
+    "policy-management"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "redis": "^4.6.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  }
+}

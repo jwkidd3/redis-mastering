@@ -1,0 +1,31 @@
+{
+  "name": "lab8-claims-processing-queues",
+  "version": "1.0.0",
+  "description": "Claims processing queue implementation with Redis Lists",
+  "type": "module",
+  "main": "src/basic-queue.js",
+  "scripts": {
+    "start": "node src/basic-queue.js",
+    "priority": "node src/priority-queue.js",
+    "reliable": "node src/reliable-queue.js",
+    "monitor": "node src/queue-monitor.js",
+    "test": "node src/test-all.js",
+    "load-data": "./scripts/load-claims-data.sh"
+  },
+  "keywords": [
+    "redis",
+    "queues",
+    "claims",
+    "processing",
+    "lists"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "redis": "^4.6.0",
+    "dotenv": "^16.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  }
+}

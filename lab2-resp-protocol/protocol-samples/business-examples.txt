@@ -1,0 +1,25 @@
+# Policy Lookup
+Request:  *2\r\n$3\r\nGET\r\n$16\r\npolicy:AUTO:1001\r\n
+Response: $45\r\nType:Auto|Premium:1200|Status:Active|Customer:C001\r\n
+
+# Customer Profile Update
+Request:  *4\r\n$4\r\nHSET\r\n$13\r\ncustomer:C001\r\n$5\r\nemail\r\n$17\r\njohn@newmail.com\r\n
+Response: :0\r\n
+
+# Claims Queue Push
+Request:  *3\r\n$5\r\nLPUSH\r\n$14\r\nclaims:pending\r\n$19\r\nCLM:AUTO:2024:00123\r\n
+Response: :1\r\n
+
+# Batch Policy Update (MSET)
+Request:  *7\r\n$4\r\nMSET\r\n$16\r\npolicy:AUTO:1001\r\n$13\r\nPremium:1250\r\n$16\r\npolicy:AUTO:1002\r\n$13\r\nPremium:1450\r\n$16\r\npolicy:AUTO:1003\r\n$13\r\nPremium:1000\r\n
+Response: +OK\r\n
+
+# Transaction Example
+Request:  *1\r\n$5\r\nMULTI\r\n
+Response: +OK\r\n
+Request:  *2\r\n$4\r\nINCR\r\n$20\r\nclaims:daily:counter\r\n
+Response: +QUEUED\r\n
+Request:  *3\r\n$5\r\nLPUSH\r\n$12\r\nclaims:queue\r\n$7\r\nCLM:123\r\n
+Response: +QUEUED\r\n
+Request:  *1\r\n$4\r\nEXEC\r\n
+Response: *2\r\n:15\r\n:8\r\n

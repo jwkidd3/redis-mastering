@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Content 6: Advanced Caching Patterns</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.min.css">
+    <style>
+        /* Main title block styling */
+        .title-slide {
+            background: linear-gradient(135deg, #e8e8e8 0%, #d3d3d3 100%) !important;
+        }
+        
+        .title-slide h1, .title-slide h2, .title-slide h3 {
+            color: #2c3e50 !important;
+            text-transform: none !important;
+        }
+        
+        /* Session headers styling */
+        .section-header {
+            background: linear-gradient(135deg, #e8e8e8 0%, #d3d3d3 100%) !important;
+        }
+        
+        .section-header h2 {
+            color: #2c3e50 !important;
+            font-size: 2.2em !important;
+        }
+        
+        /* Lab callout slide styling */
+        .lab-callout {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+        }
+        
+        .lab-callout h2, .lab-callout h3, .lab-callout p {
+            color: white !important;
+        }
+        
+        /* General slide styling */
+        .reveal {
+            font-family: "Source Sans Pro", sans-serif;
+        }
+        
+        .reveal h1, .reveal h2, .reveal h3 {
+            font-weight: 600;
+            line-height: 1.2;
+        }
+        
+        .reveal h1 {
+            font-size: 2.5em;
+        }
+        
+        .reveal h2 {
+            font-size: 1.8em;
+        }
+        
+        .reveal h3 {
+            font-size: 1.3em;
+            color: #3498db;
+        }
+        
+        .reveal pre {
+            width: 100%;
+            font-size: 0.55em;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .reveal code {
+            font-family: "Source Code Pro", monospace;
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        
+        .reveal pre code {
+            background: none;
+            padding: 0;
+            max-height: 500px;
+        }
+        
+        .reveal ul, .reveal ol {
+            text-align: left;
+            margin-left: 1em;
+        }
+        
+        .reveal li {
+            margin-bottom: 0.5em;
+        }
+        
+        /* Two-column layout */
+        .two-columns {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        .column {
+            flex: 1;
+            padding: 0 10px;
+        }
+        
+        /* Highlight boxes */
+        .highlight-box {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .highlight-box.warning {
+            border-left-color: #e74c3c;
+            background: #fff5f5;
+        }
+        
+        .highlight-box.success {
+            border-left-color: #27ae60;
+            background: #f5fff5;
+        }
+        
+        /* Table styling */
+        .reveal table {
+            margin: auto;
+            border-collapse: collapse;
+            border-spacing: 0;
+            font-size: 0.8em;
+        }
+        
+        .reveal table th,
+        .reveal table td {
+            padding: 0.5em 1em;
+            border: 1px solid #ccc;
+        }
+        
+        .reveal table th {
+            background: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+        
+        /* Auto-zoom content to fit */
+        .reveal .slides section {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .reveal .slides section.scrollable {
+            overflow-y: auto;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+            <!-- Title Slide -->
+            <section class="title-slide" data-background-color="#e8e8e8">
+                <h1>Advanced Caching Patterns</h1>
+                <h2>Content 6</h2>
+                <h3>Mastering Redis - Day 2</h3>
+                <p>Enterprise Caching Strategies for Business Applications</p>
+            </section>
+
+            <!-- Session Overview -->
+            <section class="section-header" data-background-color="#e8e8e8">
+                <h2>Session Overview</h2>
+                <div class="highlight-box">
+                    <h3>Learning Objectives</h3>
+                    <ul>
+                        <li>Master cache-aside and write-through patterns</li>
+                        <li>Implement multi-tier caching architectures</li>
+                        <li>Design cache invalidation strategies</li>
+                        <li>Optimize cache performance metrics</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Part 1: Caching Fundamentals -->
+            <section class="section-header" data-background-color="#e8e8e8">
+                <h2>Part 1: Caching Fundamentals</h2>
+                <h3>Understanding Cache Patterns</h3>
+            </section>
+
+            <section>
+                <h2>Why Advanced Caching?</h2>
+                <div class="two-columns">
+                    <div class="column">
+                        <h3>Business Challenges</h3>
+                        <ul>
+                            <li>Database overload</li>
+                            <li>Slow response times</li>
+                            <li>Scaling costs</li>
+                            <li>User experience</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h3>Redis Solutions</h3>
+                        <ul>
+                            <li>Sub-millisecond latency</li>
+                            <li>Reduced DB load by 90%</li>
+                            <li>Cost-effective scaling</li>
+                            <li>Enhanced performance</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h2>Cache Hit vs Cache Miss</h2>
+                <pre><code class="javascript">// Cache Hit Flow
+async function getProduct(productId) {
+    // 1. Check cache first
+    const cached = await redis.get(`product:${productId}`);
+    if (cached) {
+        return JSON.parse(cached); // Cache HIT
+    }
+    
+    // 2. Cache MISS - fetch from database
+    const product = await database.query(
+        'SELECT * FROM products WHERE id = ?', 
+        [productId]
+    );
+    
+    // 3. Store in cache for next time
+    await redis.setex(
+        `product:${productId}`, 
+        3600, 
+        JSON.stringify(product)
+    );
+    
+    return product;
+}</code></pre>
+            </section>
+
+            <!-- Part 2: Cache-Aside Pattern -->
+            <section class="section-header" data-background-color="#e8e8e8">
+                <h2>Part 2: Cache-Aside Pattern</h2>
+                <h3>Lazy Loading Strategy</h3>
+            </section>
+
+            <section>
+                <h2>Cache-Aside Implementation</h2>
+                <pre><code class="javascript">class CacheAsidePattern {
+    constructor(redis, database) {
+        this.redis = redis;
+        this.database = database;
+    }
+    
+    async get(key, fetchFn, ttl = 3600) {
+        // Try cache first
+        const cached = await this.redis.get(key);
+        if (cached) {
+            console.log(`Cache HIT: ${key}`);
+            return JSON.parse(cached);
+        }
+        
+        // Cache miss - fetch from source
+        console.log(`Cache MISS: ${key}`);
+        const data = await fetchFn();
+        
+        // Store in cache
+        await this.redis.setex(
+            key, ttl, JSON.stringify(data)
+        );
+        
+        return data;
+    }
+}</code></pre>
+            </section>
+
+            <section>
+                <h2>Cache-Aside Benefits</h2>
+                <div class="highlight-box success">
+                    <h3>✅ Advantages</h3>
+                    <ul>
+                        <li><strong>Resilient:</strong> Application works even if cache fails</li>
+                        <li><strong>Simple:</strong> Easy to implement and understand</li>
+                        <li><strong>Flexible:</strong> Works with any data source</li>
+                        <li><strong>Efficient:</strong> Only caches accessed data</li>
+                    </ul>
+                </div>
+                <div class="highlight-box warning">
+                    <h3>⚠️ Considerations</h3>
+                    <ul>
+                        <li>Initial requests are slower (cache miss)</li>
+                        <li>Potential for stale data</li>
+                        <li>Cache stampede risk</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Part 3: Write-Through Pattern -->
+            <section class="section-header" data-background-color="#e8e8e8">
+                <h2>Part 3: Write-Through Pattern</h2>
+                <h3>Synchronous Cache Updates</h3>
+            </section>
+
+            <section>
+                <h2>Write-Through Implementation</h2>
+                <pre><code class="javascript">class WriteThroughPattern {
+    async save(key, data) {
+        // 1. Write to cache immediately
+        await this.redis.set(key, JSON.stringify(data));
+        
+        // 2. Write to database synchronously
+        await this.database.save(data);
+        
+        console.log(`Saved to cache and DB: ${key}`);
+        return data;
+    }
+    
+    async update(key, updates) {
+        // Update both cache and database
+        const current = await this.get(key);
+        const updated = { ...current, ...updates };
+        
+        // Atomic update in both stores
+        await Promise.all([
+            this.redis.set(key, JSON.stringify(updated)),
+            this.database.update(key, updated)
+        ]);
+        
+        return updated;
+    }
+}</code></pre>
+            </section>
+
+            <section>
+                <h2>Write-Behind Pattern</h2>
+                <pre><code class="javascript">class WriteBehindPattern {
+    constructor() {
+        this.writeQueue = [];
+        this.startBackgroundWriter();
+    }
+    
+    async save(key, data) {
+        // 1. Write to cache immediately
+        await this.redis.set(key, JSON.stringify(data));
+        
+        // 2. Queue for async database write
+        this.writeQueue.push({ key, data, timestamp: Date.now() });
+        
+        return data; // Return immediately
+    }
+    
+    startBackgroundWriter() {
+        setInterval(async () => {
+            if (this.writeQueue.length > 0) {
+                const batch = this.writeQueue.splice(0, 100);
+                await this.database.batchSave(batch);
+                console.log(`Persisted ${batch.length} items`);
+            }
+        }, 5000); // Flush every 5 seconds
+    }
+}</code></pre>
+            </section>
+
+            <!-- Part 4: Multi-Tier Caching -->
+            <section class="section-header" data-background-color="#e8e8e8">
+                <h2>Part 4: Multi-Tier Caching</h2>
+                <h3>Layered Cache Architecture</h3>
+            </section>
+
+            <section>
+                <h2>Three-Tier Cache Design</h2>
+                <pre><code class="javascript">class MultiTierCache {
+    constructor() {
+        this.L1 = new Map();        // In-memory (process)
+        this.L2 = redis;           // Redis (shared)
+        this.L3 = database;        // Database (persistent)
+    }
+    
+    async get(key) {
+        // Check L1 (fastest)
+        if (this.L1.has(key)) {
+            console.log('L1 hit');
+            return this.L1.get(key);
+        }
+        
+        // Check L2
+        const l2Data = await this.L2.get(key);
+        if (l2Data) {
+            console.log('L2 hit');
+            const parsed = JSON.parse(l2Data);
+            this.L1.set(key, parsed); // Promote to L1
+            return parsed;
+        }
+        
+        // Check L3 (slowest)
+        console.log('L3 fetch');
+        const l3Data = await this.L3.findOne({ key });
+        if (l3Data) {
+            await this.promoteToCache(key, l3Data);
+            return l3Data;
+        }
+        
+        return null;
+    }
+}</code></pre>
+            </section>
+
+            <section>
+                <h2>Cache Performance Metrics</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cache Layer</th>
+                            <th>Latency</th>
+                            <th>Capacity</th>
+                            <th>Use Case</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>L1 (Memory)</td>
+                            <td>&lt;1μs</td>
+                            <td>~100MB</td>
+                            <td>Hot data</td>
+                        </tr>
+                        <tr>
+                            <td>L2 (Redis)</td>
+                            <td>&lt;1ms</td>
+                            <td>~10GB</td>
+                            <td>Warm data</td>
+                        </tr>
+                        <tr>
+                            <td>L3 (Database)</td>
+                            <td>10-100ms</td>
+                            <td>Unlimited</td>
+                            <td>Cold data</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Part 5: Cache Invalidation -->
+            <section class="section-header" data-background-color="#e8e8e8">
+                <h2>Part 5: Cache Invalidation</h2>
+                <h3>Keeping Data Fresh</h3>
+            </section>
+
+            <section>
+                <h2>Invalidation Strategies</h2>
+                <pre><code class="javascript">class CacheInvalidation {
+    // 1. TTL-based expiration
+    async setWithTTL(key, data, seconds) {
+        await redis.setex(key, seconds, JSON.stringify(data));
+    }
+    
+    // 2. Event-based invalidation
+    async onDataUpdate(event) {
+        const keys = this.getAffectedKeys(event);
+        await redis.del(...keys);
+        console.log(`Invalidated ${keys.length} keys`);
+    }
+    
+    // 3. Tagged invalidation
+    async invalidateByTag(tag) {
+        const keys = await redis.smembers(`tag:${tag}`);
+        if (keys.length > 0) {
+            await redis.del(...keys);
+            await redis.del(`tag:${tag}`);
+        }
+    }
+    
+    // 4. Pattern-based invalidation
+    async invalidatePattern(pattern) {
+        const stream = redis.scanStream({ match: pattern });
+        stream.on('data', async (keys) => {
+            if (keys.length) await redis.del(...keys);
+        });
+    }
+}</code></pre>
+            </section>
+
+            <section>
+                <h2>Cache Stampede Prevention</h2>
+                <pre><code class="javascript">class StampedeProtection {
+    async getWithLock(key, fetchFn, ttl = 3600) {
+        const cached = await redis.get(key);
+        if (cached) return JSON.parse(cached);
+        
+        // Try to acquire lock
+        const lockKey = `lock:${key}`;
+        const locked = await redis.set(lockKey, '1', {
+            NX: true,  // Only if not exists
+            EX: 30     // 30 second lock timeout
+        });
+        
+        if (locked) {
+            try {
+                // We have the lock - fetch data
+                const data = await fetchFn();
+                await redis.setex(key, ttl, JSON.stringify(data));
+                return data;
+            } finally {
+                await redis.del(lockKey);
+            }
+        } else {
+            // Someone else is fetching - wait and retry
+            await new Promise(r => setTimeout(r, 100));
+            return this.getWithLock(key, fetchFn, ttl);
+        }
+    }
+}</code></pre>
+            </section>
+
+            <!-- Part 6: Advanced Patterns -->
+            <section class="section-header" data-background-color="#e8e8e8">
+                <h2>Part 6: Advanced Patterns</h2>
+                <h3>Enterprise Caching Techniques</h3>
+            </section>
+
+            <section>
+                <h2>Probabilistic Cache Refresh</h2>
+                <pre><code class="javascript">// XFetch algorithm - refresh before expiration
+async function xFetch(key, fetchFn, ttl = 3600) {
+    const data = await redis.get(key);
+    const remaining = await redis.ttl(key);
+    
+    if (!data) {
+        // Cache miss - fetch and store
+        const fresh = await fetchFn();
+        await redis.setex(key, ttl, JSON.stringify(fresh));
+        return fresh;
+    }
+    
+    // Probabilistic early expiration
+    const now = Date.now() / 1000;
+    const expiry = now + remaining;
+    const beta = 1.0;
+    const random = Math.random();
+    const xfetch = beta * Math.log(random) * -1;
+    
+    if (now - xfetch >= expiry) {
+        // Refresh before actual expiration
+        const fresh = await fetchFn();
+        await redis.setex(key, ttl, JSON.stringify(fresh));
+        return fresh;
+    }
+    
+    return JSON.parse(data);
+}</code></pre>
+            </section>
+
+            <section>
+                <h2>Cache Warming</h2>
+                <pre><code class="javascript">class CacheWarmer {
+    async warmCache(keys) {
+        console.log(`Warming ${keys.length} keys...`);
+        const pipeline = redis.pipeline();
+        
+        // Batch fetch from database
+        const data = await database.findMany({
+            id: { $in: keys }
+        });
+        
+        // Batch set in Redis
+        for (const item of data) {
+            pipeline.setex(
+                `item:${item.id}`,
+                3600,
+                JSON.stringify(item)
+            );
+        }
+        
+        await pipeline.exec();
+        console.log(`Cache warmed with ${data.length} items`);
+    }
+    
+    // Schedule periodic warming
+    startScheduledWarming() {
+        setInterval(async () => {
+            const hotKeys = await this.identifyHotKeys();
+            await this.warmCache(hotKeys);
+        }, 300000); // Every 5 minutes
+    }
+}</code></pre>
+            </section>
+
+            <!-- Part 7: Monitoring and Optimization -->
+            <section class="section-header" data-background-color="#e8e8e8">
+                <h2>Part 7: Monitoring & Optimization</h2>
+                <h3>Cache Performance Metrics</h3>
+            </section>
+
+            <section>
+                <h2>Cache Monitoring</h2>
+                <pre><code class="javascript">class CacheMonitor {
+    constructor() {
+        this.metrics = {
+            hits: 0,
+            misses: 0,
+            errors: 0,
+            latency: []
+        };
+    }
+    
+    async get(key, fetchFn) {
+        const start = Date.now();
+        
+        try {
+            const cached = await redis.get(key);
+            
+            if (cached) {
+                this.metrics.hits++;
+                this.recordLatency(Date.now() - start);
+                return JSON.parse(cached);
+            }
+            
+            this.metrics.misses++;
+            const data = await fetchFn();
+            await redis.setex(key, 3600, JSON.stringify(data));
+            return data;
+            
+        } catch (error) {
+            this.metrics.errors++;
+            throw error;
+        }
+    }
+    
+    getHitRate() {
+        const total = this.metrics.hits + this.metrics.misses;
+        return total > 0 ? this.metrics.hits / total : 0;
+    }
+}</code></pre>
+            </section>
+
+            <section>
+                <h2>Redis Insight Integration</h2>
+                <div class="highlight-box">
+                    <h3>Monitoring with Redis Insight</h3>
+                    <ul>
+                        <li><strong>Memory Analysis:</strong> Track cache memory usage</li>
+                        <li><strong>Key Patterns:</strong> Identify hot keys and patterns</li>
+                        <li><strong>Performance Metrics:</strong> Monitor latency and throughput</li>
+                        <li><strong>Slow Log:</strong> Identify performance bottlenecks</li>
+                    </ul>
+                </div>
+                <pre><code class="bash"># Connect Redis Insight
+docker run -d --name redis-insight \
+  -p 8001:8001 \
+  redislabs/redisinsight:latest
+
+# View cache statistics in CLI
+redis-cli INFO stats</code></pre>
+            </section>
+
+            <!-- Lab Callout -->
+            <section class="lab-callout" data-background="linear-gradient(135deg, #3498db 0%, #2980b9 100%)">
+                <h2>🧪 Lab 10: Advanced Caching Patterns</h2>
+                <h3>Duration: 45 minutes</h3>
+                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <p><strong>Implement enterprise caching strategies:</strong></p>
+                    <ul style="text-align: left;">
+                        <li>Build cache-aside pattern with monitoring</li>
+                        <li>Implement write-through caching</li>
+                        <li>Create multi-tier cache architecture</li>
+                        <li>Design cache invalidation strategies</li>
+                        <li>Monitor cache performance metrics</li>
+                    </ul>
+                </div>
+                <p style="font-size: 0.9em; margin-top: 30px;">
+                    <em>Ready to optimize your application performance!</em>
+                </p>
+            </section>
+
+            <!-- Summary -->
+            <section class="section-header" data-background-color="#e8e8e8">
+                <h2>Summary</h2>
+                <div class="two-columns">
+                    <div class="column">
+                        <h3>Key Patterns</h3>
+                        <ul>
+                            <li>Cache-Aside (Lazy Loading)</li>
+                            <li>Write-Through</li>
+                            <li>Write-Behind</li>
+                            <li>Multi-Tier Caching</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h3>Best Practices</h3>
+                        <ul>
+                            <li>Monitor hit rates</li>
+                            <li>Prevent stampedes</li>
+                            <li>Plan invalidation</li>
+                            <li>Optimize TTLs</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Q&A -->
+            <section data-background="linear-gradient(135deg, #2c3e50 0%, #34495e 100%)">
+                <h1 style="color: white;">Questions & Discussion</h1>
+                <h3 style="color: #ecf0f1;">Advanced Caching Patterns</h3>
+            </section>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/notes/notes.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/zoom/zoom.min.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            center: true,
+            width: 1280,
+            height: 720,
+            margin: 0.1,
+            minScale: 0.2,
+            maxScale: 2.0,
+            controls: true,
+            progress: true,
+            history: true,
+            transition: 'slide',
+            transitionSpeed: 'default',
+            backgroundTransition: 'fade',
+            plugins: [ RevealHighlight, RevealNotes, RevealZoom ]
+        });
+        
+        // Auto-fit content to viewport
+        Reveal.addEventListener('ready', function() {
+            fitContent();
+        });
+        
+        Reveal.addEventListener('slidechanged', function() {
+            fitContent();
+        });
+        
+        function fitContent() {
+            const currentSlide = Reveal.getCurrentSlide();
+            if (currentSlide) {
+                const slideHeight = currentSlide.scrollHeight;
+                const viewportHeight = window.innerHeight * 0.9;
+                
+                if (slideHeight > viewportHeight) {
+                    const scale = viewportHeight / slideHeight;
+                    currentSlide.style.transform = `scale(${scale})`;
+                    currentSlide.style.transformOrigin = 'top center';
+                } else {
+                    currentSlide.style.transform = '';
+                }
+            }
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', fitContent);
+    </script>
+</body>
+</html>
