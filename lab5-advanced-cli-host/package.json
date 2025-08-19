@@ -1,0 +1,13 @@
+{
+  "name": "lab5-advanced-cli-host",
+  "version": "1.0.0",
+  "description": "Lab 5: Advanced CLI Operations with Client-Side Host Parameter",
+  "scripts": {
+    "examples-basic": "./examples/basic-host-examples.sh",
+    "examples-business": "./examples/business-operations-examples.sh",
+    "examples-formats": "./examples/output-formats-examples.sh"
+  },
+  "keywords": ["redis", "cli", "host", "parameter", "client-side"],
+  "author": "Redis Mastering Course",
+  "license": "MIT"
+}

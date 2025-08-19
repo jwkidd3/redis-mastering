@@ -1,29 +1,25 @@
+# Logs
+*.log
+npm-debug.log*
+
 # Dependencies
 node_modules/
 package-lock.json
 
-# Environment
+# Environment files
 .env
 .env.local
-
-# Logs
-*.log
-npm-debug.log*
 
 # OS files
 .DS_Store
 Thumbs.db
 
-# IDE
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# Test output
-coverage/
-.nyc_output/
-
-# Build
-dist/
-build/
+# Temporary files
+*.tmp
+*.temp
