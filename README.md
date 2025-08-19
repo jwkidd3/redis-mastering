@@ -10,6 +10,7 @@ sudo apt purge redis-server
 sudo apt purge redis-server redis-tools && sudo apt autoremove  
 
 sudo apt install redis-tools  
+
 docker run -p 6379:6379 redis/redis-stack:latest  
 
 ip route show 
