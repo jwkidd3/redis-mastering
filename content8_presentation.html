@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.css">
+    <style>
+        .reveal .slides section {
+            text-align: left;
+            font-size: 26px;
+        }
+        .reveal h1, .reveal h2, .reveal h3 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .reveal .title-block {
+            background: #ecf0f1;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .reveal .session-header {
+            background: #ecf0f1;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .reveal .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            font-size: 0.8em;
+        }
+        .reveal .highlight-box {
+            background: #3498db;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .reveal .warning-box {
+            background: #e67e22;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .reveal .success-box {
+            background: #27ae60;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .reveal .lab-callout {
+            background: #e74c3c;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 28px;
+            margin: 20px 0;
+        }
+        .reveal ul {
+            margin: 15px 0;
+        }
+        .reveal li {
+            margin: 8px 0;
+            line-height: 1.3;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.8em;
+        }
+        .comparison-table th, .comparison-table td {
+            border: 1px solid #bdc3c7;
+            padding: 8px;
+            text-align: left;
+        }
+        .comparison-table th {
+            background: #34495e;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+            
+            <!-- Title Slide -->
+            <section>
+                <div class="title-block">
+                    <h1>Content 8: Persistence & High Availability</h1>
+                    <h3>Redis Data Durability & Production Scaling</h3>
+                    <p><strong>Session 8 - Day 3</strong></p>
+                    <p>Enterprise Redis Deployment Strategies</p>
+                </div>
+            </section>
+
+            <!-- Learning Objectives -->
+            <section>
+                <div class="session-header">
+                    <h2>Learning Objectives</h2>
+                </div>
+                <ul>
+                    <li>Master Redis persistence mechanisms (RDB & AOF)</li>
+                    <li>Implement high availability with Redis Sentinel</li>
+                    <li>Understand Redis Cluster fundamentals</li>
+                    <li>Design production deployment strategies</li>
+                    <li>Configure backup and disaster recovery</li>
+                    <li>Plan capacity and performance optimization</li>
+                </ul>
+            </section>
+
+            <!-- Redis Persistence Overview -->
+            <section>
+                <div class="session-header">
+                    <h2>Redis Persistence Overview</h2>
+                </div>
+                <div class="highlight-box">
+                    <p><strong>Challenge:</strong> Redis is an in-memory database - what happens during restart?</p>
+                </div>
+                <ul>
+                    <li><strong>RDB (Redis Database):</strong> Point-in-time snapshots</li>
+                    <li><strong>AOF (Append Only File):</strong> Command logging</li>
+                    <li><strong>Hybrid approach:</strong> Combine both for optimal durability</li>
+                    <li><strong>No persistence:</strong> Pure cache mode for temporary data</li>
+                </ul>
+            </section>
+
+            <!-- RDB Snapshots -->
+            <section>
+                <div class="session-header">
+                    <h2>RDB Snapshots</h2>
+                </div>
+                <div class="success-box">
+                    <h4>Benefits:</h4>
+                    <ul style="margin: 5px 0;">
+                        <li>Compact single file backup</li>
+                        <li>Fast restart times</li>
+                        <li>Good for disaster recovery</li>
+                        <li>Minimal performance impact</li>
+                    </ul>
+                </div>
+                <div class="code-block">
+# RDB Configuration
+save 900 1     # Save if 1 key changes in 900 seconds
+save 300 10    # Save if 10 keys change in 300 seconds  
+save 60 10000  # Save if 10000 keys change in 60 seconds
+
+# Manual snapshot
+BGSAVE        # Background save
+SAVE          # Blocking save (avoid in production)
+                </div>
+            </section>
+
+            <!-- RDB Configuration -->
+            <section>
+                <div class="session-header">
+                    <h2>RDB Configuration Options</h2>
+                </div>
+                <div class="code-block">
+# redis.conf RDB settings
+dir /var/lib/redis                    # Snapshot directory
+dbfilename dump.rdb                   # Snapshot filename
+rdbcompression yes                    # Compress snapshots
+rdbchecksum yes                       # Checksum validation
+stop-writes-on-bgsave-error yes       # Stop writes on save error
+
+# Backup automation
+rdb-backup-enabled yes
+rdb-backup-path /backup/redis/
+                </div>
+                <div class="warning-box">
+                    <strong>Important:</strong> RDB can lose data between snapshots. Use AOF for better durability.
+                </div>
+            </section>
+
+            <!-- AOF Persistence -->
+            <section>
+                <div class="session-header">
+                    <h2>AOF (Append Only File)</h2>
+                </div>
+                <div class="success-box">
+                    <h4>Benefits:</h4>
+                    <ul style="margin: 5px 0;">
+                        <li>Better durability (every write operation)</li>
+                        <li>Human-readable log format</li>
+                        <li>Automatic log rewriting</li>
+                        <li>Crash-safe with proper sync</li>
+                    </ul>
+                </div>
+                <div class="code-block">
+# Enable AOF
+appendonly yes
+appendfilename "appendonly.aof"
+
+# Sync policies
+appendfsync always     # Sync every write (safest, slowest)
+appendfsync everysec   # Sync every second (balanced)
+appendfsync no         # Let OS decide (fastest, least safe)
+                </div>
+            </section>
+
+            <!-- AOF Configuration -->
+            <section>
+                <div class="session-header">
+                    <h2>AOF Advanced Configuration</h2>
+                </div>
+                <div class="code-block">
+# AOF rewriting (compaction)
+auto-aof-rewrite-percentage 100       # Rewrite when 100% larger
+auto-aof-rewrite-min-size 64mb        # Minimum size before rewrite
+
+# Manual rewriting
+BGREWRITEAOF                          # Background AOF rewrite
+
+# Mixed persistence (Redis 4.0+)
+aof-use-rdb-preamble yes              # RDB format + AOF tail
+                </div>
+                <div class="highlight-box">
+                    <p><strong>Best Practice:</strong> Use mixed persistence for optimal performance and durability</p>
+                </div>
+            </section>
+
+            <!-- Persistence Comparison -->
+            <section>
+                <div class="session-header">
+                    <h2>RDB vs AOF Comparison</h2>
+                </div>
+                <table class="comparison-table">
+                    <tr>
+                        <th>Aspect</th>
+                        <th>RDB</th>
+                        <th>AOF</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Data Loss</strong></td>
+                        <td>Minutes of data</td>
+                        <td>1 second or less</td>
+                    </tr>
+                    <tr>
+                        <td><strong>File Size</strong></td>
+                        <td>Compact</td>
+                        <td>Larger</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Restart Speed</strong></td>
+                        <td>Fast</td>
+                        <td>Slower</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Performance Impact</strong></td>
+                        <td>Minimal</td>
+                        <td>Higher</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Corruption Risk</strong></td>
+                        <td>Lower</td>
+                        <td>Higher</td>
+                    </tr>
+                </table>
+            </section>
+
+            <!-- High Availability Introduction -->
+            <section>
+                <div class="session-header">
+                    <h2>High Availability Overview</h2>
+                </div>
+                <div class="highlight-box">
+                    <p><strong>Business Challenge:</strong> Critical systems cannot afford Redis downtime</p>
+                </div>
+                <ul>
+                    <li><strong>Redis Sentinel:</strong> Automatic failover and monitoring</li>
+                    <li><strong>Redis Cluster:</strong> Horizontal scaling and sharding</li>
+                    <li><strong>Replication:</strong> Master-slave data synchronization</li>
+                    <li><strong>Load balancing:</strong> Distribute read operations</li>
+                </ul>
+            </section>
+
+            <!-- Redis Replication -->
+            <section>
+                <div class="session-header">
+                    <h2>Redis Replication</h2>
+                </div>
+                <div class="code-block">
+# Configure replica (on replica server)
+REPLICAOF master-host 6379
+
+# Monitor replication status
+INFO replication
+
+# Make replica read-only (default)
+replica-read-only yes
+
+# Replica configuration
+replica-serve-stale-data yes          # Serve data during sync
+replica-priority 100                  # Priority for promotion
+                </div>
+                <div class="success-box">
+                    <p><strong>Automatic synchronization:</strong> Master sends all data changes to replicas</p>
+                </div>
+            </section>
+
+            <!-- Redis Sentinel -->
+            <section>
+                <div class="session-header">
+                    <h2>Redis Sentinel</h2>
+                </div>
+                <div class="highlight-box">
+                    <h4>Sentinel provides:</h4>
+                    <ul style="margin: 5px 0;">
+                        <li><strong>Monitoring:</strong> Health checks for Redis instances</li>
+                        <li><strong>Notification:</strong> Alert administrators of issues</li>
+                        <li><strong>Automatic failover:</strong> Promote replica to master</li>
+                        <li><strong>Configuration provider:</strong> Service discovery for clients</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Sentinel Configuration -->
+            <section>
+                <div class="session-header">
+                    <h2>Sentinel Configuration</h2>
+                </div>
+                <div class="code-block">
+# sentinel.conf
+port 26379
+sentinel monitor mymaster 127.0.0.1 6379 2
+
+# Timeouts and thresholds
+sentinel down-after-milliseconds mymaster 30000
+sentinel parallel-syncs mymaster 1
+sentinel failover-timeout mymaster 180000
+
+# Start Sentinel
+redis-sentinel /path/to/sentinel.conf
+                </div>
+                <div class="warning-box">
+                    <strong>Quorum:</strong> Need odd number of Sentinels (3, 5, 7) for proper voting
+                </div>
+            </section>
+
+            <!-- Redis Cluster -->
+            <section>
+                <div class="session-header">
+                    <h2>Redis Cluster</h2>
+                </div>
+                <div class="success-box">
+                    <h4>Cluster advantages:</h4>
+                    <ul style="margin: 5px 0;">
+                        <li><strong>Horizontal scaling:</strong> Distribute data across nodes</li>
+                        <li><strong>High availability:</strong> Automatic failover</li>
+                        <li><strong>No single point of failure:</strong> Decentralized</li>
+                        <li><strong>Linear scaling:</strong> Add nodes for more capacity</li>
+                    </ul>
+                </div>
+                <div class="code-block">
+# Minimum cluster setup: 6 nodes (3 masters + 3 replicas)
+# Each master handles a subset of 16384 hash slots
+                </div>
+            </section>
+
+            <!-- Cluster Setup -->
+            <section>
+                <div class="session-header">
+                    <h2>Cluster Configuration</h2>
+                </div>
+                <div class="code-block">
+# redis.conf for cluster node
+cluster-enabled yes
+cluster-config-file nodes-6379.conf
+cluster-node-timeout 15000
+
+# Create cluster
+redis-cli --cluster create \
+  127.0.0.1:7000 127.0.0.1:7001 127.0.0.1:7002 \
+  127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 \
+  --cluster-replicas 1
+
+# Check cluster status
+redis-cli -c -p 7000 cluster nodes
+redis-cli -c -p 7000 cluster info
+                </div>
+            </section>
+
+            <!-- Production Deployment -->
+            <section>
+                <div class="session-header">
+                    <h2>Production Deployment Strategies</h2>
+                </div>
+                <ul>
+                    <li><strong>Single Master + Replicas:</strong> Simple, good for read-heavy</li>
+                    <li><strong>Sentinel Setup:</strong> Automatic failover, moderate complexity</li>
+                    <li><strong>Redis Cluster:</strong> Horizontal scaling, high complexity</li>
+                    <li><strong>Proxy Solutions:</strong> twemproxy, Envoy for load balancing</li>
+                </ul>
+                <div class="highlight-box">
+                    <p><strong>Choose based on:</strong> Data size, read/write patterns, availability requirements</p>
+                </div>
+            </section>
+
+            <!-- Backup and Disaster Recovery -->
+            <section>
+                <div class="session-header">
+                    <h2>Backup & Disaster Recovery</h2>
+                </div>
+                <div class="code-block">
+# Automated backup script
+#!/bin/bash
+BACKUP_DIR="/backup/redis/$(date +%Y%m%d)"
+mkdir -p $BACKUP_DIR
+
+# Create snapshot
+redis-cli BGSAVE
+sleep 10
+
+# Copy files
+cp /var/lib/redis/dump.rdb $BACKUP_DIR/
+cp /var/lib/redis/appendonly.aof $BACKUP_DIR/
+
+# Compress and upload to cloud storage
+tar -czf $BACKUP_DIR.tar.gz $BACKUP_DIR
+aws s3 cp $BACKUP_DIR.tar.gz s3://redis-backups/
+                </div>
+            </section>
+
+            <!-- Monitoring and Health Checks -->
+            <section>
+                <div class="session-header">
+                    <h2>Monitoring & Health Checks</h2>
+                </div>
+                <div class="code-block">
+# Key metrics to monitor
+INFO memory          # Memory usage and fragmentation
+INFO replication     # Replication lag and status  
+INFO persistence     # Last save time and AOF status
+INFO stats           # Operations per second, connections
+
+# Health check endpoint
+redis-cli --latency -h redis-server
+redis-cli ping
+
+# Custom monitoring
+MEMORY USAGE key     # Memory usage of specific key
+SLOWLOG GET 10       # Recent slow queries
+                </div>
+            </section>
+
+            <!-- Lab Callout -->
+            <section>
+                <div class="lab-callout">
+                    <h2>Lab 13 Next</h2>
+                    <p>Production Configuration</p>
+                    <p><strong>Duration:</strong> 45 minutes</p>
+                    <p>Configure persistence, replication, and monitoring for production deployment</p>
+                </div>
+            </section>
+
+            <!-- Performance Optimization -->
+            <section>
+                <div class="session-header">
+                    <h2>Performance Optimization</h2>
+                </div>
+                <ul>
+                    <li><strong>Memory optimization:</strong> Use appropriate data structures</li>
+                    <li><strong>Persistence tuning:</strong> Balance durability vs performance</li>
+                    <li><strong>Connection pooling:</strong> Reuse connections efficiently</li>
+                    <li><strong>Key expiration:</strong> Automatic cleanup of temporary data</li>
+                    <li><strong>Pipeline operations:</strong> Batch commands for efficiency</li>
+                </ul>
+                <div class="warning-box">
+                    <p><strong>Memory fragmentation:</strong> Monitor and restart if ratio > 1.5</p>
+                </div>
+            </section>
+
+            <!-- Capacity Planning -->
+            <section>
+                <div class="session-header">
+                    <h2>Capacity Planning</h2>
+                </div>
+                <div class="highlight-box">
+                    <h4>Key considerations:</h4>
+                    <ul style="margin: 5px 0;">
+                        <li><strong>Memory requirements:</strong> Dataset size + overhead</li>
+                        <li><strong>Network bandwidth:</strong> Replication and client traffic</li>
+                        <li><strong>CPU usage:</strong> Command processing and persistence</li>
+                        <li><strong>Storage space:</strong> RDB snapshots and AOF files</li>
+                    </ul>
+                </div>
+                <div class="code-block">
+# Memory calculation example
+# 1M keys * 100 bytes avg = 100MB data
+# + 20% Redis overhead = 120MB
+# + 50% growth buffer = 180MB minimum
+                </div>
+            </section>
+
+            <!-- Common Issues -->
+            <section>
+                <div class="session-header">
+                    <h2>Common Production Issues</h2>
+                </div>
+                <ul>
+                    <li><strong>Memory exhaustion:</strong> Implement eviction policies</li>
+                    <li><strong>Slow queries:</strong> Use SLOWLOG and optimize operations</li>
+                    <li><strong>Connection limits:</strong> Monitor and increase maxclients</li>
+                    <li><strong>Persistence delays:</strong> Tune fsync and rewrite settings</li>
+                    <li><strong>Network partitions:</strong> Configure timeouts appropriately</li>
+                </ul>
+                <div class="warning-box">
+                    <p><strong>Always test:</strong> Failover procedures and backup restoration</p>
+                </div>
+            </section>
+
+            <!-- Best Practices -->
+            <section>
+                <div class="session-header">
+                    <h2>Production Best Practices</h2>
+                </div>
+                <ul>
+                    <li><strong>Use multiple availability zones</strong> for geographic distribution</li>
+                    <li><strong>Monitor key metrics</strong> continuously with alerting</li>
+                    <li><strong>Test disaster recovery</strong> procedures regularly</li>
+                    <li><strong>Implement gradual deployments</strong> for configuration changes</li>
+                    <li><strong>Document operational procedures</strong> for team knowledge</li>
+                    <li><strong>Plan for capacity growth</strong> before reaching limits</li>
+                </ul>
+            </section>
+
+            <!-- Summary -->
+            <section>
+                <div class="session-header">
+                    <h2>Session Summary</h2>
+                </div>
+                <ul>
+                    <li><strong>RDB snapshots:</strong> Fast backups, some data loss risk</li>
+                    <li><strong>AOF logging:</strong> Better durability, larger files</li>
+                    <li><strong>Redis Sentinel:</strong> Automatic failover and monitoring</li>
+                    <li><strong>Redis Cluster:</strong> Horizontal scaling with sharding</li>
+                    <li><strong>Production planning:</strong> Monitoring, backup, capacity</li>
+                    <li><strong>Performance optimization:</strong> Memory, persistence, connections</li>
+                </ul>
+                <div class="success-box">
+                    <p><strong>Result:</strong> Production-ready Redis deployment with high availability and data durability</p>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            controls: true,
+            progress: true,
+            center: false,
+            transition: 'slide',
+            width: 1200,
+            height: 800,
+            margin: 0.1,
+            minScale: 0.2,
+            maxScale: 2.0
+        });
+    </script>
+</body>
+</html>

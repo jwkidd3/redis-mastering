@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  lab6-env:
+    build: .
+    container_name: lab6-javascript-redis
+    volumes:
+      - .:/app
+      - lab6_node_modules:/app/node_modules
+    environment:
+      - NODE_ENV=development
+    networks:
+      - redis-network
+    stdin_open: true
+    tty: true
+    command: tail -f /dev/null
+
+  # Optional: Local Redis server for testing
+  redis-local:
+    image: redis:7-alpine
+    container_name: lab6-redis-local
+    ports:
+      - "6379:6379"
+    networks:
+      - redis-network
+    command: redis-server --appendonly yes
+    volumes:
+      - lab6_redis_data:/data
+
+volumes:
+  lab6_node_modules:
+  lab6_redis_data:
+
+networks:
+  redis-network:
+    driver: bridge

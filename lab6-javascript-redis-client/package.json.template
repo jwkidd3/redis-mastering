@@ -1,0 +1,26 @@
+{
+  "name": "redis-js-client",
+  "version": "1.0.0",
+  "description": "Redis JavaScript client for customer and policy management",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "node tests/connection-test.js",
+    "examples": "node examples/basic-operations.js",
+    "performance": "node examples/performance-test.js"
+  },
+  "keywords": ["redis", "javascript", "nodejs", "client"],
+  "author": "Redis Training",
+  "license": "MIT",
+  "dependencies": {
+    "redis": "^4.6.0",
+    "dotenv": "^16.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

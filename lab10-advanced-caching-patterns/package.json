@@ -1,0 +1,37 @@
+{
+  "name": "lab10-advanced-caching-patterns",
+  "version": "1.0.0",
+  "description": "Advanced Redis caching patterns and optimization techniques",
+  "main": "src/redis-client.js",
+  "scripts": {
+    "test": "node test-completion.js",
+    "test:connection": "node test-connection.js",
+    "test:cache-aside": "node examples/test-cache-aside.js",
+    "test:multi-level": "node examples/test-multi-level.js",
+    "test:invalidation": "node examples/test-invalidation.js",
+    "test:performance": "node examples/performance-test.js",
+    "dev": "node examples/test-cache-aside.js",
+    "start": "node examples/performance-test.js"
+  },
+  "keywords": [
+    "redis",
+    "caching",
+    "performance",
+    "multi-level",
+    "invalidation",
+    "monitoring"
+  ],
+  "author": "Redis Training Lab",
+  "license": "MIT",
+  "dependencies": {
+    "redis": "^4.6.0",
+    "express": "^4.18.0",
+    "dotenv": "^16.3.0",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

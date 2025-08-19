@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Caching Patterns for Modern Applications</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.css">
+    <style>
+        .reveal .slides section {
+            text-align: left;
+            font-size: 0.65em;
+        }
+        .reveal h1, .reveal h2, .reveal h3 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .reveal .title-slide {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+        .reveal .title-slide h1, .reveal .title-slide h2 {
+            color: white;
+        }
+        .reveal .session-header {
+            background: #f8f9fa;
+            color: #2c3e50;
+            padding: 20px;
+            border-left: 5px solid #3498db;
+            margin-bottom: 20px;
+        }
+        .reveal .lab-callout {
+            background: #e8f5e8;
+            border: 2px solid #27ae60;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .reveal .lab-callout h3 {
+            color: #27ae60;
+            margin-top: 0;
+        }
+        .reveal pre {
+            width: 100%;
+            font-size: 0.55em;
+        }
+        .reveal code {
+            background: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .reveal .highlight {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+        }
+        .reveal .pro-tip {
+            background: #d1ecf1;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #17a2b8;
+        }
+        .reveal .warning {
+            background: #f8d7da;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #dc3545;
+        }
+        .reveal ul, .reveal ol {
+            margin-left: 1em;
+        }
+        .reveal .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+        .reveal .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+            <!-- Title Slide -->
+            <section class="title-slide">
+                <h1>Advanced Caching Patterns</h1>
+                <h2>Optimizing Application Performance with Redis</h2>
+                <p>Mastering Redis - Day 2 Session 3</p>
+            </section>
+
+            <!-- Session Overview -->
+            <section>
+                <div class="session-header">
+                    <h2>Advanced Caching Patterns</h2>
+                    <p><strong>Session Focus:</strong> Sophisticated caching strategies for high-performance applications</p>
+                </div>
+                
+                <h3>What We'll Cover</h3>
+                <ul>
+                    <li>Cache-aside pattern implementation</li>
+                    <li>Write-through and write-behind strategies</li>
+                    <li>Cache invalidation techniques</li>
+                    <li>Multi-level caching architectures</li>
+                    <li>Cache warming and preloading strategies</li>
+                    <li>Performance optimization patterns</li>
+                </ul>
+            </section>
+
+            <!-- Cache-aside Pattern -->
+            <section>
+                <h2>Cache-aside Pattern</h2>
+                
+                <div class="highlight">
+                    <strong>Most Common Pattern:</strong> Application manages both cache and database
+                </div>
+
+                <h3>How It Works</h3>
+                <ol>
+                    <li><strong>Read:</strong> Check cache first, fallback to database</li>
+                    <li><strong>Write:</strong> Update database, then invalidate cache</li>
+                    <li><strong>Miss:</strong> Load from database, populate cache</li>
+                </ol>
+
+                <h3>JavaScript Implementation</h3>
+                <pre><code class="javascript">
+async function getCustomerProfile(customerId) {
+    const cacheKey = `customer:${customerId}`;
+    
+    // Try cache first
+    let customer = await redis.get(cacheKey);
+    if (customer) {
+        return JSON.parse(customer);
+    }
+    
+    // Cache miss - load from database
+    customer = await database.getCustomer(customerId);
+    
+    // Populate cache with TTL
+    await redis.setex(cacheKey, 3600, JSON.stringify(customer));
+    
+    return customer;
+}
+                </code></pre>
+            </section>
+
+            <!-- Cache-aside Benefits -->
+            <section>
+                <h2>Cache-aside: Benefits & Trade-offs</h2>
+                
+                <div class="two-column">
+                    <div>
+                        <h3>✅ Benefits</h3>
+                        <ul>
+                            <li>Simple to implement</li>
+                            <li>Cache failures don't break application</li>
+                            <li>Data consistency guarantees</li>
+                            <li>Flexible cache policies</li>
+                            <li>Works with any database</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>⚠️ Trade-offs</h3>
+                        <ul>
+                            <li>Cache miss penalty</li>
+                            <li>Potential data staleness</li>
+                            <li>Complex invalidation logic</li>
+                            <li>Race conditions possible</li>
+                            <li>Application complexity</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="pro-tip">
+                    <strong>Pro Tip:</strong> Use cache-aside for read-heavy workloads with acceptable staleness tolerance
+                </div>
+            </section>
+
+            <!-- Write-through Pattern -->
+            <section>
+                <h2>Write-through Caching</h2>
+                
+                <div class="highlight">
+                    <strong>Synchronous Pattern:</strong> Cache and database updated together
+                </div>
+
+                <h3>Implementation Strategy</h3>
+                <pre><code class="javascript">
+async function updateCustomerProfile(customerId, profileData) {
+    const cacheKey = `customer:${customerId}`;
+    
+    try {
+        // Update database first
+        await database.updateCustomer(customerId, profileData);
+        
+        // Update cache immediately
+        await redis.setex(cacheKey, 3600, JSON.stringify(profileData));
+        
+        return { success: true };
+    } catch (error) {
+        // Rollback on failure
+        await redis.del(cacheKey);
+        throw error;
+    }
+}
+                </code></pre>
+
+                <div class="two-column">
+                    <div>
+                        <h3>When to Use</h3>
+                        <ul>
+                            <li>Strong consistency required</li>
+                            <li>Read-heavy workloads</li>
+                            <li>Critical data updates</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Considerations</h3>
+                        <ul>
+                            <li>Higher write latency</li>
+                            <li>Cache always current</li>
+                            <li>Complex error handling</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Write-behind Pattern -->
+            <section>
+                <h2>Write-behind (Write-back) Caching</h2>
+                
+                <div class="highlight">
+                    <strong>Asynchronous Pattern:</strong> Cache updated immediately, database later
+                </div>
+
+                <h3>Implementation Approach</h3>
+                <pre><code class="javascript">
+async function updateCustomerQuick(customerId, updates) {
+    const cacheKey = `customer:${customerId}`;
+    
+    // Update cache immediately
+    await redis.setex(cacheKey, 3600, JSON.stringify(updates));
+    
+    // Queue for database update
+    await redis.lpush('db_update_queue', JSON.stringify({
+        table: 'customers',
+        id: customerId,
+        data: updates,
+        timestamp: Date.now()
+    }));
+    
+    return { success: true, cached: true };
+}
+
+// Background worker
+async function processDatabaseUpdates() {
+    const update = await redis.brpop('db_update_queue', 0);
+    const updateData = JSON.parse(update[1]);
+    
+    await database.updateCustomer(updateData.id, updateData.data);
+}
+                </code></pre>
+            </section>
+
+            <!-- Cache Invalidation Strategies -->
+            <section>
+                <h2>Cache Invalidation Strategies</h2>
+                
+                <div class="warning">
+                    <strong>Remember:</strong> "There are only two hard things in Computer Science: cache invalidation and naming things" - Phil Karlton
+                </div>
+
+                <h3>Time-based Invalidation (TTL)</h3>
+                <pre><code class="javascript">
+// Set with expiration
+await redis.setex('policy:12345', 3600, policyData);
+
+// Check remaining time
+const ttl = await redis.ttl('policy:12345');
+
+// Refresh before expiration
+if (ttl < 300) { // Less than 5 minutes
+    await refreshPolicyCache('12345');
+}
+                </code></pre>
+
+                <h3>Event-based Invalidation</h3>
+                <pre><code class="javascript">
+async function updatePolicy(policyId, newData) {
+    // Update database
+    await database.updatePolicy(policyId, newData);
+    
+    // Invalidate related caches
+    await Promise.all([
+        redis.del(`policy:${policyId}`),
+        redis.del(`customer:policies:${newData.customerId}`),
+        redis.del(`agent:policies:${newData.agentId}`)
+    ]);
+}
+                </code></pre>
+            </section>
+
+            <!-- Tag-based Invalidation -->
+            <section>
+                <h2>Tag-based Cache Invalidation</h2>
+                
+                <h3>Grouping Related Cache Keys</h3>
+                <pre><code class="javascript">
+async function cacheWithTags(key, data, ttl, tags) {
+    // Store the data
+    await redis.setex(key, ttl, JSON.stringify(data));
+    
+    // Associate with tags
+    for (const tag of tags) {
+        await redis.sadd(`tag:${tag}`, key);
+        await redis.expire(`tag:${tag}`, ttl + 300); // Slightly longer TTL
+    }
+}
+
+// Usage example
+await cacheWithTags(
+    'policy:12345',
+    policyData,
+    3600,
+    ['customer:1001', 'agent:205', 'policy_type:auto']
+);
+
+// Invalidate by tag
+async function invalidateByTag(tag) {
+    const keys = await redis.smembers(`tag:${tag}`);
+    
+    if (keys.length > 0) {
+        await redis.del(...keys);
+        await redis.del(`tag:${tag}`);
+    }
+}
+                </code></pre>
+            </section>
+
+            <!-- Multi-level Caching -->
+            <section>
+                <h2>Multi-level Caching Architecture</h2>
+                
+                <div class="three-column">
+                    <div>
+                        <h3>L1: Application Cache</h3>
+                        <ul>
+                            <li>In-memory objects</li>
+                            <li>Fastest access</li>
+                            <li>Limited capacity</li>
+                            <li>Process-local</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>L2: Redis Cache</h3>
+                        <ul>
+                            <li>Shared across instances</li>
+                            <li>Network overhead</li>
+                            <li>Larger capacity</li>
+                            <li>Persistent storage</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>L3: Database</h3>
+                        <ul>
+                            <li>Source of truth</li>
+                            <li>Highest latency</li>
+                            <li>Full dataset</li>
+                            <li>ACID guarantees</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>Implementation Pattern</h3>
+                <pre><code class="javascript">
+class MultiLevelCache {
+    constructor() {
+        this.l1Cache = new Map(); // In-memory
+        this.redis = redis;       // L2 cache
+    }
+    
+    async get(key) {
+        // L1 check
+        if (this.l1Cache.has(key)) {
+            return this.l1Cache.get(key);
+        }
+        
+        // L2 check
+        const l2Data = await this.redis.get(key);
+        if (l2Data) {
+            const parsed = JSON.parse(l2Data);
+            this.l1Cache.set(key, parsed); // Populate L1
+            return parsed;
+        }
+        
+        // L3 fallback (database)
+        return null;
+    }
+}
+                </code></pre>
+            </section>
+
+            <!-- Cache Warming Strategies -->
+            <section>
+                <h2>Cache Warming Strategies</h2>
+                
+                <h3>Proactive Cache Population</h3>
+                
+                <div class="two-column">
+                    <div>
+                        <h4>Application Startup</h4>
+                        <pre><code class="javascript">
+async function warmCacheOnStartup() {
+    const criticalData = [
+        'active_policies',
+        'agent_directory',
+        'policy_types',
+        'coverage_options'
+    ];
+    
+    for (const dataType of criticalData) {
+        await preloadData(dataType);
+    }
+}
+                        </code></pre>
+                    </div>
+                    <div>
+                        <h4>Scheduled Warming</h4>
+                        <pre><code class="javascript">
+// Cron job or scheduled task
+async function scheduleWarmup() {
+    setInterval(async () => {
+        await warmPopularQuotes();
+        await warmAgentData();
+        await warmPolicyLookups();
+    }, 30 * 60 * 1000); // Every 30 minutes
+}
+                        </code></pre>
+                    </div>
+                </div>
+
+                <h3>Predictive Warming</h3>
+                <pre><code class="javascript">
+async function predictiveWarm(customerId) {
+    // Warm related data when customer logs in
+    const warmupTasks = [
+        warmCustomerPolicies(customerId),
+        warmRecentClaims(customerId),
+        warmBillingInfo(customerId),
+        warmAgentInfo(customerId)
+    ];
+    
+    // Fire and forget - don't block user
+    Promise.all(warmupTasks).catch(console.error);
+}
+                </code></pre>
+            </section>
+
+            <!-- Cache Patterns Comparison -->
+            <section>
+                <h2>Caching Patterns Comparison</h2>
+                
+                <table style="width: 100%; font-size: 0.7em;">
+                    <thead>
+                        <tr style="background: #f8f9fa;">
+                            <th>Pattern</th>
+                            <th>Consistency</th>
+                            <th>Performance</th>
+                            <th>Complexity</th>
+                            <th>Best For</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Cache-aside</strong></td>
+                            <td>Eventually</td>
+                            <td>Good</td>
+                            <td>Medium</td>
+                            <td>General purpose</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Write-through</strong></td>
+                            <td>Strong</td>
+                            <td>Slower writes</td>
+                            <td>Medium</td>
+                            <td>Critical data</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Write-behind</strong></td>
+                            <td>Eventual</td>
+                            <td>Fast writes</td>
+                            <td>High</td>
+                            <td>High throughput</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Read-through</strong></td>
+                            <td>Good</td>
+                            <td>Consistent</td>
+                            <td>Low</td>
+                            <td>Simple reads</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pro-tip">
+                    <strong>Pro Tip:</strong> Combine patterns for different data types within the same application
+                </div>
+            </section>
+
+            <!-- Performance Optimization -->
+            <section>
+                <h2>Cache Performance Optimization</h2>
+                
+                <h3>Key Strategies</h3>
+                
+                <div class="two-column">
+                    <div>
+                        <h4>Reduce Network Calls</h4>
+                        <pre><code class="javascript">
+// Batch operations
+const pipeline = redis.pipeline();
+pipeline.get('policy:1');
+pipeline.get('policy:2');
+pipeline.get('policy:3');
+const results = await pipeline.exec();
+
+// Multi-get
+const values = await redis.mget(
+    'policy:1', 'policy:2', 'policy:3'
+);
+                        </code></pre>
+                    </div>
+                    <div>
+                        <h4>Optimize Data Structure</h4>
+                        <pre><code class="javascript">
+// Use hashes for partial updates
+await redis.hset('policy:12345', {
+    'status': 'active',
+    'premium': '1200',
+    'last_updated': Date.now()
+});
+
+// Get specific fields only
+const status = await redis.hget(
+    'policy:12345', 'status'
+);
+                        </code></pre>
+                    </div>
+                </div>
+
+                <h3>Memory Optimization</h3>
+                <ul>
+                    <li><strong>Compression:</strong> Use shorter keys and compress large values</li>
+                    <li><strong>TTL Management:</strong> Set appropriate expiration times</li>
+                    <li><strong>Data Structure Choice:</strong> Use most efficient Redis type</li>
+                    <li><strong>Eviction Policies:</strong> Configure memory limits and eviction</li>
+                </ul>
+            </section>
+
+            <!-- Error Handling in Caching -->
+            <section>
+                <h2>Error Handling & Resilience</h2>
+                
+                <h3>Circuit Breaker Pattern</h3>
+                <pre><code class="javascript">
+class CacheCircuitBreaker {
+    constructor(threshold = 5, timeout = 60000) {
+        this.failureCount = 0;
+        this.threshold = threshold;
+        this.timeout = timeout;
+        this.state = 'CLOSED';
+        this.nextAttempt = Date.now();
+    }
+    
+    async execute(cacheOperation, fallback) {
+        if (this.state === 'OPEN') {
+            if (Date.now() < this.nextAttempt) {
+                return await fallback();
+            }
+            this.state = 'HALF_OPEN';
+        }
+        
+        try {
+            const result = await cacheOperation();
+            this.onSuccess();
+            return result;
+        } catch (error) {
+            this.onFailure();
+            return await fallback();
+        }
+    }
+    
+    onSuccess() {
+        this.failureCount = 0;
+        this.state = 'CLOSED';
+    }
+    
+    onFailure() {
+        this.failureCount++;
+        if (this.failureCount >= this.threshold) {
+            this.state = 'OPEN';
+            this.nextAttempt = Date.now() + this.timeout;
+        }
+    }
+}
+                </code></pre>
+            </section>
+
+            <!-- Cache Monitoring -->
+            <section>
+                <h2>Cache Monitoring & Metrics</h2>
+                
+                <h3>Key Metrics to Track</h3>
+                <div class="two-column">
+                    <div>
+                        <h4>Performance Metrics</h4>
+                        <ul>
+                            <li>Cache hit ratio</li>
+                            <li>Average response time</li>
+                            <li>Cache miss penalty</li>
+                            <li>Throughput (ops/sec)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Health Metrics</h4>
+                        <ul>
+                            <li>Memory usage</li>
+                            <li>Eviction rate</li>
+                            <li>Connection pool status</li>
+                            <li>Error rates</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>Implementation</h3>
+                <pre><code class="javascript">
+class CacheMetrics {
+    constructor() {
+        this.hits = 0;
+        this.misses = 0;
+        this.errors = 0;
+    }
+    
+    recordHit() { this.hits++; }
+    recordMiss() { this.misses++; }
+    recordError() { this.errors++; }
+    
+    getHitRatio() {
+        const total = this.hits + this.misses;
+        return total > 0 ? this.hits / total : 0;
+    }
+    
+    getStats() {
+        return {
+            hitRatio: this.getHitRatio(),
+            totalOps: this.hits + this.misses,
+            errorRate: this.errors / (this.hits + this.misses + this.errors)
+        };
+    }
+}
+                </code></pre>
+            </section>
+
+            <!-- Best Practices -->
+            <section>
+                <h2>Caching Best Practices</h2>
+                
+                <div class="three-column">
+                    <div>
+                        <h3>🎯 Design</h3>
+                        <ul>
+                            <li>Cache at multiple levels</li>
+                            <li>Use appropriate TTLs</li>
+                            <li>Design for cache failures</li>
+                            <li>Monitor cache performance</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>🚀 Performance</h3>
+                        <ul>
+                            <li>Batch operations when possible</li>
+                            <li>Use pipelines for multiple commands</li>
+                            <li>Optimize key naming</li>
+                            <li>Choose right data structures</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>🛡️ Reliability</h3>
+                        <ul>
+                            <li>Implement circuit breakers</li>
+                            <li>Handle cache stampedes</li>
+                            <li>Plan for cache warming</li>
+                            <li>Test failure scenarios</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="warning">
+                    <strong>Anti-patterns to Avoid:</strong>
+                    <ul>
+                        <li>Caching everything without strategy</li>
+                        <li>No TTL or inappropriate TTL values</li>
+                        <li>Ignoring cache invalidation</li>
+                        <li>Not monitoring cache performance</li>
+                        <li>Blocking application on cache failures</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Lab Introduction -->
+            <section>
+                <div class="lab-callout">
+                    <h3>🧪 Upcoming Lab</h3>
+                    <h2>Lab 10: Advanced Caching Patterns</h2>
+                    <p><strong>Duration:</strong> 45 minutes</p>
+                    <p><strong>Focus:</strong> Implement sophisticated caching strategies for high-performance applications</p>
+                    
+                    <h4>What You'll Build:</h4>
+                    <ul style="text-align: left; margin-top: 15px;">
+                        <li>Multi-level cache architecture with JavaScript</li>
+                        <li>Cache-aside pattern for customer data</li>
+                        <li>Tag-based invalidation system</li>
+                        <li>Performance monitoring and metrics</li>
+                        <li>Circuit breaker implementation</li>
+                    </ul>
+                    
+                    <p style="margin-top: 20px;"><strong>Next:</strong> Lab 10 - Advanced Caching Implementation</p>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/highlight.min.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            transition: 'slide',
+            transitionSpeed: 'fast',
+            backgroundTransition: 'fade',
+            plugins: [ RevealHighlight ],
+            highlight: {
+                highlightOnLoad: true
+            }
+        });
+    </script>
+</body>
+</html>

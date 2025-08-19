@@ -1,0 +1,20 @@
+{
+  "name": "claims-processing-queues",
+  "version": "1.0.0",
+  "description": "Lab 8: Claims Processing Queues with Redis Lists",
+  "main": "src/claims-queue.js",
+  "scripts": {
+    "submit": "node examples/submit-claims.js",
+    "process": "node examples/process-claims.js",
+    "monitor": "node examples/monitor-queues.js",
+    "analytics": "node examples/queue-analytics.js",
+    "test": "node scripts/test-system.js"
+  },
+  "dependencies": {
+    "redis": "^4.6.0",
+    "uuid": "^9.0.0"
+  },
+  "keywords": ["redis", "queues", "claims", "processing", "lists"],
+  "author": "Redis Training Lab",
+  "license": "MIT"
+}

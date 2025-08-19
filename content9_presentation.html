@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.css">
+    <style>
+        .reveal .slides section {
+            text-align: left;
+            font-size: 24px;
+        }
+        .reveal h1, .reveal h2, .reveal h3 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .main-title {
+            background: #ecf0f1;
+            padding: 30px;
+            margin: 20px 0;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .session-header {
+            background: #ecf0f1;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            font-size: 18px;
+        }
+        .highlight {
+            background: #f39c12;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+        .lab-callout {
+            background: #e74c3c;
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 28px;
+            margin: 25px 0;
+        }
+        .warning {
+            background: #f39c12;
+            color: white;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .success {
+            background: #27ae60;
+            color: white;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .two-column {
+            display: flex;
+            gap: 40px;
+        }
+        .two-column > div {
+            flex: 1;
+        }
+        .metric-box {
+            background: #3498db;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        .performance-tip {
+            background: #16a085;
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- Title Slide -->
+            <section>
+                <div class="main-title">
+                    <h1>Content 9</h1>
+                    <h2>Performance & Monitoring</h2>
+                    <p>Optimizing Redis for Production Workloads</p>
+                    <p><strong>Day 3 - Final Session</strong></p>
+                </div>
+            </section>
+
+            <!-- Session Overview -->
+            <section>
+                <div class="session-header">
+                    <h2>Session Overview</h2>
+                </div>
+                <p><strong>Objective:</strong> Master performance optimization and monitoring for production Redis applications</p>
+                <p><strong>Duration:</strong> 45 minutes presentation</p>
+                <p><strong>Focus:</strong> Real-world performance tuning and monitoring strategies</p>
+                <br>
+                <h3>Key Topics</h3>
+                <ul>
+                    <li>Performance optimization strategies</li>
+                    <li>Memory management and optimization</li>
+                    <li>Monitoring tools and techniques</li>
+                    <li>Slow query analysis and debugging</li>
+                    <li>Production troubleshooting</li>
+                    <li>Custom metrics and alerting</li>
+                </ul>
+            </section>
+
+            <!-- Redis Performance Fundamentals -->
+            <section>
+                <div class="session-header">
+                    <h2>Redis Performance Fundamentals</h2>
+                </div>
+                <h3>Key Performance Characteristics</h3>
+                <div class="two-column">
+                    <div>
+                        <div class="metric-box">
+                            <h4>Throughput</h4>
+                            <p>100,000+ ops/sec typical</p>
+                        </div>
+                        <div class="metric-box">
+                            <h4>Latency</h4>
+                            <p>Sub-millisecond response</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="metric-box">
+                            <h4>Memory</h4>
+                            <p>In-memory data structure</p>
+                        </div>
+                        <div class="metric-box">
+                            <h4>Concurrency</h4>
+                            <p>Single-threaded core with I/O threads</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3>Performance Factors</h3>
+                <ul>
+                    <li><span class="highlight">Data structure choice:</span> Right tool for the job</li>
+                    <li><span class="highlight">Memory efficiency:</span> Encoding optimizations</li>
+                    <li><span class="highlight">Network optimization:</span> Pipelining and batching</li>
+                    <li><span class="highlight">Persistence settings:</span> Durability vs performance trade-offs</li>
+                </ul>
+            </section>
+
+            <!-- Memory Optimization -->
+            <section>
+                <div class="session-header">
+                    <h2>Memory Optimization</h2>
+                </div>
+                <h3>Memory Analysis Commands</h3>
+                <div class="code-block">
+# Memory usage analysis
+INFO memory
+MEMORY USAGE key-name
+MEMORY STATS
+
+# Memory profiling
+MEMORY DOCTOR
+MEMORY MALLOC-STATS
+</div>
+
+                <h3>Optimization Strategies</h3>
+                <div class="performance-tip">
+                    <strong>Use appropriate data structures:</strong> Hash vs String for objects
+                </div>
+                <div class="code-block">
+# Inefficient: Multiple string keys
+SET user:1001:name "John Doe"
+SET user:1001:email "john@example.com"
+SET user:1001:age "35"
+
+# Efficient: Single hash
+HSET user:1001 name "John Doe" email "john@example.com" age 35
+</div>
+            </section>
+
+            <!-- Memory Optimization Continued -->
+            <section>
+                <div class="session-header">
+                    <h2>Memory Optimization Techniques</h2>
+                </div>
+                
+                <h3>Encoding Optimizations</h3>
+                <div class="performance-tip">
+                    <strong>Small collections are encoded efficiently</strong>
+                </div>
+                <div class="code-block">
+# Configuration for optimal encoding
+hash-max-ziplist-entries 512
+hash-max-ziplist-value 64
+list-max-ziplist-size -2
+set-max-intset-entries 512
+zset-max-ziplist-entries 128
+zset-max-ziplist-value 64
+</div>
+
+                <h3>TTL for Memory Management</h3>
+                <div class="code-block">
+# Set TTL to prevent memory leaks
+SETEX cache:user:1001 3600 "user data"
+EXPIRE session:abc123 1800
+
+# Clean up expired keys actively
+SET lazyfree-lazy-expire yes
+SET lazyfree-lazy-eviction yes
+</div>
+            </section>
+
+            <!-- Performance Monitoring -->
+            <section>
+                <div class="session-header">
+                    <h2>Performance Monitoring</h2>
+                </div>
+                
+                <h3>Key Metrics to Monitor</h3>
+                <div class="two-column">
+                    <div>
+                        <h4>Throughput Metrics</h4>
+                        <ul>
+                            <li>Commands processed per second</li>
+                            <li>Network input/output</li>
+                            <li>Hit ratio (for cache scenarios)</li>
+                            <li>Key eviction rate</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Resource Metrics</h4>
+                        <ul>
+                            <li>Memory usage and fragmentation</li>
+                            <li>CPU utilization</li>
+                            <li>Connected clients</li>
+                            <li>Blocked clients</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>Monitoring Commands</h3>
+                <div class="code-block">
+# Real-time monitoring
+MONITOR          # Live command stream
+INFO all         # Comprehensive statistics
+CLIENT LIST      # Connected clients
+SLOWLOG GET 10   # Recent slow commands
+</div>
+            </section>
+
+            <!-- Redis Insight for Monitoring -->
+            <section>
+                <div class="session-header">
+                    <h2>Redis Insight for Monitoring</h2>
+                </div>
+                
+                <h3>Key Features for Performance</h3>
+                <ul>
+                    <li><span class="highlight">Real-time metrics:</span> Memory, CPU, throughput visualization</li>
+                    <li><span class="highlight">Slow log analysis:</span> Identify performance bottlenecks</li>
+                    <li><span class="highlight">Memory analysis:</span> Key size distribution and memory usage</li>
+                    <li><span class="highlight">Client connections:</span> Monitor connection patterns and blocked clients</li>
+                </ul>
+
+                <div class="success">
+                    <strong>Best Practice:</strong> Use Redis Insight's profiler to identify expensive operations in real-time during development and testing.
+                </div>
+
+                <h3>Setting Up Monitoring Dashboard</h3>
+                <div class="code-block">
+# Enable slow log
+CONFIG SET slowlog-log-slower-than 10000  # 10ms threshold
+CONFIG SET slowlog-max-len 128             # Keep last 128 entries
+
+# Monitor in Redis Insight CLI
+SLOWLOG GET
+INFO commandstats
+</div>
+            </section>
+
+            <!-- Slow Query Analysis -->
+            <section>
+                <div class="session-header">
+                    <h2>Slow Query Analysis</h2>
+                </div>
+                
+                <h3>Identifying Slow Operations</h3>
+                <div class="code-block">
+# Configure slow log
+CONFIG SET slowlog-log-slower-than 1000   # 1ms threshold
+CONFIG SET slowlog-max-len 1000
+
+# Analyze slow queries
+SLOWLOG GET 10
+SLOWLOG LEN
+SLOWLOG RESET
+</div>
+
+                <h3>Common Performance Issues</h3>
+                <div class="warning">
+                    <strong>O(N) Operations:</strong> KEYS, FLUSHALL, large SORT operations
+                </div>
+                <div class="warning">
+                    <strong>Large Collections:</strong> Operations on huge lists, sets, or hashes
+                </div>
+                <div class="warning">
+                    <strong>Memory Issues:</strong> Frequent evictions, high fragmentation
+                </div>
+
+                <h3>Optimization Solutions</h3>
+                <div class="code-block">
+# Instead of KEYS * (O(N))
+SCAN 0 MATCH pattern COUNT 100
+
+# Instead of large LRANGE
+LRANGE mylist 0 99  # Paginate results
+
+# Batch operations
+MGET key1 key2 key3  # Instead of multiple GET
+</div>
+            </section>
+
+            <!-- JavaScript Performance Monitoring -->
+            <section>
+                <div class="session-header">
+                    <h2>JavaScript Performance Monitoring</h2>
+                </div>
+                
+                <h3>Custom Metrics Implementation</h3>
+                <div class="code-block">
+class RedisMetrics {
+    constructor(client) {
+        this.client = client;
+        this.metrics = {
+            commands: 0,
+            errors: 0,
+            latency: []
+        };
+    }
+    
+    async executeWithMetrics(command, ...args) {
+        const start = Date.now();
+        try {
+            const result = await this.client[command](...args);
+            this.recordSuccess(Date.now() - start);
+            return result;
+        } catch (error) {
+            this.recordError();
+            throw error;
+        }
+    }
+    
+    recordSuccess(latency) {
+        this.metrics.commands++;
+        this.metrics.latency.push(latency);
+        if (this.metrics.latency.length > 1000) {
+            this.metrics.latency.shift();
+        }
+    }
+}
+</div>
+            </section>
+
+            <!-- Connection Pool Monitoring -->
+            <section>
+                <div class="session-header">
+                    <h2>Connection Pool Monitoring</h2>
+                </div>
+                
+                <h3>Pool Configuration</h3>
+                <div class="code-block">
+const redis = require('redis');
+
+const client = redis.createClient({
+    socket: {
+        host: 'remote-redis-host',
+        port: 6379,
+        connectTimeout: 60000,
+        lazyConnect: true
+    },
+    pool: {
+        min: 5,           // Minimum connections
+        max: 20,          // Maximum connections
+        acquireTimeoutMillis: 60000,
+        createTimeoutMillis: 30000,
+        destroyTimeoutMillis: 5000,
+        idleTimeoutMillis: 30000,
+        reapIntervalMillis: 1000
+    }
+});
+</div>
+
+                <h3>Pool Health Monitoring</h3>
+                <div class="code-block">
+// Monitor pool statistics
+client.on('connect', () => {
+    console.log('Connection established');
+});
+
+client.on('error', (err) => {
+    console.error('Redis Client Error:', err);
+});
+
+client.on('reconnecting', () => {
+    console.log('Redis client reconnecting...');
+});
+
+// Custom pool monitoring
+setInterval(() => {
+    console.log('Pool stats:', client.pool.stats);
+}, 30000);
+</div>
+            </section>
+
+            <!-- Custom Alerting -->
+            <section>
+                <div class="session-header">
+                    <h2>Custom Alerting & Monitoring</h2>
+                </div>
+                
+                <h3>Health Check Implementation</h3>
+                <div class="code-block">
+class RedisHealthMonitor {
+    constructor(client) {
+        this.client = client;
+        this.alerts = [];
+    }
+    
+    async checkHealth() {
+        try {
+            const start = Date.now();
+            await this.client.ping();
+            const latency = Date.now() - start;
+            
+            // Check latency threshold
+            if (latency > 100) {
+                this.triggerAlert('HIGH_LATENCY', { latency });
+            }
+            
+            // Check memory usage
+            const info = await this.client.info('memory');
+            const memoryUsage = this.parseMemoryInfo(info);
+            
+            if (memoryUsage.percentage > 90) {
+                this.triggerAlert('HIGH_MEMORY', memoryUsage);
+            }
+            
+            return { status: 'healthy', latency, memory: memoryUsage };
+        } catch (error) {
+            this.triggerAlert('CONNECTION_ERROR', { error: error.message });
+            return { status: 'unhealthy', error: error.message };
+        }
+    }
+}
+</div>
+            </section>
+
+            <!-- Production Troubleshooting -->
+            <section>
+                <div class="session-header">
+                    <h2>Production Troubleshooting</h2>
+                </div>
+                
+                <h3>Common Issues & Solutions</h3>
+                <div class="two-column">
+                    <div>
+                        <h4>High Memory Usage</h4>
+                        <ul>
+                            <li>Check for memory leaks</li>
+                            <li>Analyze key patterns</li>
+                            <li>Review TTL settings</li>
+                            <li>Consider data archival</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>High Latency</h4>
+                        <ul>
+                            <li>Review slow log</li>
+                            <li>Check O(N) operations</li>
+                            <li>Network connectivity</li>
+                            <li>Resource contention</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>Diagnostic Commands</h3>
+                <div class="code-block">
+# Memory diagnostics
+MEMORY DOCTOR
+MEMORY USAGE key-pattern
+INFO memory
+
+# Performance diagnostics
+INFO commandstats
+CLIENT LIST
+LATENCY HISTORY command
+
+# Debug specific keys
+DEBUG OBJECT key-name
+TYPE key-name
+TTL key-name
+</div>
+            </section>
+
+            <!-- Enterprise Monitoring -->
+            <section>
+                <div class="session-header">
+                    <h2>Enterprise Monitoring Integration</h2>
+                </div>
+                
+                <h3>Metrics Export for Monitoring Systems</h3>
+                <div class="code-block">
+class MetricsExporter {
+    constructor(client) {
+        this.client = client;
+    }
+    
+    async collectMetrics() {
+        const info = await this.client.info();
+        const stats = this.parseRedisInfo(info);
+        
+        return {
+            'redis.commands.processed': stats.total_commands_processed,
+            'redis.memory.used': stats.used_memory,
+            'redis.memory.rss': stats.used_memory_rss,
+            'redis.clients.connected': stats.connected_clients,
+            'redis.keys.expired': stats.expired_keys,
+            'redis.keyspace.hits': stats.keyspace_hits,
+            'redis.keyspace.misses': stats.keyspace_misses
+        };
+    }
+    
+    // Export to Prometheus/Grafana/DataDog/etc.
+    async exportToMonitoringSystem(metrics) {
+        // Implementation depends on monitoring system
+        console.log('Metrics:', JSON.stringify(metrics, null, 2));
+    }
+}
+</div>
+            </section>
+
+            <!-- Lab Introduction -->
+            <section>
+                <div class="lab-callout">
+                    <h2>Final Lab Coming Next</h2>
+                    <p>Lab 15: Enterprise Integration</p>
+                    <p><strong>Duration:</strong> 45 minutes</p>
+                    <p>Build a complete monitoring and performance optimization system</p>
+                </div>
+            </section>
+
+            <!-- Summary -->
+            <section>
+                <div class="session-header">
+                    <h2>Session Summary</h2>
+                </div>
+                <ul>
+                    <li><span class="highlight">Performance fundamentals:</span> Throughput, latency, and memory characteristics</li>
+                    <li><span class="highlight">Memory optimization:</span> Data structure choice, encoding, and TTL management</li>
+                    <li><span class="highlight">Monitoring tools:</span> Redis commands, Redis Insight, and custom metrics</li>
+                    <li><span class="highlight">Slow query analysis:</span> Identification and optimization of bottlenecks</li>
+                    <li><span class="highlight">JavaScript monitoring:</span> Custom metrics and connection pool health</li>
+                    <li><span class="highlight">Production troubleshooting:</span> Common issues and diagnostic approaches</li>
+                    <li><span class="highlight">Enterprise integration:</span> Metrics export and alerting systems</li>
+                </ul>
+                
+                <div class="success">
+                    <strong>Next Steps:</strong> Apply these monitoring and optimization techniques in the final hands-on lab to build a production-ready Redis application.
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            controls: true,
+            progress: true,
+            center: false,
+            transition: 'slide',
+            width: 1200,
+            height: 800,
+            margin: 0.1,
+            minScale: 0.2,
+            maxScale: 2.0
+        });
+    </script>
+</body>
+</html>

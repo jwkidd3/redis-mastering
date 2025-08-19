@@ -1,0 +1,26 @@
+{
+  "name": "redis-customer-policy-system",
+  "version": "1.0.0",
+  "description": "Redis Hash operations for customer and policy management",
+  "main": "src/redis-client.js",
+  "scripts": {
+    "test": "node test-connection.js",
+    "test-customers": "node examples/test-customers.js",
+    "test-policies": "node examples/test-policies.js",
+    "test-integrated": "node examples/test-integrated-system.js",
+    "test-advanced": "node examples/advanced-hash-operations.js"
+  },
+  "dependencies": {
+    "redis": "^4.6.5"
+  },
+  "keywords": [
+    "redis",
+    "hashes",
+    "customer-management",
+    "policy-management",
+    "javascript",
+    "nodejs"
+  ],
+  "author": "Redis Training Lab",
+  "license": "MIT"
+}

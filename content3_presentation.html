@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.css">
+    <style>
+        .reveal .slides section {
+            text-align: left;
+            font-size: 28px;
+        }
+        .reveal h1, .reveal h2, .reveal h3 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .reveal .title-block {
+            background: #ecf0f1;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .reveal .session-header {
+            background: #ecf0f1;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .reveal .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+        }
+        .reveal .highlight {
+            background: #f39c12;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+        .reveal .lab-callout {
+            background: #e74c3c;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 32px;
+            margin: 20px 0;
+        }
+        .reveal ul {
+            margin: 20px 0;
+        }
+        .reveal li {
+            margin: 10px 0;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+            <!-- Title Slide -->
+            <section>
+                <div class="title-block">
+                    <h1>Content 3: Core Data Structures</h1>
+                    <h2>String Operations & Key Management</h2>
+                    <p><strong>Duration:</strong> 45 minutes</p>
+                    <p><strong>Focus:</strong> Redis String data type and operations</p>
+                </div>
+            </section>
+
+            <!-- Session Overview -->
+            <section>
+                <div class="session-header">
+                    <h2>Session Objectives</h2>
+                </div>
+                <ul>
+                    <li>Master Redis String data type fundamentals</li>
+                    <li>Implement basic operations for policy and customer data</li>
+                    <li>Execute numeric operations for calculations</li>
+                    <li>Apply string manipulation for document processing</li>
+                    <li>Utilize batch operations for bulk updates</li>
+                    <li>Design key naming conventions for entities</li>
+                    <li>Implement TTL strategies for temporary data</li>
+                    <li>Optimize memory usage for large databases</li>
+                </ul>
+            </section>
+
+            <!-- String Fundamentals -->
+            <section>
+                <div class="session-header">
+                    <h2>Redis String Data Type</h2>
+                </div>
+                <ul>
+                    <li><span class="highlight">Binary-safe</span> - can store any data type</li>
+                    <li><span class="highlight">Maximum size:</span> 512 MB per string</li>
+                    <li><span class="highlight">Most basic</span> Redis data type</li>
+                    <li><span class="highlight">Versatile:</span> text, numbers, JSON, binary data</li>
+                </ul>
+                <div class="code-block">
+                    # String can hold various data types
+                    SET policy:123456 "AUTO-2024-PREMIUM-1500"
+                    SET customer:789012 "John Smith"
+                    SET claim:amount:456 "2500.50"
+                    SET policy:doc:pdf "\x89PNG\r\n..."
+                </div>
+            </section>
+
+            <!-- Basic String Operations -->
+            <section>
+                <div class="session-header">
+                    <h2>Basic String Operations - SET & GET</h2>
+                </div>
+                <ul>
+                    <li><span class="highlight">SET</span> - Store key-value pairs</li>
+                    <li><span class="highlight">GET</span> - Retrieve values by key</li>
+                    <li><span class="highlight">EXISTS</span> - Check if key exists</li>
+                    <li><span class="highlight">DEL</span> - Delete keys</li>
+                </ul>
+                <div class="code-block">
+                    # Store policy information
+                    SET policy:123456 "AUTO-PREMIUM-1500-ACTIVE"
+                    
+                    # Retrieve policy data
+                    GET policy:123456
+                    
+                    # Check existence
+                    EXISTS policy:123456
+                    
+                    # Delete policy
+                    DEL policy:123456
+                </div>
+            </section>
+
+            <!-- SET Command Variations -->
+            <section>
+                <div class="session-header">
+                    <h2>SET Command Options</h2>
+                </div>
+                <ul>
+                    <li><span class="highlight">SET key value EX seconds</span> - Set with expiration</li>
+                    <li><span class="highlight">SET key value NX</span> - Set if not exists</li>
+                    <li><span class="highlight">SET key value XX</span> - Set if exists</li>
+                    <li><span class="highlight">SETNX</span> - Set if not exists (standalone)</li>
+                </ul>
+                <div class="code-block">
+                    # Set with 1 hour expiration (quote timeout)
+                    SET quote:temp:789 "QUOTE-DATA" EX 3600
+                    
+                    # Set only if customer doesn't exist
+                    SET customer:new:456 "New Customer" NX
+                    
+                    # Update only if policy exists
+                    SET policy:123456 "UPDATED-STATUS" XX
+                    
+                    # Alternative syntax
+                    SETNX session:user:789 "logged-in"
+                </div>
+            </section>
+
+            <!-- Numeric Operations -->
+            <section>
+                <div class="session-header">
+                    <h2>Numeric Operations</h2>
+                </div>
+                <ul>
+                    <li><span class="highlight">INCR</span> - Increment by 1</li>
+                    <li><span class="highlight">DECR</span> - Decrement by 1</li>
+                    <li><span class="highlight">INCRBY</span> - Increment by specified amount</li>
+                    <li><span class="highlight">DECRBY</span> - Decrement by specified amount</li>
+                    <li><span class="highlight">INCRBYFLOAT</span> - Increment by float value</li>
+                </ul>
+                <div class="code-block">
+                    # Initialize claim counter
+                    SET claim:counter 0
+                    
+                    # Increment for new claims
+                    INCR claim:counter          # Returns: 1
+                    INCR claim:counter          # Returns: 2
+                    
+                    # Add premium amount
+                    SET premium:total 0
+                    INCRBY premium:total 1500   # Add $1500
+                    INCRBYFLOAT premium:total 250.50  # Add $250.50
+                </div>
+            </section>
+
+            <!-- String Manipulation -->
+            <section>
+                <div class="session-header">
+                    <h2>String Manipulation Commands</h2>
+                </div>
+                <ul>
+                    <li><span class="highlight">APPEND</span> - Append to existing string</li>
+                    <li><span class="highlight">STRLEN</span> - Get string length</li>
+                    <li><span class="highlight">GETRANGE</span> - Get substring</li>
+                    <li><span class="highlight">SETRANGE</span> - Overwrite part of string</li>
+                </ul>
+                <div class="code-block">
+                    # Build policy number incrementally
+                    SET policy:temp "AUTO"
+                    APPEND policy:temp "-2024"      # "AUTO-2024"
+                    APPEND policy:temp "-PREMIUM"   # "AUTO-2024-PREMIUM"
+                    
+                    # Get string length
+                    STRLEN policy:temp              # Returns: 17
+                    
+                    # Extract year from policy number
+                    GETRANGE policy:temp 5 8        # Returns: "2024"
+                </div>
+            </section>
+
+            <!-- Batch Operations -->
+            <section>
+                <div class="session-header">
+                    <h2>Batch Operations - MSET & MGET</h2>
+                </div>
+                <ul>
+                    <li><span class="highlight">MSET</span> - Set multiple keys atomically</li>
+                    <li><span class="highlight">MGET</span> - Get multiple values at once</li>
+                    <li><span class="highlight">MSETNX</span> - Set multiple if none exist</li>
+                    <li><span class="highlight">Performance benefit:</span> Reduced network round trips</li>
+                </ul>
+                <div class="code-block">
+                    # Set multiple customer data points
+                    MSET customer:123:name "John Smith" \
+                         customer:123:email "john@email.com" \
+                         customer:123:phone "555-0123" \
+                         customer:123:status "ACTIVE"
+                    
+                    # Retrieve multiple values
+                    MGET customer:123:name customer:123:email customer:123:status
+                    
+                    # Bulk policy initialization (all or nothing)
+                    MSETNX policy:1001 "NEW" policy:1002 "NEW" policy:1003 "NEW"
+                </div>
+            </section>
+
+            <!-- Key Naming Conventions -->
+            <section>
+                <div class="session-header">
+                    <h2>Key Naming Conventions</h2>
+                </div>
+                <ul>
+                    <li><span class="highlight">Hierarchical structure:</span> Use colons (:) as separators</li>
+                    <li><span class="highlight">Entity-based:</span> Start with entity type</li>
+                    <li><span class="highlight">Consistent patterns:</span> Predictable key structure</li>
+                    <li><span class="highlight">Case sensitivity:</span> Redis keys are case-sensitive</li>
+                </ul>
+                <div class="code-block">
+                    # Entity-based naming patterns
+                    policy:123456:premium           # Policy premium amount
+                    policy:123456:status            # Policy status
+                    policy:123456:customer          # Associated customer ID
+                    
+                    customer:789012:profile         # Customer profile data
+                    customer:789012:policies        # Customer's policies
+                    customer:789012:claims          # Customer's claims
+                    
+                    claim:456789:amount             # Claim amount
+                    claim:456789:status             # Claim processing status
+                    claim:456789:adjuster           # Assigned adjuster
+                </div>
+            </section>
+
+            <!-- TTL and Expiration -->
+            <section>
+                <div class="session-header">
+                    <h2>TTL (Time To Live) Management</h2>
+                </div>
+                <ul>
+                    <li><span class="highlight">EXPIRE</span> - Set expiration in seconds</li>
+                    <li><span class="highlight">EXPIREAT</span> - Set expiration at Unix timestamp</li>
+                    <li><span class="highlight">TTL</span> - Check remaining time</li>
+                    <li><span class="highlight">PERSIST</span> - Remove expiration</li>
+                    <li><span class="highlight">PEXPIRE/PTTL</span> - Millisecond precision</li>
+                </ul>
+                <div class="code-block">
+                    # Set quote with 30-minute expiration
+                    SET quote:temp:789 "QUOTE-DATA-HERE"
+                    EXPIRE quote:temp:789 1800
+                    
+                    # Check remaining time
+                    TTL quote:temp:789              # Returns seconds remaining
+                    
+                    # Set session with precise expiration
+                    SET session:user:456 "ACTIVE"
+                    EXPIREAT session:user:456 1640995200  # Unix timestamp
+                    
+                    # Remove expiration (make permanent)
+                    PERSIST session:user:456
+                </div>
+            </section>
+
+            <!-- Memory Optimization -->
+            <section>
+                <div class="session-header">
+                    <h2>Memory Optimization Strategies</h2>
+                </div>
+                <ul>
+                    <li><span class="highlight">Key length:</span> Shorter keys save memory</li>
+                    <li><span class="highlight">Value encoding:</span> Redis optimizes small integers/strings</li>
+                    <li><span class="highlight">Expiration policies:</span> Automatic cleanup</li>
+                    <li><span class="highlight">Compression:</span> For large text values</li>
+                </ul>
+                <div class="code-block">
+                    # Memory-efficient key naming
+                    # Instead of: customer:profile:personal:full:name:first
+                    # Use: cust:123:fname
+                    
+                    # Redis optimizes these automatically:
+                    SET counter:1 "123"           # Stored as integer
+                    SET short:key "hello"         # Optimized string encoding
+                    
+                    # For large data, consider JSON compression
+                    SET policy:large:data '{"compressed":"json","data":"here"}'
+                </div>
+            </section>
+
+            <!-- Practical Use Cases -->
+            <section>
+                <div class="session-header">
+                    <h2>Practical String Use Cases</h2>
+                </div>
+                <ul>
+                    <li><span class="highlight">Session storage:</span> User login tokens</li>
+                    <li><span class="highlight">Caching:</span> API responses and computed values</li>
+                    <li><span class="highlight">Counters:</span> Statistics and metrics</li>
+                    <li><span class="highlight">Configuration:</span> Application settings</li>
+                    <li><span class="highlight">Rate limiting:</span> API call counters</li>
+                    <li><span class="highlight">Feature flags:</span> Application feature toggles</li>
+                </ul>
+                <div class="code-block">
+                    # Session management
+                    SET session:abc123 "user:789|role:customer|exp:1640995200"
+                    
+                    # API response caching
+                    SET cache:policy:123456 '{"policy":"data","premium":1500}'
+                    EXPIRE cache:policy:123456 300  # 5-minute cache
+                    
+                    # Rate limiting counter
+                    SET rate:limit:user:789 "1"
+                    EXPIRE rate:limit:user:789 60   # Reset every minute
+                    INCR rate:limit:user:789        # Increment usage
+                </div>
+            </section>
+
+            <!-- Performance Considerations -->
+            <section>
+                <div class="session-header">
+                    <h2>Performance Best Practices</h2>
+                </div>
+                <ul>
+                    <li><span class="highlight">Atomic operations:</span> INCR/DECR are atomic and fast</li>
+                    <li><span class="highlight">Batch operations:</span> Use MGET/MSET for multiple keys</li>
+                    <li><span class="highlight">Pipeline commands:</span> Reduce network latency</li>
+                    <li><span class="highlight">Memory usage:</span> Monitor with MEMORY USAGE command</li>
+                    <li><span class="highlight">Key patterns:</span> Use consistent naming for easier management</li>
+                </ul>
+                <div class="code-block">
+                    # Check memory usage of specific keys
+                    MEMORY USAGE policy:123456
+                    MEMORY USAGE customer:789012:profile
+                    
+                    # Efficient batch retrieval
+                    MGET policy:1001 policy:1002 policy:1003 policy:1004
+                    
+                    # Atomic increment for thread-safe counters
+                    INCR daily:claims:count         # Thread-safe increment
+                </div>
+            </section>
+
+            <!-- Common Patterns -->
+            <section>
+                <div class="session-header">
+                    <h2>Common String Patterns</h2>
+                </div>
+                <ul>
+                    <li><span class="highlight">Unique ID generation:</span> INCR for sequential IDs</li>
+                    <li><span class="highlight">Distributed locking:</span> SETNX for simple locks</li>
+                    <li><span class="highlight">Cache-aside pattern:</span> Check existence before DB query</li>
+                    <li><span class="highlight">Write-through caching:</span> Update cache and DB together</li>
+                </ul>
+                <div class="code-block">
+                    # Generate unique policy numbers
+                    INCR policy:id:generator        # Returns: 1, 2, 3, etc.
+                    SET policy:000001 "NEW-POLICY-DATA"
+                    
+                    # Simple distributed lock
+                    SETNX lock:process:claims "worker-1"
+                    EXPIRE lock:process:claims 30   # Lock expires in 30 seconds
+                    
+                    # Cache-aside pattern
+                    GET cache:customer:789
+                    # If null, query database and cache result
+                    SET cache:customer:789 "database-result" EX 300
+                </div>
+            </section>
+
+            <!-- Lab Introduction -->
+            <section>
+                <div class="lab-callout">
+                    <h2>Labs 4-5 Coming Next</h2>
+                    <p>Data Management & Monitoring</p>
+                    <p><strong>Duration:</strong> 90 minutes total</p>
+                    <p>Hands-on practice with string operations and key management</p>
+                </div>
+            </section>
+
+            <!-- Summary -->
+            <section>
+                <div class="session-header">
+                    <h2>Session Summary</h2>
+                </div>
+                <ul>
+                    <li><span class="highlight">String fundamentals:</span> Binary-safe, versatile data type</li>
+                    <li><span class="highlight">Basic operations:</span> SET, GET, EXISTS, DEL with options</li>
+                    <li><span class="highlight">Numeric operations:</span> INCR, DECR for atomic calculations</li>
+                    <li><span class="highlight">String manipulation:</span> APPEND, GETRANGE, SETRANGE</li>
+                    <li><span class="highlight">Batch operations:</span> MSET, MGET for efficiency</li>
+                    <li><span class="highlight">Key conventions:</span> Hierarchical, consistent naming</li>
+                    <li><span class="highlight">TTL management:</span> Automatic expiration strategies</li>
+                    <li><span class="highlight">Performance:</span> Memory optimization and best practices</li>
+                </ul>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            controls: true,
+            progress: true,
+            center: false,
+            transition: 'slide',
+            width: 1200,
+            height: 800,
+            margin: 0.1,
+            minScale: 0.2,
+            maxScale: 2.0
+        });
+    </script>
+</body>
+</html>

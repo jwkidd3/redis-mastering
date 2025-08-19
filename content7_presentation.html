@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.css">
+    <style>
+        .reveal .slides {
+            zoom: 0.5;
+        }
+        .main-title {
+            background: #f8f9fa;
+            color: #333;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 15px 0;
+        }
+        .session-header {
+            background: #f8f9fa;
+            color: #333;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            margin: 10px 0;
+        }
+        .bullet-point {
+            margin: 6px 0;
+            font-size: 0.85em;
+            line-height: 1.3;
+        }
+        .code-block {
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            margin: 8px 0;
+            font-size: 0.7em;
+            line-height: 1.2;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 0.8em;
+            margin: 0.4em 0;
+            font-size: 0.85em;
+        }
+        .success-box {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            padding: 0.8em;
+            margin: 0.4em 0;
+            font-size: 0.85em;
+        }
+        .highlight-box {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 4px;
+            padding: 0.8em;
+            margin: 0.4em 0;
+            font-size: 0.85em;
+        }
+        .security-box {
+            background: #ffebee;
+            border: 1px solid #ffcdd2;
+            border-radius: 4px;
+            padding: 0.8em;
+            margin: 0.4em 0;
+            font-size: 0.85em;
+        }
+        .two-column {
+            display: flex;
+            gap: 15px;
+        }
+        .two-column > div {
+            flex: 1;
+        }
+        .reveal h1 {
+            font-size: 2.2em;
+            margin-bottom: 0.3em;
+        }
+        .reveal h2 {
+            font-size: 1.8em;
+            margin-bottom: 0.4em;
+        }
+        .reveal h3 {
+            font-size: 1.4em;
+            margin-bottom: 0.3em;
+        }
+        .reveal h4 {
+            font-size: 1.1em;
+            margin-bottom: 0.2em;
+        }
+        .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+            text-transform: none;
+            line-height: 1.2;
+        }
+        .reveal .slides section {
+            text-align: left;
+        }
+        .reveal .slides section[data-background] {
+            text-align: center;
+        }
+        .reveal ul, .reveal ol {
+            margin-bottom: 0.5em;
+        }
+        .reveal li {
+            margin-bottom: 0.3em;
+            line-height: 1.3;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- Title Slide -->
+            <section data-background="#f8f9fa">
+                <div class="main-title">
+                    <h1>Content 7</h1>
+                    <h2>Production Deployment & Security</h2>
+                    <p>Redis for Production Insurance Systems</p>
+                    <p><strong>Day 3 - Morning Session</strong></p>
+                </div>
+            </section>
+
+            <!-- Session Overview -->
+            <section>
+                <div class="session-header">
+                    <h2>Session Overview</h2>
+                </div>
+                <div class="bullet-point"><strong>Objective:</strong> Deploy secure, production-ready Redis systems for enterprise applications</div>
+                <div class="bullet-point"><strong>Duration:</strong> 50 minutes presentation</div>
+                <div class="bullet-point"><strong>Focus:</strong> Security, compliance, and production best practices</div>
+                <br>
+                <h3>Key Topics</h3>
+                <div class="bullet-point">• Production deployment architecture and considerations</div>
+                <div class="bullet-point">• Security best practices for sensitive data protection</div>
+                <div class="bullet-point">• Network security and encryption configuration</div>
+                <div class="bullet-point">• Memory sizing and capacity planning strategies</div>
+                <div class="bullet-point">• Performance tuning for high-volume transactions</div>
+                <div class="bullet-point">• Compliance requirements for enterprise systems</div>
+            </section>
+
+            <!-- Production Architecture Considerations -->
+            <section>
+                <div class="session-header">
+                    <h2>Production Architecture Considerations</h2>
+                </div>
+                <h3>Environment Planning</h3>
+                <div class="two-column">
+                    <div>
+                        <h4>Hardware Requirements</h4>
+                        <ul style="font-size: 0.9em;">
+                            <li>CPU: Multiple cores for concurrent operations</li>
+                            <li>RAM: Primary storage medium</li>
+                            <li>Storage: Fast SSD for persistence</li>
+                            <li>Network: Low latency, high bandwidth</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Deployment Patterns</h4>
+                        <ul style="font-size: 0.9em;">
+                            <li>Standalone instance</li>
+                            <li>Master-slave replication</li>
+                            <li>Sentinel for high availability</li>
+                            <li>Cluster for horizontal scaling</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="highlight-box">
+                    <strong>Enterprise Consideration:</strong> Start simple with standalone or master-slave, scale to cluster as needed
+                </div>
+            </section>
+
+            <!-- Memory Sizing and Capacity Planning -->
+            <section>
+                <div class="session-header">
+                    <h2>Memory Sizing & Capacity Planning</h2>
+                </div>
+                <h3>Memory Planning Guidelines</h3>
+                <div class="code-block">
+# Estimate memory usage
+# Rule of thumb: Start with 2x expected data size
+# Account for:
+# - Data overhead (keys, values, metadata)
+# - Replication overhead (if using slaves)
+# - Fragmentation overhead (20-30%)
+# - Operating system overhead
+
+# Example calculation:
+# Expected data: 10GB
+# With overhead: 10GB × 2.5 = 25GB RAM minimum
+</div>
+                <h3>Memory Configuration</h3>
+                <div class="code-block">
+# Set maximum memory limit
+maxmemory 8gb
+
+# Configure eviction policy
+maxmemory-policy allkeys-lru
+
+# Monitor memory usage
+INFO memory
+</div>
+            </section>
+
+            <!-- Memory Management -->
+            <section>
+                <div class="session-header">
+                    <h2>Memory Management Strategies</h2>
+                </div>
+                <h3>Eviction Policies</h3>
+                <div class="two-column">
+                    <div>
+                        <h4>Available Policies</h4>
+                        <ul style="font-size: 0.8em;">
+                            <li><strong>noeviction:</strong> Return errors when memory limit reached</li>
+                            <li><strong>allkeys-lru:</strong> Remove least recently used keys</li>
+                            <li><strong>volatile-lru:</strong> Remove LRU among keys with expire set</li>
+                            <li><strong>allkeys-random:</strong> Remove random keys</li>
+                            <li><strong>volatile-random:</strong> Remove random among keys with expire</li>
+                            <li><strong>volatile-ttl:</strong> Remove keys with nearest expire time</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Recommendations</h4>
+                        <div class="success-box" style="font-size: 0.8em;">
+                            <strong>Cache Use Case:</strong><br>
+                            Use <code>allkeys-lru</code> for general caching
+                        </div>
+                        <div class="success-box" style="font-size: 0.8em;">
+                            <strong>Mixed Use Case:</strong><br>
+                            Use <code>volatile-lru</code> to preserve persistent data
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Security Best Practices -->
+            <section>
+                <div class="session-header">
+                    <h2>Security Best Practices</h2>
+                </div>
+                <div class="security-box">
+                    <strong>Critical:</strong> Redis is designed for trusted environments - security is YOUR responsibility
+                </div>
+                <h3>Authentication & Authorization</h3>
+                <div class="code-block">
+# Enable authentication
+requirepass your_strong_password_here
+
+# Create users with specific permissions (Redis 6+)
+ACL SETUSER customer_service on >customer_pass ~customer:* +get +set
+ACL SETUSER analyst on >analyst_pass ~stats:* +get +zadd +zrange
+
+# Default user security
+ACL SETUSER default off
+</div>
+                <div class="warning-box">
+                    <strong>Password Security:</strong> Use strong, unique passwords and rotate regularly
+                </div>
+            </section>
+
+            <!-- Network Security -->
+            <section>
+                <div class="session-header">
+                    <h2>Network Security Configuration</h2>
+                </div>
+                <h3>Network Access Control</h3>
+                <div class="code-block">
+# Bind to specific interfaces only
+bind 10.0.1.5 127.0.0.1
+
+# Disable protected mode (only for trusted networks)
+protected-mode yes
+
+# Change default port
+port 6380
+
+# Disable dangerous commands
+rename-command FLUSHDB ""
+rename-command FLUSHALL ""
+rename-command CONFIG ""
+rename-command DEBUG ""
+</div>
+                <h3>Firewall Configuration</h3>
+                <div class="bullet-point">• <strong>Restrict access:</strong> Only allow connections from application servers</div>
+                <div class="bullet-point">• <strong>Use VPN/Private networks:</strong> Never expose Redis to public internet</div>
+                <div class="bullet-point">• <strong>Monitor connections:</strong> Log and alert on unusual access patterns</div>
+            </section>
+
+            <!-- SSL/TLS Encryption -->
+            <section>
+                <div class="session-header">
+                    <h2>SSL/TLS Encryption Setup</h2>
+                </div>
+                <h3>Enabling TLS (Redis 6+)</h3>
+                <div class="code-block">
+# TLS configuration in redis.conf
+tls-port 6380
+port 0
+
+# Certificate files
+tls-cert-file /path/to/redis.crt
+tls-key-file /path/to/redis.key
+tls-ca-cert-file /path/to/ca.crt
+
+# Client certificate authentication
+tls-auth-clients yes
+</div>
+                <h3>Client Connection with TLS</h3>
+                <div class="code-block">
+# Node.js client with TLS
+const redis = require('redis');
+const client = redis.createClient({
+    socket: {
+        host: 'redis-server.company.com',
+        port: 6380,
+        tls: true,
+        cert: fs.readFileSync('client.crt'),
+        key: fs.readFileSync('client.key'),
+        ca: fs.readFileSync('ca.crt')
+    }
+});
+</div>
+            </section>
+
+            <!-- Performance Tuning -->
+            <section>
+                <div class="session-header">
+                    <h2>Performance Tuning Guidelines</h2>
+                </div>
+                <h3>Key Performance Settings</h3>
+                <div class="code-block">
+# TCP keepalive for client connections
+tcp-keepalive 300
+
+# Client timeout settings
+timeout 300
+
+# Background saving optimization
+save 900 1
+save 300 10
+save 60 10000
+
+# Disable slow operations in production
+stop-writes-on-bgsave-error yes
+rdbcompression yes
+rdbchecksum yes
+</div>
+                <h3>Connection Pool Optimization</h3>
+                <div class="code-block">
+# Increase client connection limits
+maxclients 10000
+
+# Connection pool settings in application
+const client = redis.createClient({
+    socket: {
+        connectTimeout: 5000,
+        lazyConnect: true
+    },
+    retry_unfulfilled_commands: false
+});
+</div>
+            </section>
+
+            <!-- Scaling Patterns -->
+            <section>
+                <div class="session-header">
+                    <h2>Scaling Patterns & Load Balancing</h2>
+                </div>
+                <h3>Horizontal Scaling Approaches</h3>
+                <div class="two-column">
+                    <div>
+                        <h4>Read Scaling</h4>
+                        <ul style="font-size: 0.9em;">
+                            <li>Master-slave replication</li>
+                            <li>Multiple read replicas</li>
+                            <li>Application-level read routing</li>
+                            <li>Load balancer for read operations</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Write Scaling</h4>
+                        <ul style="font-size: 0.9em;">
+                            <li>Redis Cluster for sharding</li>
+                            <li>Application-level partitioning</li>
+                            <li>Functional partitioning by data type</li>
+                            <li>Time-based partitioning</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="highlight-box">
+                    <strong>Start Simple:</strong> Begin with master-slave, move to cluster when write throughput becomes a bottleneck
+                </div>
+            </section>
+
+            <!-- Compliance and Governance -->
+            <section>
+                <div class="session-header">
+                    <h2>Enterprise Compliance & Governance</h2>
+                </div>
+                <h3>Data Protection Regulations</h3>
+                <div class="two-column">
+                    <div>
+                        <h4>GDPR/Privacy Compliance</h4>
+                        <ul style="font-size: 0.8em;">
+                            <li>Data encryption at rest and in transit</li>
+                            <li>Right to be forgotten implementation</li>
+                            <li>Data retention policies with TTL</li>
+                            <li>Audit logging for data access</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Industry-Specific Requirements</h4>
+                        <ul style="font-size: 0.8em;">
+                            <li>HIPAA for healthcare data</li>
+                            <li>SOX for financial records</li>
+                            <li>PCI DSS for payment data</li>
+                            <li>Data residency requirements</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="security-box">
+                    <strong>Key Principle:</strong> Implement data classification and handle sensitive data with appropriate controls
+                </div>
+            </section>
+
+            <!-- Data Governance -->
+            <section>
+                <div class="session-header">
+                    <h2>Data Governance in Production</h2>
+                </div>
+                <h3>Data Classification Strategy</h3>
+                <div class="code-block">
+# Implement data classification in key naming
+# Public data
+SET public:weather:dallas "75°F"
+
+# Internal business data  
+SET internal:metrics:daily_sales "150000"
+
+# Confidential customer data (encrypted)
+SET confidential:customer:12345:profile "{encrypted_data}"
+
+# Restricted PII data (special handling)
+SET restricted:customer:12345:ssn "{encrypted_ssn}"
+</div>
+                <h3>Data Retention Policies</h3>
+                <div class="code-block">
+# Implement automatic data retention
+# Customer session data - 24 hours
+SET session:user123 "session_data" EX 86400
+
+# Audit logs - 90 days  
+SET audit:login:user123:20231201 "login_data" EX 7776000
+
+# Temporary cache - 1 hour
+SET cache:quote:abc123 "quote_data" EX 3600
+</div>
+            </section>
+
+            <!-- Monitoring and Alerting -->
+            <section>
+                <div class="session-header">
+                    <h2>Production Monitoring Strategy</h2>
+                </div>
+                <h3>Critical Metrics to Monitor</h3>
+                <div class="two-column">
+                    <div>
+                        <h4>Performance Metrics</h4>
+                        <ul style="font-size: 0.8em;">
+                            <li>Memory usage and fragmentation</li>
+                            <li>CPU utilization</li>
+                            <li>Network I/O and latency</li>
+                            <li>Commands per second</li>
+                            <li>Slow query log analysis</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Health Metrics</h4>
+                        <ul style="font-size: 0.8em;">
+                            <li>Connection count and timeouts</li>
+                            <li>Replication lag (if using slaves)</li>
+                            <li>Persistence operation success</li>
+                            <li>Error rates and failed commands</li>
+                            <li>Security events and failed auth</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="code-block" style="font-size: 0.7em;">
+# Key monitoring commands
+INFO stats          # Command statistics
+INFO replication    # Replication status  
+INFO memory         # Memory usage details
+SLOWLOG GET 10      # Recent slow commands
+CLIENT LIST         # Active connections
+</div>
+            </section>
+
+            <!-- Backup and Recovery -->
+            <section>
+                <div class="session-header">
+                    <h2>Backup & Recovery Strategy</h2>
+                </div>
+                <h3>Production Backup Approaches</h3>
+                <div class="two-column">
+                    <div>
+                        <h4>RDB Snapshots</h4>
+                        <ul style="font-size: 0.8em;">
+                            <li>Point-in-time recovery</li>
+                            <li>Compact binary format</li>
+                            <li>Fast restore for large datasets</li>
+                            <li>Automated scheduling</li>
+                        </ul>
+                        <div class="code-block" style="font-size: 0.7em;">
+# Configure automatic snapshots
+save 900 1     # 15 min if 1+ changes
+save 300 10    # 5 min if 10+ changes  
+save 60 10000  # 1 min if 10k+ changes
+</div>
+                    </div>
+                    <div>
+                        <h4>AOF (Append Only File)</h4>
+                        <ul style="font-size: 0.8em;">
+                            <li>Command-by-command logging</li>
+                            <li>Better durability guarantees</li>
+                            <li>Incremental backup capability</li>
+                            <li>Point-in-time recovery precision</li>
+                        </ul>
+                        <div class="code-block" style="font-size: 0.7em;">
+# Enable AOF
+appendonly yes
+appendfilename "appendonly.aof"
+appendfsync everysec
+</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Disaster Recovery -->
+            <section>
+                <div class="session-header">
+                    <h2>Disaster Recovery Planning</h2>
+                </div>
+                <h3>Business Continuity Requirements</h3>
+                <div class="bullet-point"><strong>RTO (Recovery Time Objective):</strong> Maximum acceptable downtime</div>
+                <div class="bullet-point"><strong>RPO (Recovery Point Objective):</strong> Maximum acceptable data loss</div>
+                <div class="bullet-point"><strong>Service Tiers:</strong> Critical vs non-critical data classification</div>
+                
+                <h3>Multi-Region Strategy</h3>
+                <div class="code-block">
+# Disaster recovery setup example
+# Primary region: US-East
+# DR region: US-West
+
+# Automated backup replication to DR site
+# Network connectivity between regions
+# Failover procedures and testing
+# Data consistency verification
+</div>
+                <div class="warning-box">
+                    <strong>Test Regularly:</strong> Disaster recovery plans must be tested quarterly to ensure they work
+                </div>
+            </section>
+
+            <!-- Production Checklist -->
+            <section>
+                <div class="session-header">
+                    <h2>Production Deployment Checklist</h2>
+                </div>
+                <div class="two-column">
+                    <div>
+                        <h4>Security Checklist</h4>
+                        <ul style="font-size: 0.7em;">
+                            <li>☐ Authentication enabled</li>
+                            <li>☐ ACLs configured for users</li>
+                            <li>☐ Network access restricted</li>
+                            <li>☐ TLS encryption enabled</li>
+                            <li>☐ Dangerous commands disabled</li>
+                            <li>☐ Firewall rules configured</li>
+                            <li>☐ Audit logging enabled</li>
+                        </ul>
+                        
+                        <h4>Performance Checklist</h4>
+                        <ul style="font-size: 0.7em;">
+                            <li>☐ Memory limits configured</li>
+                            <li>☐ Eviction policy set</li>
+                            <li>☐ Connection limits tuned</li>
+                            <li>☐ Persistence optimized</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Monitoring Checklist</h4>
+                        <ul style="font-size: 0.7em;">
+                            <li>☐ Health checks implemented</li>
+                            <li>☐ Performance metrics collected</li>
+                            <li>☐ Alerting rules configured</li>
+                            <li>☐ Log aggregation setup</li>
+                            <li>☐ Dashboard created</li>
+                        </ul>
+
+                        <h4>Backup Checklist</h4>
+                        <ul style="font-size: 0.7em;">
+                            <li>☐ RDB/AOF configured</li>
+                            <li>☐ Backup schedule automated</li>
+                            <li>☐ Backup verification process</li>
+                            <li>☐ Restore procedures tested</li>
+                            <li>☐ Disaster recovery plan</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lab Callout -->
+            <section data-background="#e8f5e8">
+                <div class="session-header" style="background: #c8e6c9; color: #2e7d32;">
+                    <h2>🧪 Hands-On Practice</h2>
+                </div>
+                <div style="text-align: center; color: #2e7d32;">
+                    <h3>Next: Lab 11</h3>
+                    <h2>Security & Session Management</h2>
+                    <p><strong>Duration: 45 minutes</strong></p>
+                    <br>
+                    <div style="font-size: 0.9em;">
+                        <p>• Implement secure authentication and session management</p>
+                        <p>• Configure TLS encryption and access controls</p>
+                        <p>• Set up production security monitoring</p>
+                        <p>• Practice security best practices hands-on</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Session Summary -->
+            <section>
+                <div class="session-header">
+                    <h2>Session Summary</h2>
+                </div>
+                <h3>Key Takeaways</h3>
+                <div class="bullet-point">• <strong>Security First:</strong> Authentication, encryption, and access control are non-negotiable</div>
+                <div class="bullet-point">• <strong>Plan for Scale:</strong> Start simple, architect for growth with proper capacity planning</div>
+                <div class="bullet-point">• <strong>Monitor Everything:</strong> Comprehensive monitoring enables proactive issue resolution</div>
+                <div class="bullet-point">• <strong>Test Recovery:</strong> Backup and disaster recovery plans must be regularly tested</div>
+                <div class="bullet-point">• <strong>Compliance Matters:</strong> Understand and implement industry-specific requirements</div>
+                
+                <div class="success-box">
+                    <strong>Next Steps:</strong> Apply these production concepts in Lab 11 where you'll implement secure session management with authentication and monitoring
+                </div>
+            </section>
+
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            transition: 'slide',
+            transitionSpeed: 'default',
+            backgroundTransition: 'fade'
+        });
+    </script>
+</body>
+</html>

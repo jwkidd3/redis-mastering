@@ -1,0 +1,19 @@
+{
+  "name": "lab14-insurance-monitoring",
+  "version": "1.0.0",
+  "description": "Lab 14: Monitoring & Health Checks for Insurance Operations",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node src/main.js",
+    "dev": "nodemon src/main.js",
+    "test": "npm run test:health && npm run test:monitoring",
+    "test:health": "curl -f http://localhost:3000/health || exit 1",
+    "test:monitoring": "curl -f http://localhost:4000/api/metrics/realtime || exit 1",
+    "load-data": "node scripts/load-insurance-monitoring-data.js",
+    "setup": "npm install && npm run load-data"
+  },
+  "dependencies": {
+    "redis": "^4.6.5",
+    "ioredis": "^5.3.1",
+    "express": "^4.18.2",
+    "node-cron": "^3

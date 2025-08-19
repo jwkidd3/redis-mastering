@@ -1,0 +1,52 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Main App",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/app.js",
+            "console": "integratedTerminal",
+            "env": {
+                "NODE_ENV": "development"
+            },
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        },
+        {
+            "name": "Test Connection",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/connection-test.js",
+            "console": "integratedTerminal",
+            "env": {
+                "NODE_ENV": "development"
+            }
+        },
+        {
+            "name": "Run Examples",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/examples/basic-operations.js",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Performance Test",
+            "type": "node", 
+            "request": "launch",
+            "program": "${workspaceFolder}/examples/performance-test.js",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug Current File",
+            "type": "node",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        }
+    ]
+}

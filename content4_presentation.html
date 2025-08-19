@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Content 4: JavaScript Redis Integration</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.min.css">
+    <style>
+        .reveal .slides section {
+            text-align: left;
+            font-size: 0.75em;
+            line-height: 1.3;
+        }
+        .reveal h1, .reveal h2, .reveal h3 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 0.5em;
+        }
+        .main-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            padding: 2em;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .session-header {
+            background: #f8f9fa;
+            color: #2c3e50 !important;
+            padding: 1em;
+            border-left: 5px solid #3498db;
+            margin-bottom: 1em;
+        }
+        .code-block {
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 0.7em;
+            font-family: 'Courier New', monospace;
+            font-size: 0.7em;
+            margin: 0.3em 0;
+            line-height: 1.2;
+        }
+        .highlight {
+            background: #ffffcc;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+        }
+        .lab-callout {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white !important;
+            padding: 1.5em;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.1em;
+            margin: 1em 0;
+        }
+        .bullet-point {
+            margin: 0.3em 0;
+            line-height: 1.4;
+        }
+        .two-column {
+            display: flex;
+            gap: 2em;
+        }
+        .column {
+            flex: 1;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 1em;
+            margin: 0.5em 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 1em;
+            margin: 0.5em 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- Title Slide -->
+            <section>
+                <div class="main-title">
+                    <h1>Content 4</h1>
+                    <h2>JavaScript Redis Integration</h2>
+                    <p>Building Application Components with Node.js</p>
+                    <p><strong>Day 2 - Morning Session</strong></p>
+                </div>
+            </section>
+
+            <!-- Session Overview -->
+            <section>
+                <div class="session-header">
+                    <h2>Session Overview</h2>
+                </div>
+                <div class="bullet-point"><strong>Objective:</strong> Master JavaScript Redis client integration for application development</div>
+                <div class="bullet-point"><strong>Duration:</strong> 50 minutes presentation</div>
+                <div class="bullet-point"><strong>Approach:</strong> From basic setup to production-ready patterns</div>
+                <br>
+                <h3>Key Topics</h3>
+                <div class="bullet-point">• Node.js Redis client configuration and setup</div>
+                <div class="bullet-point">• Connection management for high-availability systems</div>
+                <div class="bullet-point">• Async/await patterns for Redis operations</div>
+                <div class="bullet-point">• Error handling and reconnection strategies</div>
+                <div class="bullet-point">• Environment configuration and debugging</div>
+            </section>
+
+            <!-- Node.js Redis Client Setup -->
+            <section>
+                <div class="session-header">
+                    <h2>Node.js Redis Client Setup</h2>
+                </div>
+                <h3>Installing the Redis Node.js Client</h3>
+                <div class="code-block">npm install redis dotenv</div>
+                <br>
+                <h3>Basic Client Creation</h3>
+                <div class="code-block">const redis = require('redis');
+
+// Create client with remote host
+const client = redis.createClient({
+  host: 'redis-server.training.com',
+  port: 6379,
+  password: 'your_password' // if required
+});
+
+// ES6 import syntax
+import { createClient } from 'redis';</div>
+            </section>
+
+            <!-- Client Configuration Options -->
+            <section>
+                <div class="session-header">
+                    <h2>Client Configuration Options</h2>
+                </div>
+                <h3>Comprehensive Configuration</h3>
+                <div class="code-block">const client = redis.createClient({
+  socket: {
+    host: 'redis-server.training.com',
+    port: 6379,
+    connectTimeout: 10000,
+    commandTimeout: 5000,
+    reconnectStrategy: (retries) => Math.min(retries * 50, 500)
+  },
+  password: process.env.REDIS_PASSWORD,
+  database: 0,
+  name: 'policy-service-client'
+});
+
+// Event listeners
+client.on('connect', () => console.log('Connected to Redis'));
+client.on('error', (err) => console.error('Redis error:', err));</div>
+            </section>
+
+            <!-- Environment Configuration -->
+            <section>
+                <div class="session-header">
+                    <h2>Environment Configuration</h2>
+                </div>
+                <h3>Using Environment Variables (.env)</h3>
+                <div class="code-block">REDIS_HOST=redis-server.training.com
+REDIS_PORT=6379
+REDIS_PASSWORD=your_password
+REDIS_DB=0
+NODE_ENV=development</div>
+                <br>
+                <h3>Loading Configuration</h3>
+                <div class="code-block">require('dotenv').config();
+
+const config = {
+  socket: {
+    host: process.env.REDIS_HOST,
+    port: parseInt(process.env.REDIS_PORT)
+  },
+  password: process.env.REDIS_PASSWORD,
+  database: parseInt(process.env.REDIS_DB)
+};</div>
+            </section>
+
+            <!-- Connection Management -->
+            <section>
+                <div class="session-header">
+                    <h2>Connection Management</h2>
+                </div>
+                <h3>Establishing and Managing Connections</h3>
+                <div class="code-block">const redis = require('redis');
+
+async function initializeRedis() {
+  const client = redis.createClient({
+    socket: {
+      host: process.env.REDIS_HOST,
+      port: process.env.REDIS_PORT
+    },
+    password: process.env.REDIS_PASSWORD
+  });
+
+  // Connect to Redis
+  await client.connect();
+  
+  // Test connection
+  const response = await client.ping();
+  console.log('Redis connection test:', response);
+  
+  return client;
+}</div>
+            </section>
+
+            <!-- Error Handling -->
+            <section>
+                <div class="session-header">
+                    <h2>Error Handling Strategies</h2>
+                </div>
+                <h3>Comprehensive Error Management</h3>
+                <div class="code-block">client.on('error', (err) => {
+  console.error('Redis Client Error:', err);
+  // Log to monitoring system
+});
+
+client.on('connect', () => {
+  console.log('Redis connected successfully');
+});
+
+client.on('reconnecting', () => {
+  console.log('Redis reconnecting...');
+});
+
+client.on('ready', () => {
+  console.log('Redis client ready for commands');
+});</div>
+            </section>
+
+            <!-- Async/Await Patterns -->
+            <section>
+                <div class="session-header">
+                    <h2>Async/Await Patterns</h2>
+                </div>
+                <h3>Modern JavaScript Redis Operations</h3>
+                <div class="code-block">// Basic async operations
+async function basicOperations() {
+  try {
+    // Set a value
+    await client.set('policy:12345', 'Premium Auto Policy');
+    
+    // Get a value
+    const policy = await client.get('policy:12345');
+    console.log('Policy:', policy);
+    
+    // Check existence
+    const exists = await client.exists('policy:12345');
+    console.log('Policy exists:', exists === 1);
+    
+  } catch (error) {
+    console.error('Redis operation failed:', error);
+  }
+}</div>
+            </section>
+
+            <!-- Promise Handling -->
+            <section>
+                <div class="session-header">
+                    <h2>Promise Handling and Error Recovery</h2>
+                </div>
+                <h3>Robust Operation Patterns</h3>
+                <div class="code-block">async function robustRedisOperation(key, value) {
+  try {
+    const result = await client.set(key, value);
+    return { success: true, result };
+  } catch (error) {
+    console.error(`Failed to set ${key}:`, error.message);
+    
+    // Attempt reconnection if connection lost
+    if (!client.isOpen) {
+      try {
+        await client.connect();
+        const retryResult = await client.set(key, value);
+        return { success: true, result: retryResult };
+      } catch (retryError) {
+        return { success: false, error: retryError.message };
+      }
+    }
+    
+    return { success: false, error: error.message };
+  }
+}</div>
+            </section>
+
+            <!-- Connection Pooling -->
+            <section>
+                <div class="session-header">
+                    <h2>Connection Pooling</h2>
+                </div>
+                <h3>Managing Multiple Connections</h3>
+                <div class="code-block">class RedisPool {
+  constructor(options = {}) {
+    this.maxConnections = options.maxConnections || 10;
+    this.connections = [];
+    this.config = options.config;
+  }
+
+  async getConnection() {
+    if (this.connections.length > 0) {
+      return this.connections.pop();
+    }
+    
+    const client = redis.createClient(this.config);
+    await client.connect();
+    return client;
+  }
+
+  releaseConnection(client) {
+    if (this.connections.length < this.maxConnections) {
+      this.connections.push(client);
+    } else {
+      client.quit();
+    }
+  }
+}</div>
+            </section>
+
+            <!-- Debugging JavaScript Applications -->
+            <section>
+                <div class="session-header">
+                    <h2>Debugging JavaScript Redis Applications</h2>
+                </div>
+                <h3>Debugging Techniques</h3>
+                <div class="bullet-point">• <strong>Console logging:</strong> Track operation flow and data</div>
+                <div class="bullet-point">• <strong>Error stack traces:</strong> Identify failure points</div>
+                <div class="bullet-point">• <strong>Network monitoring:</strong> Watch Redis connections</div>
+                <div class="bullet-point">• <strong>Performance timing:</strong> Measure operation speed</div>
+                <br>
+                <div class="code-block">// Debug wrapper function
+async function debugRedisOperation(operation, ...args) {
+  console.log(`Executing: ${operation}(${args.join(', ')})`);
+  const start = Date.now();
+  
+  try {
+    const result = await client[operation](...args);
+    const duration = Date.now() - start;
+    console.log(`✓ ${operation} completed in ${duration}ms`);
+    return result;
+  } catch (error) {
+    console.error(`✗ ${operation} failed:`, error.message);
+    throw error;
+  }
+}</div>
+            </section>
+
+            <!-- VS Code Integration -->
+            <section>
+                <div class="session-header">
+                    <h2>Visual Studio Code Integration</h2>
+                </div>
+                <h3>Development Environment Setup</h3>
+                <div class="bullet-point">• <strong>Extension:</strong> Redis extension for syntax highlighting</div>
+                <div class="bullet-point">• <strong>Debugging:</strong> Built-in Node.js debugger</div>
+                <div class="bullet-point">• <strong>IntelliSense:</strong> Redis client method completion</div>
+                <div class="bullet-point">• <strong>Integrated terminal:</strong> Run Redis CLI commands</div>
+                <br>
+                <h3>Debug Configuration (launch.json)</h3>
+                <div class="code-block">{
+  "type": "node",
+  "request": "launch",
+  "name": "Debug Redis App",
+  "program": "${workspaceFolder}/app.js",
+  "env": {
+    "NODE_ENV": "development",
+    "REDIS_HOST": "redis-server.training.com"
+  },
+  "console": "integratedTerminal"
+}</div>
+            </section>
+
+            <!-- Common Patterns -->
+            <section>
+                <div class="session-header">
+                    <h2>Common JavaScript Redis Patterns</h2>
+                </div>
+                <h3>Utility Functions</h3>
+                <div class="code-block">// Redis utility class
+class RedisUtil {
+  constructor(client) {
+    this.client = client;
+  }
+
+  async setWithExpiry(key, value, seconds) {
+    return await this.client.setEx(key, seconds, value);
+  }
+
+  async getJSON(key) {
+    const data = await this.client.get(key);
+    return data ? JSON.parse(data) : null;
+  }
+
+  async setJSON(key, object, ttl = null) {
+    const data = JSON.stringify(object);
+    if (ttl) {
+      return await this.client.setEx(key, ttl, data);
+    }
+    return await this.client.set(key, data);
+  }
+}</div>
+            </section>
+
+            <!-- Application Architecture -->
+            <section>
+                <div class="session-header">
+                    <h2>Application Architecture Patterns</h2>
+                </div>
+                <h3>Service Layer Pattern</h3>
+                <div class="code-block">// PolicyService.js
+class PolicyService {
+  constructor(redisClient) {
+    this.redis = redisClient;
+  }
+
+  async createPolicy(policyData) {
+    const policyId = `policy:${Date.now()}`;
+    await this.redis.setJSON(policyId, policyData, 3600);
+    return policyId;
+  }
+
+  async getPolicy(policyId) {
+    return await this.redis.getJSON(policyId);
+  }
+
+  async updatePolicy(policyId, updates) {
+    const existing = await this.getPolicy(policyId);
+    if (!existing) throw new Error('Policy not found');
+    
+    const updated = { ...existing, ...updates };
+    await this.redis.setJSON(policyId, updated, 3600);
+    return updated;
+  }
+}</div>
+            </section>
+
+            <!-- Testing Strategies -->
+            <section>
+                <div class="session-header">
+                    <h2>Testing Redis JavaScript Code</h2>
+                </div>
+                <h3>Unit Testing with Mocks</h3>
+                <div class="code-block">// Using jest for testing
+const redis = require('redis');
+jest.mock('redis');
+
+describe('PolicyService', () => {
+  let mockClient;
+  let policyService;
+
+  beforeEach(() => {
+    mockClient = {
+      get: jest.fn(),
+      set: jest.fn(),
+      setEx: jest.fn()
+    };
+    policyService = new PolicyService(mockClient);
+  });
+
+  test('should create policy', async () => {
+    mockClient.setEx.mockResolvedValue('OK');
+    
+    const result = await policyService.createPolicy({
+      type: 'auto',
+      premium: 1200
+    });
+    
+    expect(mockClient.setEx).toHaveBeenCalled();
+    expect(result).toMatch(/^policy:/);
+  });
+});</div>
+            </section>
+
+            <!-- Performance Considerations -->
+            <section>
+                <div class="session-header">
+                    <h2>Performance Considerations</h2>
+                </div>
+                <div class="two-column">
+                    <div class="column">
+                        <h3>Best Practices</h3>
+                        <div class="bullet-point">• Reuse client connections</div>
+                        <div class="bullet-point">• Use connection pooling for high load</div>
+                        <div class="bullet-point">• Implement proper timeout handling</div>
+                        <div class="bullet-point">• Batch operations when possible</div>
+                        <div class="bullet-point">• Monitor memory usage</div>
+                    </div>
+                    <div class="column">
+                        <h3>Avoid Common Pitfalls</h3>
+                        <div class="bullet-point">• Creating too many connections</div>
+                        <div class="bullet-point">• Not handling reconnections</div>
+                        <div class="bullet-point">• Blocking operations without timeouts</div>
+                        <div class="bullet-point">• Ignoring error events</div>
+                        <div class="bullet-point">• Memory leaks from unclosed clients</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lab Introduction -->
+            <section>
+                <div class="lab-callout">
+                    <h2>🧪 Next: Lab 6</h2>
+                    <h3>JavaScript Redis Client Setup</h3>
+                    <p><strong>Duration: 45 minutes</strong></p>
+                    <p>Hands-on setup of Node.js Redis client with connection management, basic CRUD operations, and error handling for application development</p>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            controls: true,
+            progress: true,
+            center: true,
+            transition: 'slide',
+            width: 1400,
+            height: 900,
+            margin: 0.05,
+            minScale: 0.1,
+            maxScale: 3.0
+        });
+    </script>
+</body>
+</html>

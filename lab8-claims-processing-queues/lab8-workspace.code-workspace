@@ -1,0 +1,91 @@
+{
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "settings": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "files.autoSave": "onFocusChange",
+        "terminal.integrated.defaultProfile.osx": "bash",
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.defaultProfile.windows": "Command Prompt"
+    },
+    "extensions": {
+        "recommendations": [
+            "ms-vscode.vscode-json",
+            "bradlc.vscode-tailwindcss",
+            "esbenp.prettier-vscode",
+            "dbaeumer.vscode-eslint",
+            "formulahendry.code-runner",
+            "humao.rest-client"
+        ]
+    },
+    "launch": {
+        "configurations": [
+            {
+                "name": "Submit Claims",
+                "type": "node",
+                "request": "launch",
+                "program": "${workspaceFolder}/examples/submit-claims.js",
+                "console": "integratedTerminal"
+            },
+            {
+                "name": "Process Claims",
+                "type": "node",
+                "request": "launch",
+                "program": "${workspaceFolder}/examples/process-claims.js",
+                "console": "integratedTerminal"
+            },
+            {
+                "name": "Monitor Queues",
+                "type": "node",
+                "request": "launch",
+                "program": "${workspaceFolder}/examples/monitor-queues.js",
+                "console": "integratedTerminal"
+            },
+            {
+                "name": "Test System",
+                "type": "node",
+                "request": "launch",
+                "program": "${workspaceFolder}/scripts/test-system.js",
+                "console": "integratedTerminal"
+            }
+        ]
+    },
+    "tasks": {
+        "tasks": [
+            {
+                "label": "Install Dependencies",
+                "type": "shell",
+                "command": "npm install",
+                "group": "build"
+            },
+            {
+                "label": "Submit Test Claims",
+                "type": "shell",
+                "command": "npm run submit",
+                "group": "test"
+            },
+            {
+                "label": "Start Claims Processor",
+                "type": "shell",
+                "command": "npm run process",
+                "group": "test"
+            },
+            {
+                "label": "Start Queue Monitor",
+                "type": "shell",
+                "command": "npm run monitor",
+                "group": "test"
+            },
+            {
+                "label": "Run System Test",
+                "type": "shell",
+                "command": "npm test",
+                "group": "test"
+            }
+        ]
+    }
+}

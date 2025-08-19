@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RESP Protocol & CLI Operations</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.min.css">
+    <style>
+        .reveal .slides section {
+            text-align: left;
+            font-size: 0.75em;
+        }
+        .reveal h1, .reveal h2, .reveal h3 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        .reveal h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        .reveal .title-slide {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 40px;
+        }
+        .reveal .title-slide h1, .reveal .title-slide h2 {
+            color: white;
+        }
+        .reveal .section-header {
+            background: #f8f9fa;
+            color: #2c3e50;
+            text-align: center;
+            padding: 30px;
+            border: 2px solid #e9ecef;
+        }
+        .reveal .lab-callout {
+            background: #e8f5e8;
+            border: 3px solid #28a745;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin: 15px 0;
+        }
+        .reveal .lab-callout h3 {
+            color: #155724;
+            margin-bottom: 10px;
+            font-size: 1.4em;
+        }
+        .reveal code {
+            background: #f1f3f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #d73a49;
+            font-size: 0.9em;
+        }
+        .reveal pre code {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.65em;
+            line-height: 1.3;
+        }
+        .reveal .command-box {
+            background: #282c34;
+            color: #61dafb;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            font-size: 0.8em;
+            line-height: 1.4;
+        }
+        .reveal ul, .reveal ol {
+            margin-left: 15px;
+        }
+        .reveal li {
+            margin-bottom: 6px;
+            font-size: 0.95em;
+        }
+        .reveal .highlight {
+            background: #fff3cd;
+            padding: 12px;
+            border-left: 3px solid #ffc107;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+        .reveal .protocol-example {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .reveal .protocol-example h4 {
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+        .reveal .two-column {
+            display: flex;
+            gap: 20px;
+        }
+        .reveal .column {
+            flex: 1;
+        }
+        .reveal p {
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+            <!-- Title Slide -->
+            <section class="title-slide">
+                <h1>RESP Protocol & CLI Operations</h1>
+                <h2>Day 1 - Session 2</h2>
+                <p style="font-size: 1.2em; margin-top: 40px;">Mastering Redis Communication</p>
+            </section>
+
+            <!-- Section Header -->
+            <section class="section-header">
+                <h2>RESP Protocol & CLI Operations</h2>
+                <p style="font-size: 1.1em; margin-top: 30px;">Understanding Redis Communication Protocol and Advanced CLI Features</p>
+            </section>
+
+            <!-- RESP Protocol Introduction -->
+            <section>
+                <h3>What is RESP Protocol?</h3>
+                <ul>
+                    <li><strong>RESP</strong> = Redis Serialization Protocol</li>
+                    <li>Binary-safe protocol for client-server communication</li>
+                    <li>Simple, human-readable format for debugging</li>
+                    <li>Used by all Redis clients and tools</li>
+                    <li>Enables efficient data transmission over TCP</li>
+                </ul>
+                
+                <div class="highlight">
+                    <strong>Key Benefit:</strong> Understanding RESP helps debug connection issues and optimize application performance
+                </div>
+            </section>
+
+            <!-- RESP Data Types -->
+            <section>
+                <h3>RESP Data Types</h3>
+                <div class="two-column">
+                    <div class="column">
+                        <h4>Five Core Types:</h4>
+                        <ul>
+                            <li><strong>Simple Strings:</strong> <code>+OK\r\n</code></li>
+                            <li><strong>Errors:</strong> <code>-ERR message\r\n</code></li>
+                            <li><strong>Integers:</strong> <code>:123\r\n</code></li>
+                            <li><strong>Bulk Strings:</strong> <code>$6\r\nfoobar\r\n</code></li>
+                            <li><strong>Arrays:</strong> <code>*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n</code></li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h4>Type Prefixes:</h4>
+                        <ul>
+                            <li><code>+</code> Simple string response</li>
+                            <li><code>-</code> Error message</li>
+                            <li><code>:</code> Integer number</li>
+                            <li><code>$</code> Bulk string (with length)</li>
+                            <li><code>*</code> Array (with count)</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RESP Examples -->
+            <section>
+                <h3>RESP Protocol Examples</h3>
+                
+                <div class="protocol-example">
+                    <h4>Command: SET policy:12345 "active"</h4>
+                    <strong>Client sends:</strong>
+                    <pre><code>*3\r\n$3\r\nSET\r\n$10\r\npolicy:12345\r\n$6\r\nactive\r\n</code></pre>
+                    <strong>Server responds:</strong>
+                    <pre><code>+OK\r\n</code></pre>
+                </div>
+
+                <div class="protocol-example">
+                    <h4>Command: GET policy:12345</h4>
+                    <strong>Client sends:</strong>
+                    <pre><code>*2\r\n$3\r\nGET\r\n$10\r\npolicy:12345\r\n</code></pre>
+                    <strong>Server responds:</strong>
+                    <pre><code>$6\r\nactive\r\n</code></pre>
+                </div>
+            </section>
+
+            <!-- RESP Error Handling -->
+            <section>
+                <h3>RESP Error Responses</h3>
+                
+                <div class="protocol-example">
+                    <h4>Wrong Number of Arguments:</h4>
+                    <pre><code>-ERR wrong number of arguments for 'SET' command\r\n</code></pre>
+                </div>
+
+                <div class="protocol-example">
+                    <h4>Unknown Command:</h4>
+                    <pre><code>-ERR unknown command 'INVALID'\r\n</code></pre>
+                </div>
+
+                <div class="protocol-example">
+                    <h4>Wrong Type Operation:</h4>
+                    <pre><code>-WRONGTYPE Operation against a key holding the wrong kind of value\r\n</code></pre>
+                </div>
+
+                <div class="highlight">
+                    <strong>Best Practice:</strong> Always handle error responses in client applications for robust error handling
+                </div>
+            </section>
+
+            <!-- Redis CLI Advanced Features -->
+            <section>
+                <h3>Redis CLI Advanced Features</h3>
+                
+                <h4>Connection Options:</h4>
+                <div class="command-box">
+                    redis-cli -h remote-redis-host -p 6379 -a password<br>
+                    redis-cli --uri redis://user:pass@remote-redis-host:6379/0<br>
+                    redis-cli -h remote-redis-host --tls --cert cert.pem --key key.pem
+                </div>
+
+                <h4>Output Formatting:</h4>
+                <div class="command-box">
+                    redis-cli --raw          # Raw output without formatting<br>
+                    redis-cli --csv          # CSV format output<br>
+                    redis-cli --json         # JSON format output<br>
+                    redis-cli --latency      # Latency monitoring mode
+                </div>
+            </section>
+
+            <!-- CLI Monitoring Commands -->
+            <section>
+                <h3>CLI Real-time Monitoring</h3>
+                
+                <h4>Monitoring Commands:</h4>
+                <div class="command-box">
+                    redis-cli -h remote-redis-host MONITOR<br>
+                    redis-cli -h remote-redis-host --latency-history<br>
+                    redis-cli -h remote-redis-host --stat<br>
+                    redis-cli -h remote-redis-host --bigkeys
+                </div>
+
+                <div class="highlight">
+                    <strong>MONITOR Command:</strong> Shows all commands being executed in real-time. Use carefully in production as it impacts performance.
+                </div>
+            </section>
+
+            <!-- CLI Performance Analysis -->
+            <section>
+                <h3>CLI Performance Analysis</h3>
+                
+                <h4>Performance Commands:</h4>
+                <div class="command-box">
+                    redis-cli -h remote-redis-host --slowlog-len<br>
+                    redis-cli -h remote-redis-host SLOWLOG GET 10<br>
+                    redis-cli -h remote-redis-host INFO stats<br>
+                    redis-cli -h remote-redis-host MEMORY USAGE policy:12345
+                </div>
+
+                <div class="highlight">
+                    <strong>Slow Log:</strong> Tracks commands that take longer than configured threshold. Essential for performance tuning.
+                </div>
+            </section>
+
+            <!-- RESP in Practice -->
+            <section>
+                <h3>Observing RESP in Action</h3>
+                
+                <h4>Using MONITOR Command:</h4>
+                <div class="command-box">
+                    127.0.0.1:6379> MONITOR<br>
+                    OK<br>
+                    1634567890.123456 [0 127.0.0.1:54321] "SET" "customer:67890" "John Doe"<br>
+                    1634567891.234567 [0 127.0.0.1:54322] "GET" "customer:67890"<br>
+                    1634567892.345678 [0 127.0.0.1:54321] "HSET" "policy:12345" "premium" "1200"
+                </div>
+
+                <h4>Raw Protocol View:</h4>
+                <div class="command-box">
+                    redis-cli -h remote-redis-host --raw<br>
+                    > SET claim:98765 pending<br>
+                    OK<br>
+                    > GET claim:98765<br>
+                    pending
+                </div>
+            </section>
+
+            <!-- Redis Insight Introduction -->
+            <section>
+                <h3>Redis Insight Overview</h3>
+                
+                <ul>
+                    <li><strong>Graphical Interface:</strong> Visual Redis management and monitoring</li>
+                    <li><strong>Built-in CLI:</strong> Full command-line interface within the GUI</li>
+                    <li><strong>Memory Analysis:</strong> Visual memory usage and key analysis</li>
+                    <li><strong>Real-time Monitoring:</strong> Live performance metrics and statistics</li>
+                    <li><strong>Data Browser:</strong> Visual exploration of keys and data structures</li>
+                </ul>
+
+                <div class="highlight">
+                    <strong>Connection:</strong> Redis Insight connects to remote Redis instances and provides both GUI and CLI access in one tool
+                </div>
+            </section>
+
+            <!-- Redis Insight CLI Features -->
+            <section>
+                <h3>Redis Insight CLI Features</h3>
+                
+                <h4>Integrated Command Line:</h4>
+                <ul>
+                    <li>Full Redis CLI functionality within the GUI</li>
+                    <li>Command history and auto-completion</li>
+                    <li>Syntax highlighting for Redis commands</li>
+                    <li>Multi-line command support</li>
+                    <li>Export command results to various formats</li>
+                </ul>
+
+                <h4>Advanced CLI Features:</h4>
+                <ul>
+                    <li>Command profiling and execution time display</li>
+                    <li>Memory usage analysis for individual commands</li>
+                    <li>Connection status and health monitoring</li>
+                    <li>Database switching and namespace management</li>
+                </ul>
+            </section>
+
+            <!-- Performance Monitoring -->
+            <section>
+                <h3>Performance Monitoring with CLI</h3>
+                
+                <h4>Key Performance Commands:</h4>
+                <div class="command-box">
+                    INFO stats                    # Server statistics<br>
+                    INFO memory                   # Memory usage details<br>
+                    INFO clients                  # Client connections<br>
+                    INFO commandstats             # Command execution stats<br>
+                    CONFIG GET maxmemory*         # Memory configuration
+                </div>
+
+                <h4>Slow Query Analysis:</h4>
+                <div class="command-box">
+                    CONFIG SET slowlog-log-slower-than 10000<br>
+                    SLOWLOG GET 10<br>
+                    SLOWLOG LEN<br>
+                    SLOWLOG RESET
+                </div>
+            </section>
+
+            <!-- String Operations Commands -->
+            <section>
+                <h3>String Operations</h3>
+                
+                <h4>Basic String Commands:</h4>
+                <div class="command-box">
+                    SET customer:67890 "John Doe"<br>
+                    GET customer:67890<br>
+                    EXISTS customer:67890<br>
+                    DEL customer:67890
+                </div>
+
+                <h4>Bulk String Operations:</h4>
+                <div class="command-box">
+                    MSET policy:1 "active" policy:2 "pending"<br>
+                    MGET policy:1 policy:2
+                </div>
+            </section>
+
+            <!-- Key Management Commands -->
+            <section>
+                <h3>Key Management</h3>
+                
+                <h4>Key Discovery:</h4>
+                <div class="command-box">
+                    KEYS policy:*                 # Find keys by pattern<br>
+                    SCAN 0 MATCH customer:* COUNT 100
+                </div>
+
+                <h4>Key Lifecycle:</h4>
+                <div class="command-box">
+                    EXPIRE policy:12345 3600      # Set TTL<br>
+                    TTL policy:12345              # Check remaining TTL<br>
+                    TYPE policy:12345             # Get key type
+                </div>
+
+                <div class="highlight">
+                    <strong>Production Tip:</strong> Use SCAN instead of KEYS in production to avoid blocking the server
+                </div>
+            </section>
+
+            <!-- Memory Analysis Commands -->
+            <section>
+                <h3>Memory Analysis</h3>
+                
+                <h4>Memory Commands:</h4>
+                <div class="command-box">
+                    MEMORY USAGE customer:67890           # Key memory usage<br>
+                    MEMORY STATS                          # Overall memory stats<br>
+                    DEBUG OBJECT policy:12345             # Object information<br>
+                    OBJECT ENCODING customer:67890        # Encoding details
+                </div>
+            </section>
+
+            <!-- Database Management -->
+            <section>
+                <h3>Database Management</h3>
+                
+                <h4>Database Commands:</h4>
+                <div class="command-box">
+                    SELECT 0                      # Switch database<br>
+                    DBSIZE                        # Count keys in current DB<br>
+                    FLUSHDB                       # Clear current database<br>
+                    FLUSHALL                      # Clear all databases<br>
+                    SAVE                          # Force save snapshot
+                </div>
+
+                <div class="highlight">
+                    <strong>Warning:</strong> FLUSHDB and FLUSHALL permanently delete data. Never use in production without proper backup!
+                </div>
+            </section>
+
+            <!-- Production Best Practices -->
+            <section>
+                <h3>Production Best Practices</h3>
+                
+                <h4>Commands to Avoid in Production:</h4>
+                <ul>
+                    <li><strong>FLUSHALL/FLUSHDB:</strong> Permanently deletes all data</li>
+                    <li><strong>KEYS pattern:</strong> Blocks server, use SCAN instead</li>
+                    <li><strong>MONITOR:</strong> Impacts performance significantly</li>
+                    <li><strong>DEBUG commands:</strong> Can cause memory spikes</li>
+                </ul>
+
+                <h4>Safe Production Commands:</h4>
+                <ul>
+                    <li><strong>SCAN:</strong> Non-blocking key iteration</li>
+                    <li><strong>--latency:</strong> Monitor performance safely</li>
+                    <li><strong>INFO:</strong> Get server statistics</li>
+                    <li><strong>SLOWLOG:</strong> Identify slow operations</li>
+                </ul>
+            </section>
+
+            <!-- Debugging Workflow -->
+            <section>
+                <h3>Debugging Workflow</h3>
+                
+                <h4>Step-by-Step Debugging:</h4>
+                <ol>
+                    <li><strong>Test Connection:</strong> <code>PING</code> command</li>
+                    <li><strong>Check Key Existence:</strong> <code>EXISTS keyname</code></li>
+                    <li><strong>Verify Data Type:</strong> <code>TYPE keyname</code></li>
+                    <li><strong>Analyze Memory:</strong> <code>MEMORY USAGE keyname</code></li>
+                    <li><strong>Monitor Operations:</strong> <code>MONITOR</code> (if safe)</li>
+                </ol>
+
+                <h4>Performance Investigation:</h4>
+                <div class="command-box">
+                    INFO stats                    # Overall statistics<br>
+                    SLOWLOG GET 10               # Recent slow queries<br>
+                    --latency-history            # Connection latency<br>
+                    CLIENT LIST                  # Active connections
+                </div>
+            </section>
+
+            <!-- Connection Troubleshooting -->
+            <section>
+                <h3>Connection Troubleshooting</h3>
+                
+                <h4>Common Connection Issues:</h4>
+                <ul>
+                    <li><strong>Authentication:</strong> Wrong password or AUTH command</li>
+                    <li><strong>Network:</strong> Firewall blocking Redis port (6379)</li>
+                    <li><strong>Configuration:</strong> Redis bound to localhost only</li>
+                    <li><strong>SSL/TLS:</strong> Certificate or encryption mismatches</li>
+                </ul>
+
+                <h4>Diagnostic Commands:</h4>
+                <div class="command-box">
+                    redis-cli -h remote-redis-host ping<br>
+                    redis-cli -h remote-redis-host --latency<br>
+                    redis-cli -h remote-redis-host INFO server<br>
+                    redis-cli -h remote-redis-host CLIENT LIST
+                </div>
+            </section>
+
+            <!-- Lab Transition -->
+            <section class="lab-callout">
+                <h3>🧪 Hands-On Labs Coming Up</h3>
+                <h4>Labs 2-3: RESP Protocol & Data Operations</h4>
+                <p><strong>Duration:</strong> 90 minutes total</p>
+                <p><strong>Focus:</strong> Hands-on experience with RESP protocol observation and data operations using both CLI and Redis Insight</p>
+                <ul style="text-align: left; max-width: 600px; margin: 0 auto;">
+                    <li><strong>Lab 2:</strong> RESP Protocol Analysis (45 minutes)</li>
+                    <li><strong>Lab 3:</strong> Data Operations with Strings (45 minutes)</li>
+                </ul>
+            </section>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            transition: 'slide',
+            transitionSpeed: 'default',
+            backgroundTransition: 'fade',
+            controls: true,
+            progress: true,
+            center: false,
+            touch: true,
+            loop: false,
+            rtl: false,
+            shuffle: false,
+            fragments: true,
+            help: true,
+            showNotes: false,
+            autoPlayMedia: null,
+            preloadIframes: null,
+            autoSlide: 0,
+            autoSlideStoppable: true,
+            mouseWheel: false,
+            hideInactiveCursor: true,
+            hideCursorTime: 5000,
+            previewLinks: false,
+            width: 1200,
+            height: 800,
+            margin: 0.04,
+            minScale: 0.2,
+            maxScale: 2.0
+        });
+    </script>
+</body>
+</html>
