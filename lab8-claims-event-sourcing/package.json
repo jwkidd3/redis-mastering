@@ -1,0 +1,24 @@
+{
+  "name": "lab8-claims-event-sourcing",
+  "version": "1.0.0",
+  "description": "Claims Event Sourcing with Redis Streams",
+  "main": "src/services/claims-producer.js",
+  "scripts": {
+    "start": "node src/services/claims-producer.js",
+    "processor": "node src/consumers/claims-processor.js",
+    "analytics": "node src/consumers/analytics-consumer.js",
+    "notifications": "node src/consumers/notification-consumer.js",
+    "dashboard": "node src/services/analytics-dashboard.js",
+    "test": "node tests/test-claims-streams.js",
+    "load-data": "node scripts/load-sample-data.js",
+    "submit-claims": "node scripts/submit-test-claims.js",
+    "monitor": "node scripts/monitor-claims.js"
+  },
+  "dependencies": {
+    "redis": "^4.6.0",
+    "uuid": "^9.0.0"
+  },
+  "keywords": ["redis", "streams", "event-sourcing", "claims", "insurance"],
+  "author": "Redis Lab",
+  "license": "MIT"
+}
