@@ -15,6 +15,25 @@ By the end of this lab, you will be able to:
 
 ---
 
+## WSL Ubuntu Setup (If needed)
+
+**If you're using WSL Ubuntu and encounter "file not found" errors:**
+
+```bash
+# Quick setup for WSL
+./setup-wsl.sh
+
+# Or one-command start
+./quick-start.sh
+
+# Manual fixes if needed
+sudo apt install -y redis-tools bc dos2unix
+chmod +x scripts/*.sh
+dos2unix scripts/*.sh
+```
+
+---
+
 ## Part 1: Advanced CLI Scripting & Automation (15 minutes)
 
 ### Step 1: Environment Setup
@@ -47,9 +66,6 @@ redis-cli --scan --pattern "claim:*" | wc -l
 
 # Bulk operations with pipeline
 redis-cli --pipe < scripts/bulk-operations.txt
-
-# Key migration and export
-redis-cli --rdb dump.rdb
 
 # Memory analysis by pattern
 redis-cli --memkeys --memkeys-samples 1000

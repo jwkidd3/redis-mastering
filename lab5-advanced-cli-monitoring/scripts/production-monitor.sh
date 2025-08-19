@@ -108,7 +108,7 @@ display_monitoring() {
     echo -e "   Fragmentation: ${YELLOW}$fragmentation${NC}"
     
     # Memory warning
-    if (( $(echo "$fragmentation > 1.5" | bc -l) )); then
+    if command -v bc > /dev/null && (( $(echo "$fragmentation > 1.5" | bc -l) )); then
         echo -e "   ${RED}⚠️  High fragmentation detected${NC}"
     fi
     echo ""
@@ -141,31 +141,6 @@ display_monitoring() {
     fi
     echo ""
     
-    # Slow Log
-    echo -e "${RED}🐌 Recent Slow Operations${NC}"
-    local slow_log=$(redis-cli SLOWLOG GET 3)
-    if [ -n "$slow_log" ]; then
-        echo "$slow_log" | head -10
-    else
-        echo -e "   ${GREEN}✅ No slow operations${NC}"
-    fi
-    echo ""
-    
-    # Data Structure Analysis
-    echo -e "${YELLOW}📊 Live Data Analysis${NC}"
-    local string_keys=$(redis-cli --scan --pattern "*" | head -100 | while read key; do redis-cli TYPE "$key"; done | grep -c "string" || echo "0")
-    local hash_keys=$(redis-cli --scan --pattern "*" | head -100 | while read key; do redis-cli TYPE "$key"; done | grep -c "hash" || echo "0")
-    local list_keys=$(redis-cli --scan --pattern "*" | head -100 | while read key; do redis-cli TYPE "$key"; done | grep -c "list" || echo "0")
-    local set_keys=$(redis-cli --scan --pattern "*" | head -100 | while read key; do redis-cli TYPE "$key"; done | grep -c "set" || echo "0")
-    local zset_keys=$(redis-cli --scan --pattern "*" | head -100 | while read key; do redis-cli TYPE "$key"; done | grep -c "zset" || echo "0")
-    
-    echo -e "   Strings: ${YELLOW}$string_keys${NC}"
-    echo -e "   Hashes: ${YELLOW}$hash_keys${NC}"
-    echo -e "   Lists: ${YELLOW}$list_keys${NC}"
-    echo -e "   Sets: ${YELLOW}$set_keys${NC}"
-    echo -e "   Sorted Sets: ${YELLOW}$zset_keys${NC}"
-    echo ""
-    
     # Sample Pattern Analysis
     echo -e "${GREEN}🔍 Key Pattern Analysis${NC}"
     local customer_keys=$(redis-cli EVAL "return #redis.call('keys', 'customer:*')" 0)
@@ -193,7 +168,7 @@ display_monitoring() {
         ((alerts++))
     fi
     
-    if (( $(echo "$fragmentation > 1.5" | bc -l) )); then
+    if command -v bc > /dev/null && (( $(echo "$fragmentation > 1.5" | bc -l) )); then
         echo -e "   ${RED}⚠️  High memory fragmentation: $fragmentation${NC}"
         ((alerts++))
     fi
@@ -206,15 +181,13 @@ display_monitoring() {
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     echo "[$timestamp] Memory: $(format_bytes $memory_used), Clients: $connected_clients, Hit Ratio: ${hit_ratio}%, Fragmentation: $fragmentation" >> "$LOG_FILE"
     
-    # Save status to JSON
-    cat > "$STATUS_FILE" << EOF
-{
-    "timestamp": "$timestamp",
-    "memory_used": $memory_used,
-    "connected_clients": $connected_clients,
-    "hit_ratio": $hit_ratio,
-    "fragmentation": "$fragmentation",
-    "total_keys": ${keys:-0},
-    "alerts": $alerts,
-    "uptime_seconds": $uptime_seconds
+    echo ""
+    echo -e "${CYAN}📊 Auto-refresh in ${UPDATE_INTERVAL}s | Press Ctrl+C to exit${NC}"
+    echo -e "${CYAN}📁 Logs: $LOG_FILE${NC}"
 }
+
+# Main monitoring loop
+while true; do
+    display_monitoring
+    sleep $UPDATE_INTERVAL
+done
