@@ -7,69 +7,89 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.min.css">
     <style>
-        .reveal {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
+        /* Ensure content fits on screen with better scaling */
         .reveal .slides section {
             text-align: left;
-            font-size: 0.85em;
+            font-size: 18px;
+            line-height: 1.2;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding: 12px;
+            box-sizing: border-box;
+            overflow: hidden;
         }
         
         .reveal h1, .reveal h2, .reveal h3 {
             color: #2c3e50;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
         }
         
         .reveal h1 {
-            font-size: 2.2em;
-            background: #ecf0f1;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
+            font-size: 1.6em;
+            margin-bottom: 8px;
         }
         
         .reveal h2 {
-            font-size: 1.8em;
-            background: #ecf0f1;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
+            font-size: 1.3em;
+            margin-bottom: 8px;
         }
         
         .reveal h3 {
-            font-size: 1.4em;
-            background: #ecf0f1;
-            padding: 12px;
-            border-radius: 6px;
-            margin: 12px 0;
+            font-size: 1.1em;
+            margin-bottom: 6px;
+        }
+        
+        .reveal .title-slide {
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            justify-content: center;
         }
         
         .reveal .title-slide h1 {
-            background: linear-gradient(135deg, #3498db, #2c3e50);
             color: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            font-size: 1.8em;
+            margin-bottom: 12px;
+        }
+        
+        .reveal .session-header {
+            background: linear-gradient(135deg, #ecf0f1, #bdc3c7);
+            color: #2c3e50;
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            margin: 8px 0;
+            flex-shrink: 0;
         }
         
         .reveal code {
             background: #2c3e50;
             color: #e74c3c;
-            padding: 2px 6px;
+            padding: 1px 4px;
             border-radius: 3px;
             font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.8em;
         }
         
         .reveal pre {
             background: #2c3e50;
             color: #ecf0f1;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 0.75em;
-            line-height: 1.3;
-            margin: 15px 0;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.55em;
+            line-height: 1.1;
+            margin: 6px 0;
+            max-height: 25vh;
+            overflow-y: auto;
+            flex-shrink: 0;
         }
         
         .reveal pre code {
@@ -79,77 +99,124 @@
         }
         
         .reveal ul, .reveal ol {
-            margin: 15px 0;
-            padding-left: 25px;
+            margin: 6px 0;
+            padding-left: 16px;
         }
         
         .reveal li {
-            margin: 8px 0;
-            line-height: 1.4;
+            margin: 2px 0;
+            line-height: 1.2;
+            font-size: 0.85em;
         }
         
         .reveal .lab-callout {
             background: linear-gradient(135deg, #e74c3c, #c0392b);
             color: white;
-            padding: 25px;
-            border-radius: 12px;
+            padding: 12px;
+            border-radius: 8px;
             text-align: center;
-            margin: 20px 0;
-            box-shadow: 0 8px 20px rgba(231,76,60,0.3);
+            margin: 8px 0;
+            box-shadow: 0 4px 12px rgba(231,76,60,0.3);
+            flex-shrink: 0;
         }
         
         .reveal .lab-callout h2 {
             background: transparent;
             color: white;
-            margin: 0 0 15px 0;
-            font-size: 1.6em;
+            margin: 0 0 6px 0;
+            font-size: 1.2em;
         }
         
         .reveal .highlight-box {
             background: #f8f9fa;
-            border-left: 5px solid #3498db;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 5px;
+            border-left: 3px solid #3498db;
+            padding: 8px;
+            margin: 6px 0;
+            border-radius: 3px;
+            font-size: 0.8em;
         }
         
         .reveal .warning-box {
             background: #fff3cd;
-            border-left: 5px solid #f39c12;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 5px;
+            border-left: 3px solid #f39c12;
+            padding: 8px;
+            margin: 6px 0;
+            border-radius: 3px;
+            font-size: 0.8em;
         }
         
         .reveal .success-box {
             background: #d4edda;
-            border-left: 5px solid #27ae60;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 5px;
+            border-left: 3px solid #27ae60;
+            padding: 8px;
+            margin: 6px 0;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+        
+        .reveal .streams-benefit {
+            background: #e8f5e8;
+            border-left: 3px solid #27ae60;
+            padding: 8px;
+            margin: 6px 0;
+            border-radius: 4px;
+            font-size: 0.8em;
         }
         
         .reveal .two-column {
             display: flex;
-            gap: 30px;
+            gap: 10px;
+            margin: 6px 0;
         }
         
         .reveal .two-column > div {
             flex: 1;
+            font-size: 0.8em;
+        }
+        
+        .reveal .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 8px 0;
+        }
+        
+        .reveal .feature-box {
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            border-left: 3px solid #3498db;
+            font-size: 0.8em;
+        }
+        
+        .reveal .feature-box h3 {
+            margin-top: 0;
+            margin-bottom: 4px;
+            font-size: 0.95em;
+        }
+        
+        .reveal .feature-box ul {
+            margin: 4px 0;
+        }
+        
+        .reveal .feature-box li {
+            margin: 1px 0;
+            font-size: 0.9em;
         }
         
         .reveal table {
             border-collapse: collapse;
             width: 100%;
-            margin: 15px 0;
-            font-size: 0.8em;
+            margin: 6px 0;
+            font-size: 0.6em;
         }
         
         .reveal table th,
         .reveal table td {
             border: 1px solid #bdc3c7;
-            padding: 8px 12px;
+            padding: 3px 5px;
             text-align: left;
+            line-height: 1.1;
         }
         
         .reveal table th {
@@ -161,294 +228,449 @@
         .reveal table tr:nth-child(even) {
             background: #f8f9fa;
         }
+        
+        /* Content area that can scroll if needed */
+        .reveal .content-area {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        /* Ensure slides fit different screen sizes */
+        @media (max-width: 1024px) {
+            .reveal .slides section {
+                font-size: 16px;
+                padding: 10px;
+            }
+            .reveal pre {
+                font-size: 0.5em;
+                max-height: 20vh;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .reveal .slides section {
+                font-size: 14px;
+                padding: 8px;
+            }
+            .reveal .two-column {
+                flex-direction: column;
+            }
+            .reveal .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            .reveal pre {
+                font-size: 0.48em;
+                max-height: 18vh;
+            }
+        }
+        
+        @media (max-height: 800px) {
+            .reveal .slides section {
+                font-size: 16px;
+                padding: 10px;
+            }
+            .reveal pre {
+                font-size: 0.5em;
+                max-height: 22vh;
+            }
+        }
+        
+        @media (max-height: 700px) {
+            .reveal .slides section {
+                font-size: 15px;
+                padding: 8px;
+            }
+            .reveal pre {
+                font-size: 0.48em;
+                max-height: 20vh;
+            }
+            .reveal .feature-box {
+                padding: 6px;
+            }
+        }
+        
+        @media (max-height: 600px) {
+            .reveal .slides section {
+                font-size: 14px;
+                padding: 6px;
+            }
+            .reveal pre {
+                font-size: 0.45em;
+                max-height: 18vh;
+                padding: 6px;
+            }
+            .reveal h1 {
+                font-size: 1.4em;
+            }
+            .reveal h2 {
+                font-size: 1.2em;
+            }
+            .reveal h3 {
+                font-size: 1em;
+            }
+        }
+        
+        @media (max-height: 500px) {
+            .reveal .slides section {
+                font-size: 12px;
+                padding: 5px;
+            }
+            .reveal pre {
+                font-size: 0.42em;
+                max-height: 15vh;
+                padding: 5px;
+            }
+        }
+        
+        /* Ensure all slides are visible */
+        .reveal .slides {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .reveal .slides > section {
+            max-height: 100vh;
+            height: 100vh;
+        }
+        
+        /* Auto-scale very long content */
+        .reveal .slides > section.present {
+            transform-origin: center center;
+        }
     </style>
 </head>
 <body>
     <div class="reveal">
         <div class="slides">
+            
             <!-- Title Slide -->
             <section class="title-slide">
                 <h1>Set & Sorted Set Applications for Analytics</h1>
-                <p style="text-align: center; font-size: 1.2em; color: #7f8c8d; margin-top: 30px;">
+                <p style="font-size: 1.2em; margin-top: 20px;">
                     <strong>Content 5</strong><br>
                     Advanced Data Structures for Complex Operations<br>
-                    Day 2 - Afternoon Session
+                    Day 2 - Afternoon Session (45 minutes)
                 </p>
+            </section>
+
+            <!-- Session Overview -->
+            <section>
+                <div class="session-header">
+                    <h2>Session Objectives</h2>
+                </div>
+                <ul>
+                    <li><strong>Master Redis Sets</strong> for unique collections and set arithmetic</li>
+                    <li><strong>Implement Sorted Sets</strong> for rankings and score-based queries</li>
+                    <li><strong>Build analytics systems</strong> with event-driven data aggregation</li>
+                    <li><strong>Integrate with Stream events</strong> from Lab 8 for real-time analytics</li>
+                    <li><strong>Design performance dashboards</strong> and leaderboard systems</li>
+                    <li><strong>Apply set operations</strong> for complex business logic</li>
+                </ul>
+                
+                <div class="streams-benefit">
+                    <strong>🔗 Lab 8 Integration:</strong> Sets and Sorted Sets will aggregate and analyze the event data from our Streams-based event sourcing system
+                </div>
             </section>
 
             <!-- Redis Sets Overview -->
             <section>
-                <h2>Redis Sets Overview</h2>
-                <ul>
-                    <li><strong>Unordered collections</strong> of unique strings</li>
-                    <li><strong>No duplicates allowed</strong> - automatic uniqueness</li>
-                    <li><strong>Fast membership testing</strong> - O(1) operations</li>
-                    <li><strong>Set arithmetic operations</strong> - union, intersection, difference</li>
-                </ul>
-
+                <h2>Redis Sets: Unique Collections</h2>
+                
                 <div class="highlight-box">
-                    <strong>Perfect for:</strong>
-                    <ul>
-                        <li>Coverage validation and uniqueness</li>
-                        <li>Customer segmentation and tagging</li>
-                        <li>Risk category groupings</li>
-                        <li>Agent territory assignments</li>
-                    </ul>
+                    <strong>🔑 Definition:</strong> Redis Sets are unordered collections of unique string members, perfect for storing distinct values and performing set arithmetic operations.
                 </div>
-            </section>
 
-            <!-- Basic Set Operations -->
-            <section>
-                <h2>Basic Set Operations</h2>
-
-                <div class="two-column">
-                    <div>
-                        <h3>Adding Members</h3>
-                        <pre><code># Add coverage types
-SADD policy:123:coverage "collision"
-SADD policy:123:coverage "comprehensive" 
-SADD policy:123:coverage "liability"
-
-# Add multiple at once
-SADD customer:456:tags "premium" "loyal" "auto"</code></pre>
+                <div class="feature-grid">
+                    <div class="feature-box">
+                        <h3>📊 Key Characteristics</h3>
+                        <ul>
+                            <li><strong>Unique members:</strong> No duplicates allowed</li>
+                            <li><strong>Unordered:</strong> No specific sequence</li>
+                            <li><strong>Fast membership:</strong> O(1) checking</li>
+                            <li><strong>Set arithmetic:</strong> Union, intersection, difference</li>
+                            <li><strong>Memory efficient:</strong> Optimized storage</li>
+                        </ul>
                     </div>
-                    <div>
-                        <h3>Checking Membership</h3>
-                        <pre><code># Check if coverage exists
-SISMEMBER policy:123:coverage "collision"
-# Returns 1 if exists, 0 if not
+                    <div class="feature-box">
+                        <h3>🎯 Common Use Cases</h3>
+                        <ul>
+                            <li><strong>User segmentation:</strong> Group users by behavior</li>
+                            <li><strong>Tag systems:</strong> Product categories, user interests</li>
+                            <li><strong>Access control:</strong> Permission groups, roles</li>
+                            <li><strong>Unique tracking:</strong> Visitors, sessions, events</li>
+                            <li><strong>Feature flags:</strong> A/B testing groups</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <pre><code># Basic set operations
+SADD users:premium "user001" "user003" "user007"
+SADD users:active "user001" "user002" "user003" "user004"
+SADD users:mobile "user002" "user003" "user005"
+
+# Check membership
+SISMEMBER users:premium "user001"  # Returns 1 (true)
 
 # Get all members
-SMEMBERS policy:123:coverage
-# Returns all coverage types</code></pre>
-                    </div>
-                </div>
-
-                <h3>Set Information</h3>
-                <pre><code># Count members
-SCARD policy:123:coverage          # Returns number of coverage types
-
-# Remove member
-SREM policy:123:coverage "collision"</code></pre>
+SMEMBERS users:premium</code></pre>
             </section>
 
-            <!-- Set Arithmetic Operations -->
+            <!-- Set Operations -->
             <section>
                 <h2>Set Arithmetic Operations</h2>
-
-                <h3>Risk Assessment Example</h3>
-                <pre><code># Define risk categories
-SADD high_risk_customers "cust1" "cust2" "cust3"
-SADD young_drivers "cust1" "cust4" "cust5"
-SADD premium_customers "cust2" "cust6" "cust7"</code></pre>
 
                 <div class="two-column">
                     <div>
                         <h3>Intersection (AND)</h3>
-                        <pre><code># High-risk premium customers
-SINTER high_risk_customers premium_customers
-# Returns customers in both sets</code></pre>
+                        <pre><code># Premium users who are also active
+SINTER users:premium users:active
+# Returns: user001, user003</code></pre>
+                        
+                        <h3>Union (OR)</h3>
+                        <pre><code># All premium OR mobile users
+SUNION users:premium users:mobile
+# Returns all unique users from both sets</code></pre>
                     </div>
                     <div>
-                        <h3>Union (OR)</h3>
-                        <pre><code># All special attention customers
-SUNION high_risk_customers young_drivers
-# Returns customers in either set</code></pre>
+                        <h3>Difference (NOT)</h3>
+                        <pre><code># Active users who are NOT premium
+SDIFF users:active users:premium
+# Returns: user002, user004</code></pre>
+                        
+                        <h3>Store Results</h3>
+                        <pre><code># Save intersection result
+SINTERSTORE users:premium_active 
+  users:premium users:active</code></pre>
                     </div>
                 </div>
 
-                <h3>Difference (NOT)</h3>
-                <pre><code># High-risk customers who are NOT premium
-SDIFF high_risk_customers premium_customers</code></pre>
-            </section>
-
-            <!-- Coverage Validation Use Case -->
-            <section>
-                <h2>Coverage Validation Use Case</h2>
-
-                <h3>Required vs Actual Coverage</h3>
-                <pre><code># Define required coverage for vehicle type
-SADD required:motorcycle "liability" "collision" "comprehensive"
-SADD required:commercial "liability" "cargo" "workers_comp"
-
-# Customer's current coverage
-SADD policy:789:coverage "liability" "collision"
-
-# Check missing coverage
-SDIFF required:motorcycle policy:789:coverage
-# Returns: "comprehensive"
-
-# Check if customer has required minimum
-SINTER required:motorcycle policy:789:coverage
-# Returns coverage customer has that's required</code></pre>
-
                 <div class="success-box">
-                    <strong>Business Value:</strong> Automated compliance checking and gap analysis
+                    <strong>💡 Business Applications:</strong> Customer segmentation, feature rollouts, permission management, campaign targeting
                 </div>
             </section>
 
-            <!-- Customer Segmentation -->
+            <!-- Real-World Set Examples -->
             <section>
-                <h2>Customer Segmentation with Sets</h2>
+                <h2>Real-World Set Applications</h2>
 
-                <h3>Building Customer Segments</h3>
-                <pre><code># Create customer segments
-SADD segment:high_value "cust001" "cust045" "cust123"
-SADD segment:young_drivers "cust012" "cust045" "cust067"
-SADD segment:commercial "cust089" "cust123" "cust156"
-SADD segment:multi_policy "cust001" "cust089" "cust201"</code></pre>
+                <h3>E-commerce Product Categories</h3>
+                <pre><code># Product categorization
+SADD category:electronics "prod001" "prod045" "prod123"
+SADD category:sale "prod012" "prod045" "prod067"
+SADD category:featured "prod001" "prod089" "prod201"
 
-                <h3>Cross-Segment Analysis</h3>
-                <pre><code># High-value young drivers (premium opportunity)
-SINTER segment:high_value segment:young_drivers
+# Find electronics on sale
+SINTER category:electronics category:sale
 
-# Commercial customers with multiple policies
-SINTER segment:commercial segment:multi_policy
+# All featured OR sale products
+SUNION category:featured category:sale
 
-# Count customers in multiple segments
-SCARD segment:high_value</code></pre>
+# Electronics not on sale (full price)
+SDIFF category:electronics category:sale</code></pre>
+
+                <h3>User Access Control</h3>
+                <pre><code># Role-based access control
+SADD role:admin "user001" "user002"
+SADD role:editor "user003" "user004" "user005"
+SADD role:viewer "user006" "user007" "user008"
+
+# Check if user has admin access
+SISMEMBER role:admin "user001"
+
+# Get all users with edit permissions (admin + editor)
+SUNION role:admin role:editor</code></pre>
             </section>
 
-            <!-- Sorted Sets Introduction -->
+            <!-- Event-Driven Analytics Integration -->
             <section>
-                <h2>Redis Sorted Sets (ZSets)</h2>
+                <h2>Event-Driven Analytics with Sets</h2>
                 
-                <ul>
-                    <li><strong>Ordered collections</strong> with unique members</li>
-                    <li><strong>Each member has a score</strong> (floating-point number)</li>
-                    <li><strong>Automatically sorted</strong> by score (ascending)</li>
-                    <li><strong>Fast range operations</strong> by score or rank</li>
-                </ul>
-
-                <div class="highlight-box">
-                    <strong>Perfect for:</strong>
-                    <ul>
-                        <li>Agent performance leaderboards</li>
-                        <li>Premium amount rankings</li>
-                        <li>Risk scoring systems</li>
-                        <li>Time-based prioritization</li>
-                    </ul>
+                <div class="streams-benefit">
+                    <strong>🔗 Integration with Lab 8 Streams:</strong> Sets aggregate unique values from event streams for real-time analytics
                 </div>
+
+                <h3>Real-Time User Segmentation from Events</h3>
+                <pre><code># Consumer processes events and updates user segments
+// JavaScript consumer processing order events
+const processOrderEvent = async (event) => {
+  if (event.eventType === 'order.completed') {
+    // Add to active buyers segment
+    await redis.sAdd('segment:active_buyers', event.userId);
+    
+    // High-value buyers (orders > $500)
+    if (event.amount > 500) {
+      await redis.sAdd('segment:high_value', event.userId);
+    }
+    
+    // Mobile users
+    if (event.channel === 'mobile_app') {
+      await redis.sAdd('segment:mobile_users', event.userId);
+    }
+  }
+};</code></pre>
+
+                <h3>Dynamic Feature Flag Management</h3>
+                <pre><code># A/B testing groups updated from user behavior events
+SADD feature:new_checkout "user001" "user003" "user007"
+SADD feature:beta_ui "user002" "user004" "user008"
+
+# Check user's feature access
+SISMEMBER feature:new_checkout "user001"
+
+# Users in multiple beta programs
+SINTER feature:new_checkout feature:beta_ui</code></pre>
             </section>
 
-            <!-- Basic Sorted Set Operations -->
+            <!-- Redis Sorted Sets Overview -->
             <section>
-                <h2>Basic Sorted Set Operations</h2>
+                <h2>Redis Sorted Sets: Ranked Collections</h2>
+                
+                <div class="highlight-box">
+                    <strong>🔑 Definition:</strong> Redis Sorted Sets are collections of unique members, each associated with a score. Members are automatically sorted by their scores.
+                </div>
 
-                <h3>Adding Members with Scores</h3>
-                <pre><code># Agent performance leaderboard (score = policies sold)
-ZADD agent_leaderboard 45 "agent001"
-ZADD agent_leaderboard 67 "agent002" 
-ZADD agent_leaderboard 23 "agent003"
+                <div class="feature-grid">
+                    <div class="feature-box">
+                        <h3>📊 Key Features</h3>
+                        <ul>
+                            <li><strong>Scored members:</strong> Each member has a numeric score</li>
+                            <li><strong>Auto-sorted:</strong> Ordered by score (ascending)</li>
+                            <li><strong>Unique members:</strong> No duplicates</li>
+                            <li><strong>Range queries:</strong> By score or rank</li>
+                            <li><strong>Fast updates:</strong> O(log N) operations</li>
+                        </ul>
+                    </div>
+                    <div class="feature-box">
+                        <h3>🎯 Perfect For</h3>
+                        <ul>
+                            <li><strong>Leaderboards:</strong> User rankings, scores</li>
+                            <li><strong>Priority queues:</strong> Task scheduling</li>
+                            <li><strong>Time series:</strong> Timestamp-based data</li>
+                            <li><strong>Analytics:</strong> Performance metrics</li>
+                            <li><strong>Rate limiting:</strong> Request counting</li>
+                        </ul>
+                    </div>
+                </div>
 
-# Premium rankings (score = annual premium)
-ZADD premium_rankings 1200.50 "policy001"
-ZADD premium_rankings 890.75 "policy002"
-ZADD premium_rankings 2450.00 "policy003"</code></pre>
+                <pre><code># Basic sorted set operations
+ZADD user_scores 850 "user001" 720 "user002" 950 "user003"
+ZADD sales_leaderboard 15000 "agent001" 23000 "agent002" 8500 "agent003"
 
-                <h3>Retrieving Data</h3>
-                <pre><code># Get top 3 agents (highest scores)
-ZREVRANGE agent_leaderboard 0 2 WITHSCORES
+# Get top performers (highest scores first)
+ZREVRANGE sales_leaderboard 0 2 WITHSCORES
 
-# Get bottom 5 premiums (lowest first)
-ZRANGE premium_rankings 0 4 WITHSCORES</code></pre>
+# Get user's rank
+ZREVRANK sales_leaderboard "agent002"</code></pre>
             </section>
 
-            <!-- Range Queries -->
+            <!-- Sorted Set Operations -->
             <section>
-                <h2>Range Queries and Scoring</h2>
+                <h2>Sorted Set Range Operations</h2>
 
-                <h3>Score-Based Ranges</h3>
-                <pre><code># Get policies with premiums between $1000-$2000
-ZRANGEBYSCORE premium_rankings 1000 2000 WITHSCORES
+                <h3>Score-Based Queries</h3>
+                <pre><code># Get users with scores between 800-900
+ZRANGEBYSCORE user_scores 800 900 WITHSCORES
 
-# Get high-performing agents (>50 policies)
-ZRANGEBYSCORE agent_leaderboard 50 +inf WITHSCORES
+# Get high performers (score > 20000)
+ZRANGEBYSCORE sales_leaderboard 20000 +inf WITHSCORES
 
-# Count agents in score range
-ZCOUNT agent_leaderboard 30 60</code></pre>
+# Count users in score range
+ZCOUNT user_scores 700 850
+
+# Get users with top 10% scores
+ZREVRANGEBYSCORE user_scores +inf -inf LIMIT 0 10</code></pre>
 
                 <h3>Rank-Based Operations</h3>
-                <pre><code># Get agent rank (0-based, lowest score = rank 0)
-ZRANK agent_leaderboard "agent001"
+                <pre><code># Get top 5 performers
+ZREVRANGE sales_leaderboard 0 4 WITHSCORES
 
-# Get reverse rank (highest score = rank 0)
-ZREVRANK agent_leaderboard "agent001"
+# Get bottom 3 performers
+ZRANGE sales_leaderboard 0 2 WITHSCORES
 
-# Get specific agent's score
-ZSCORE agent_leaderboard "agent001"</code></pre>
+# Get user's specific score
+ZSCORE sales_leaderboard "agent001"
+
+# Update scores
+ZINCRBY sales_leaderboard 5000 "agent001"</code></pre>
             </section>
 
-            <!-- Risk Scoring System -->
+            <!-- Event Stream Analytics -->
             <section>
-                <h2>Risk Scoring System</h2>
+                <h2>Stream Event Analytics with Sorted Sets</h2>
+                
+                <div class="streams-benefit">
+                    <strong>🔗 Real-Time Analytics:</strong> Sorted sets aggregate metrics from event streams for live dashboards and performance tracking
+                </div>
 
-                <h3>Building Risk Scores</h3>
-                <pre><code># Risk scores (0-100, higher = more risky)
-ZADD risk_scores 75.5 "driver001"  # High risk
-ZADD risk_scores 25.2 "driver002"  # Low risk
-ZADD risk_scores 45.8 "driver003"  # Medium risk
-ZADD risk_scores 88.1 "driver004"  # Very high risk</code></pre>
+                <h3>User Activity Scoring</h3>
+                <pre><code># JavaScript consumer aggregating user activity from events
+const updateUserActivity = async (event) => {
+  const userId = event.userId;
+  
+  switch (event.eventType) {
+    case 'user.login':
+      await redis.zIncrBy('activity_scores', 1, userId);
+      break;
+    case 'order.completed':
+      await redis.zIncrBy('activity_scores', 10, userId);
+      await redis.zIncrBy('revenue_leaderboard', event.amount, userId);
+      break;
+    case 'product.viewed':
+      await redis.zIncrBy('activity_scores', 0.5, userId);
+      break;
+    case 'review.submitted':
+      await redis.zIncrBy('activity_scores', 5, userId);
+      break;
+  }
+};</code></pre>
 
-                <h3>Risk-Based Queries</h3>
-                <pre><code># Get high-risk drivers (score > 70)
-ZRANGEBYSCORE risk_scores 70 100 WITHSCORES
+                <h3>Real-Time Performance Dashboards</h3>
+                <pre><code># Get real-time analytics
+ZREVRANGE activity_scores 0 9 WITHSCORES  # Top 10 active users
+ZREVRANGE revenue_leaderboard 0 4 WITHSCORES  # Top 5 revenue generators
 
-# Get low-risk drivers for discounts (score < 30)
-ZRANGEBYSCORE risk_scores 0 30 WITHSCORES
-
-# Count medium-risk drivers (30-70)
-ZCOUNT risk_scores 30 70</code></pre>
+# Time-based analytics (using timestamps as scores)
+ZADD daily_orders 1692441600 "order001" 1692442200 "order002"
+ZRANGEBYSCORE daily_orders 1692441600 1692528000  # Orders from specific day</code></pre>
             </section>
 
-            <!-- Time-Based Prioritization -->
+            <!-- Advanced Analytics Patterns -->
             <section>
-                <h2>Time-Based Prioritization</h2>
+                <h2>Advanced Analytics Patterns</h2>
 
-                <h3>Claims Processing Priority</h3>
-                <pre><code># Priority queue using timestamps as scores
-ZADD claims_priority 1640995200 "claim001"  # Standard
-ZADD claims_priority 1640995800 "claim002"  # Standard  
-ZADD claims_priority 1641082000 "claim003"  # Urgent (higher timestamp)
+                <h3>Multi-Metric Leaderboards</h3>
+                <pre><code># Multiple performance dimensions
+ZADD performance:orders 150 "agent001" 200 "agent002" 89 "agent003"
+ZADD performance:revenue 45000 "agent001" 67000 "agent002" 28000 "agent003"
+ZADD performance:satisfaction 4.8 "agent001" 4.9 "agent002" 4.2 "agent003"
 
-# Process claims by urgency (oldest/highest timestamp first)
-ZREVRANGE claims_priority 0 4</code></pre>
+# Composite scoring (weighted average)
+// JavaScript function to calculate composite scores
+const updateCompositeScore = async (agentId) => {
+  const orders = await redis.zScore('performance:orders', agentId) || 0;
+  const revenue = await redis.zScore('performance:revenue', agentId) || 0;
+  const satisfaction = await redis.zScore('performance:satisfaction', agentId) || 0;
+  
+  // Weighted composite score
+  const composite = (orders * 0.3) + (revenue * 0.0001) + (satisfaction * 20);
+  await redis.zAdd('performance:composite', { score: composite, value: agentId });
+};</code></pre>
 
-                <h3>Renewal Reminders</h3>
-                <pre><code># Policy renewal dates (Unix timestamp)
-ZADD renewal_queue 1641168000 "policy001"
-ZADD renewal_queue 1641254400 "policy002" 
-ZADD renewal_queue 1641340800 "policy003"
+                <h3>Time-Window Analytics</h3>
+                <pre><code># Sliding window analytics using timestamps
+ZADD hourly_metrics 1692441600 "metric001"  # Hour 1
+ZADD hourly_metrics 1692445200 "metric002"  # Hour 2
+ZADD hourly_metrics 1692448800 "metric003"  # Hour 3
 
-# Get policies due for renewal in next 30 days
-ZRANGEBYSCORE renewal_queue 1641168000 1641772800</code></pre>
-            </section>
-
-            <!-- Advanced Sorted Set Operations -->
-            <section>
-                <h2>Advanced Sorted Set Operations</h2>
-
-                <h3>Updating Scores</h3>
-                <pre><code># Increment agent's policy count
-ZINCRBY agent_leaderboard 1 "agent001"
-
-# Update risk score based on new claim
-ZINCRBY risk_scores 5.5 "driver002"  # Increase risk</code></pre>
-
-                <h3>Removing Members</h3>
-                <pre><code># Remove specific member
-ZREM agent_leaderboard "agent003"
-
-# Remove by rank (remove bottom 2 performers)
-ZREMRANGEBYRANK agent_leaderboard 0 1
-
-# Remove by score range (remove very low performers)
-ZREMRANGEBYSCORE agent_leaderboard 0 10</code></pre>
+# Get metrics from last 2 hours
+const twoHoursAgo = Date.now() - (2 * 60 * 60 * 1000);
+ZRANGEBYSCORE hourly_metrics twoHoursAgo +inf</code></pre>
             </section>
 
             <!-- Performance Considerations -->
             <section>
-                <h2>Performance Considerations</h2>
+                <h2>Performance & Best Practices</h2>
 
                 <div class="two-column">
                     <div>
@@ -472,97 +694,157 @@ ZREMRANGEBYSCORE agent_leaderboard 0 10</code></pre>
                 </div>
 
                 <div class="warning-box">
-                    <strong>Best Practices:</strong>
+                    <strong>⚠️ Best Practices:</strong>
                     <ul>
-                        <li>Use <code>SCAN</code> instead of <code>SMEMBERS</code> for large sets</li>
+                        <li>Use <code>SSCAN</code> instead of <code>SMEMBERS</code> for large sets</li>
                         <li>Limit range queries with <code>LIMIT</code> parameter</li>
                         <li>Consider memory usage for large sorted sets</li>
                         <li>Use appropriate data types for scores (integers when possible)</li>
+                        <li>Implement pagination for large result sets</li>
                     </ul>
                 </div>
+
+                <h3>Memory Optimization</h3>
+                <pre><code># Efficient operations for large datasets
+SSCAN users:active 0 MATCH "user*" COUNT 100  # Paginated scanning
+ZRANGEBYSCORE leaderboard 0 1000 LIMIT 0 20   # Limited range queries
+ZUNIONSTORE temp_result 2 set1 set2 WEIGHTS 1 2  # Weighted unions</code></pre>
             </section>
 
-            <!-- JavaScript Integration Preview -->
+            <!-- JavaScript Integration -->
             <section>
-                <h2>JavaScript Integration Preview</h2>
+                <h2>JavaScript Integration Examples</h2>
 
                 <h3>Set Operations in Node.js</h3>
-                <pre><code>// Add customer to high-value segment
-await client.sAdd('segment:high_value', 'customer123');
+                <pre><code>// Real-time user segmentation
+const addToSegment = async (userId, segment) => {
+  await redis.sAdd(`segment:${segment}`, userId);
+};
 
-// Check membership
-const isHighValue = await client.sIsMember('segment:high_value', 'customer123');
+// Complex segmentation logic
+const analyzeUser = async (userId, orderEvent) => {
+  // Add to active buyers
+  await redis.sAdd('segment:active_buyers', userId);
+  
+  // High-value customer check
+  if (orderEvent.amount > 1000) {
+    await redis.sAdd('segment:high_value', userId);
+  }
+  
+  // Get user's current segments
+  const segments = await Promise.all([
+    redis.sIsMember('segment:premium', userId),
+    redis.sIsMember('segment:high_value', userId),
+    redis.sIsMember('segment:mobile', userId)
+  ]);
+  
+  return {
+    isPremium: segments[0],
+    isHighValue: segments[1],
+    isMobile: segments[2]
+  };
+};</code></pre>
 
-// Get intersection of segments
-const premiumYoungDrivers = await client.sInter([
-    'segment:premium', 
-    'segment:young_drivers'
-]);</code></pre>
+                <h3>Sorted Set Analytics</h3>
+                <pre><code>// Leaderboard management
+const updateLeaderboard = async (userId, score) => {
+  await redis.zAdd('user_leaderboard', { score, value: userId });
+};
 
-                <h3>Sorted Set Operations</h3>
-                <pre><code>// Update agent leaderboard
-await client.zAdd('agent_leaderboard', { score: 67, value: 'agent002' });
-
-// Get top performers
-const topAgents = await client.zRevRange('agent_leaderboard', 0, 2, {
-    WITHSCORES: true
-});</code></pre>
+// Get user rankings
+const getUserRanking = async (userId) => {
+  const score = await redis.zScore('user_leaderboard', userId);
+  const rank = await redis.zRevRank('user_leaderboard', userId);
+  const total = await redis.zCard('user_leaderboard');
+  
+  return {
+    score,
+    rank: rank + 1, // Convert to 1-based ranking
+    total,
+    percentile: ((total - rank) / total * 100).toFixed(1)
+  };
+};</code></pre>
             </section>
 
             <!-- Lab Callout -->
             <section>
                 <div class="lab-callout">
-                    <h2>🧪 Upcoming Labs</h2>
-                    <p><strong>Lab 9: Analytics with Sets and Sorted Sets</strong></p>
-                    <p><em>Build customer segmentation and agent performance systems using JavaScript and Redis data structures</em></p>
-                    <br>
-                    <p><strong>Lab 10: Advanced Caching Patterns</strong></p>
-                    <p><em>Implement sophisticated caching strategies with TTL management and cache invalidation</em></p>
+                    <h2>🧪 Coming Up: Labs 9-10</h2>
+                    <div style="display: flex; gap: 20px; margin-top: 15px;">
+                        <div style="flex: 1;">
+                            <h3>Lab 9: Event-Driven Analytics</h3>
+                            <p><strong>Duration:</strong> 45 minutes</p>
+                            <p><strong>Focus:</strong> Sets & Sorted Sets with Stream Integration</p>
+                            <ul style="text-align: left; font-size: 0.8em; margin: 8px 0;">
+                                <li>Real-time user segmentation from events</li>
+                                <li>Performance leaderboards and rankings</li>
+                                <li>Event stream analytics aggregation</li>
+                                <li>Multi-dimensional scoring systems</li>
+                            </ul>
+                        </div>
+                        <div style="flex: 1;">
+                            <h3>Lab 10: Advanced Caching Patterns</h3>
+                            <p><strong>Duration:</strong> 45 minutes</p>
+                            <p><strong>Focus:</strong> Event-driven cache invalidation</p>
+                            <ul style="text-align: left; font-size: 0.8em; margin: 8px 0;">
+                                <li>Cache-aside with event sourcing</li>
+                                <li>Stream-triggered cache updates</li>
+                                <li>Multi-tier caching strategies</li>
+                                <li>Performance optimization patterns</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.2); border-radius: 6px;">
+                        <p style="margin: 0; font-size: 1em;"><strong>Total Lab Time: 90 minutes</strong></p>
+                        <p style="margin: 5px 0 0 0; font-size: 0.85em;">Building on event data from Lab 8 for complete analytics solutions!</p>
+                    </div>
                 </div>
             </section>
 
-            <!-- Key Takeaways -->
+            <!-- Session Summary -->
             <section>
-                <h2>Key Takeaways</h2>
+                <h2>Session Summary & Key Takeaways</h2>
+
+                <div class="feature-grid">
+                    <div class="feature-box">
+                        <h3>✅ Sets Mastered</h3>
+                        <ul>
+                            <li>Unique collections and membership testing</li>
+                            <li>Set arithmetic for complex logic</li>
+                            <li>User segmentation and categorization</li>
+                            <li>Real-time group management</li>
+                        </ul>
+                    </div>
+                    <div class="feature-box">
+                        <h3>✅ Sorted Sets Mastered</h3>
+                        <ul>
+                            <li>Score-based rankings and leaderboards</li>
+                            <li>Range queries and analytics</li>
+                            <li>Time-series data management</li>
+                            <li>Performance metrics tracking</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="streams-benefit">
+                    <strong>🔗 Event Integration Ready:</strong> You can now build analytics systems that aggregate data from event streams (Lab 8) into Sets and Sorted Sets for real-time dashboards, user segmentation, and performance tracking!
+                </div>
 
                 <div class="success-box">
-                    <h3>Sets Enable:</h3>
+                    <h3>Business Applications Unlocked:</h3>
                     <ul>
-                        <li><strong>Uniqueness validation</strong> - Coverage requirements, customer tags</li>
-                        <li><strong>Set arithmetic</strong> - Complex business logic with intersections</li>
-                        <li><strong>Fast membership testing</strong> - O(1) customer segment checking</li>
-                        <li><strong>Grouping and categorization</strong> - Risk categories, agent territories</li>
+                        <li><strong>Customer Analytics:</strong> Real-time segmentation from user behavior events</li>
+                        <li><strong>Performance Dashboards:</strong> Live leaderboards and KPI tracking</li>
+                        <li><strong>Feature Management:</strong> Dynamic A/B testing and feature flags</li>
+                        <li><strong>Priority Systems:</strong> Task queues and request processing</li>
                     </ul>
                 </div>
 
                 <div class="highlight-box">
-                    <h3>Sorted Sets Enable:</h3>
-                    <ul>
-                        <li><strong>Ranking systems</strong> - Agent leaderboards, premium tiers</li>
-                        <li><strong>Range queries</strong> - Risk score analysis, time-based processing</li>
-                        <li><strong>Priority queues</strong> - Claims processing, renewal scheduling</li>
-                        <li><strong>Time-series data</strong> - Chronological processing with scores</li>
-                    </ul>
+                    <strong>🎯 Next:</strong> Hands-on implementation in Labs 9-10, building complete analytics solutions that process real-time events and provide actionable business insights!
                 </div>
             </section>
-
-            <!-- Summary -->
-            <section>
-                <h2>Session Summary</h2>
-
-                <ul>
-                    <li><strong>Redis Sets</strong> provide unique collections with set arithmetic</li>
-                    <li><strong>Perfect for customer segmentation</strong> and coverage validation</li>
-                    <li><strong>Sorted Sets add scoring</strong> for rankings and prioritization</li>
-                    <li><strong>Excellent for analytics</strong> - leaderboards, risk scoring, time-based processing</li>
-                    <li><strong>JavaScript integration</strong> enables powerful business applications</li>
-                    <li><strong>Performance characteristics</strong> support real-time operations</li>
-                </ul>
-
-                <div class="highlight-box">
-                    <strong>Next:</strong> Hands-on labs building customer analytics and advanced caching patterns using these powerful data structures in real JavaScript applications.
-                </div>
-            </section>
+            
         </div>
     </div>
 
@@ -570,15 +852,28 @@ const topAgents = await client.zRevRange('agent_leaderboard', 0, 2, {
     <script>
         Reveal.initialize({
             hash: true,
+            transition: 'slide',
+            transitionSpeed: 'default',
+            backgroundTransition: 'fade',
             controls: true,
             progress: true,
-            center: false,
-            transition: 'slide',
-            width: 1200,
-            height: 800,
-            margin: 0.1,
-            minScale: 0.2,
-            maxScale: 2.0
+            center: true,
+            touch: true,
+            loop: false,
+            rtl: false,
+            fragments: true,
+            embedded: false,
+            help: true,
+            showNotes: false,
+            autoSlide: 0,
+            autoSlideStoppable: true,
+            mouseWheel: false,
+            hideAddressBar: true,
+            previewLinks: false,
+            focusBodyOnPageVisibilityChange: true,
+            viewDistance: 3,
+            parallaxBackgroundImage: '',
+            parallaxBackgroundSize: ''
         });
     </script>
 </body>
