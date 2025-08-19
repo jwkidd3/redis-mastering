@@ -1,86 +1,56 @@
 # Lab 5 Troubleshooting Guide
 
-## WSL Ubuntu Specific Issues
+## WSL Ubuntu Issues
 
-### "File not found" errors when running scripts
+### "File not found" when running scripts
 
-**Problem:** `./scripts/script-name.sh: No such file or directory`
-**Solutions:**
-1. Run WSL setup: `./setup-wsl.sh`
-2. Fix line endings: `dos2unix scripts/*.sh`
-3. Set permissions: `chmod +x scripts/*.sh`
-4. Use troubleshoot script: `./troubleshoot-wsl.sh`
-
-### Permission denied errors
-
-**Problem:** `bash: ./script.sh: Permission denied`
-**Solutions:**
-1. Fix permissions: `chmod +x script.sh`
-2. Run as: `bash script.sh` instead of `./script.sh`
-3. Use setup script: `./setup-wsl.sh`
-
-### Docker issues in WSL
-
-**Problem:** Cannot connect to Docker daemon
-**Solutions:**
-1. Enable Docker integration in WSL settings
-2. Start Docker Desktop on Windows
-3. Verify with: `docker --version && docker ps`
-
-### Redis connection issues
-
-**Problem:** `redis-cli` command not found
-**Solutions:**
-1. Install Redis tools: `sudo apt install redis-tools`
-2. Or use Docker: `docker exec redis-lab5 redis-cli ping`
-
-### Script execution fails with "bad interpreter"
-
-**Problem:** `/bin/bash^M: bad interpreter`
-**Solutions:**
-1. Convert line endings: `dos2unix script.sh`
-2. Or use sed: `sed -i 's/\r$//' script.sh`
-
-## Quick WSL Setup Commands
+This is usually a line ending issue. Fix with:
 
 ```bash
-# Complete WSL setup
-./setup-wsl.sh
-
-# Quick troubleshooting
-./troubleshoot-wsl.sh
-
-# Manual fixes
+# Install required packages
 sudo apt update
-sudo apt install -y redis-tools bc dos2unix
-find . -name "*.sh" -exec dos2unix {} \;
-find . -name "*.sh" -exec chmod +x {} \;
+sudo apt install -y redis-tools bc
 
-# Start everything
-./quick-start.sh
+# Fix all scripts
+find . -name "*.sh" -exec chmod +x {} \;
+find . -name "*.sh" -exec sed -i 's/\r$//' {} \;
+
+# Test
+./scripts/load-production-data.sh
 ```
 
-## Common Redis Issues
+### Permission denied
 
-### Redis Connection Issues
+```bash
+chmod +x scripts/*.sh
+chmod +x setup-wsl.sh
+```
 
-**Problem:** `redis-cli ping` fails
-**Solutions:**
-1. Check if Redis container is running: `docker ps`
-2. Restart Redis container: `docker restart redis-lab5`
-3. Check port binding: `docker port redis-lab5`
+### Redis CLI not found
 
-### Memory Issues
+```bash
+sudo apt install redis-tools
+redis-cli --version
+```
 
-**Problem:** High memory usage warnings
-**Solutions:**
-1. Run memory analysis: `redis-cli --bigkeys`
-2. Check for expired keys: `redis-cli INFO keyspace`
+### Docker issues
 
-### Performance Issues
+1. Make sure Docker Desktop is running
+2. Enable WSL integration in Docker settings
+3. Test: `docker --version`
 
-**Problem:** Slow operations detected
-**Solutions:**
-1. Check slow log: `redis-cli SLOWLOG GET 10`
-2. Analyze command patterns: Use Redis Insight Profiler
-3. Review client connections: `redis-cli CLIENT LIST`
+## Quick Fixes
+
+```bash
+# Complete setup
+./setup-wsl.sh
+
+# Start Redis
+docker run -d --name redis-lab5 -p 6379:6379 redis:7-alpine
+
+# Load data
+./scripts/load-production-data.sh
+
+# Monitor
+./scripts/production-monitor.sh
+```
