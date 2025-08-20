@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hash & List Data Structures for Insurance Data</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/monokai.css">
+    <style>
+        .reveal {
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+            font-size: 32px; /* Increased for better readability */
+        }
+        
+        .reveal .slides section {
+            text-align: left;
+            padding: 20px;
+        }
+        
+        .reveal h1, .reveal h2, .reveal h3 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .reveal h1 {
+            font-size: 2.2em;
+            background: #ecf0f1;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 40px;
+        }
+        
+        .reveal h2 {
+            font-size: 1.8em;
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 35px;
+        }
+        
+        .reveal h3 {
+            font-size: 1.4em;
+            color: #e74c3c;
+            margin-bottom: 25px;
+        }
+        
+        .reveal ul {
+            margin-left: 40px;
+            line-height: 1.8;
+        }
+        
+        .reveal li {
+            margin-bottom: 15px;
+            font-size: 1em;
+        }
+        
+        .reveal code {
+            background-color: #f8f9fa;
+            color: #e74c3c;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .reveal pre code {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 25px;
+            border-radius: 8px;
+            font-size: 0.8em;
+            line-height: 1.6;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .callout {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 30px 0;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .callout h2 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        
+        .callout p {
+            font-size: 1.2em;
+            margin: 0;
+            font-weight: 500;
+        }
+        
+        .highlight-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        
+        .two-column {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+        }
+        
+        .two-column > div {
+            flex: 1;
+        }
+        
+        .command-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.9em;
+        }
+        
+        .command-table th,
+        .command-table td {
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            text-align: left;
+        }
+        
+        .command-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        
+        .command-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .small-text {
+            font-size: 0.85em;
+        }
+        
+        .comparison-box {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .pattern-box {
+            background: #f0f7ff;
+            border-left: 5px solid #2196f3;
+            padding: 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+            <!-- Title Slide -->
+            <section>
+                <h1>Hash & List Data Structures for Insurance Data</h1>
+                <p style="text-align: center; font-size: 1.2em; color: #666; margin-top: 40px;">
+                    Structured Data Management for Customer Profiles & Policy Systems
+                </p>
+                <p style="text-align: center; font-size: 1em; color: #888; margin-top: 60px;">
+                    Day 2 - Session 2 | Duration: 45 minutes
+                </p>
+            </section>
+
+            <!-- Session Objectives -->
+            <section>
+                <h2>Learning Objectives</h2>
+                <ul>
+                    <li>Master Redis Hashes for customer profile management</li>
+                    <li>Implement policy data storage with nested structures</li>
+                    <li>Understand Lists for workflow queues and processing</li>
+                    <li>Design efficient data models for insurance systems</li>
+                    <li>Compare JSON strings vs Redis Hash storage strategies</li>
+                    <li>Prepare for JavaScript integration with structured data</li>
+                </ul>
+            </section>
+
+            <!-- Redis Hashes Introduction -->
+            <section>
+                <h2>Redis Hashes Overview</h2>
+                <div class="two-column">
+                    <div>
+                        <h3>What are Hashes?</h3>
+                        <ul>
+                            <li>Field-value pairs within a single key</li>
+                            <li>Perfect for object-like structures</li>
+                            <li>Memory efficient for small to medium objects</li>
+                            <li>Support partial updates and atomic operations</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Insurance Applications</h3>
+                        <ul>
+                            <li><strong>Customer Profiles:</strong> Name, contact, preferences</li>
+                            <li><strong>Policy Records:</strong> Coverage, premium, status</li>
+                            <li><strong>Claims Data:</strong> Amount, status, dates</li>
+                            <li><strong>Agent Information:</strong> Territory, performance, contact</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="highlight-box">
+                    <strong>Key Benefit:</strong> Update individual fields without affecting the entire record, 
+                    perfect for real-time customer portal updates and policy modifications.
+                </div>
+            </section>
+
+            <!-- Basic Hash Operations -->
+            <section>
+                <h2>Basic Hash Operations</h2>
+                <table class="command-table">
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>Description</th>
+                            <th>Time Complexity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>HSET key field value</code></td>
+                            <td>Set field in hash</td>
+                            <td>O(1)</td>
+                        </tr>
+                        <tr>
+                            <td><code>HGET key field</code></td>
+                            <td>Get field value</td>
+                            <td>O(1)</td>
+                        </tr>
+                        <tr>
+                            <td><code>HGETALL key</code></td>
+                            <td>Get all fields and values</td>
+                            <td>O(N)</td>
+                        </tr>
+                        <tr>
+                            <td><code>HMSET key field1 value1 field2 value2</code></td>
+                            <td>Set multiple fields</td>
+                            <td>O(N)</td>
+                        </tr>
+                        <tr>
+                            <td><code>HMGET key field1 field2</code></td>
+                            <td>Get multiple fields</td>
+                            <td>O(N)</td>
+                        </tr>
+                        <tr>
+                            <td><code>HDEL key field</code></td>
+                            <td>Delete field</td>
+                            <td>O(1)</td>
+                        </tr>
+                        <tr>
+                            <td><code>HEXISTS key field</code></td>
+                            <td>Check if field exists</td>
+                            <td>O(1)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Customer Profile Example -->
+            <section>
+                <h2>Customer Profile with Hashes</h2>
+                <pre><code class="language-bash"># Create comprehensive customer profile
+HSET customer:12345 name "Alice Johnson"
+HSET customer:12345 email "alice.johnson@example.com"
+HSET customer:12345 phone "555-0123"
+HSET customer:12345 tier "premium"
+HSET customer:12345 join_date "2023-01-15"
+HSET customer:12345 risk_score "850"
+HSET customer:12345 state "CA"
+HSET customer:12345 preferred_contact "email"
+
+# More efficient: Set multiple fields at once
+HMSET customer:67890 name "Bob Smith" email "bob@example.com" \
+    phone "555-0456" tier "standard" join_date "2023-02-20" \
+    risk_score "720" state "TX" preferred_contact "phone"
+
+# Retrieve specific customer information
+HGET customer:12345 name          # Returns: "Alice Johnson"
+HGET customer:12345 tier          # Returns: "premium"
+
+# Get multiple fields efficiently
+HMGET customer:12345 name email tier  # Returns: ["Alice Johnson", "alice.johnson@example.com", "premium"]
+
+# Get all customer data
+HGETALL customer:12345  # Returns all field-value pairs
+</code></pre>
+            </section>
+
+            <!-- Policy Management Example -->
+            <section>
+                <h2>Policy Management with Hashes</h2>
+                <pre><code class="language-bash"># Auto insurance policy
+HMSET policy:AUTO-001 customer_id "12345" type "auto" \
+    premium "1200.50" deductible "500" status "active" \
+    coverage_limit "100000" vehicle "2022 Honda Civic" \
+    start_date "2024-01-01" renewal_date "2025-01-01"
+
+# Home insurance policy
+HMSET policy:HOME-001 customer_id "12345" type "home" \
+    premium "850.00" deductible "1000" status "active" \
+    coverage_limit "350000" property_address "123 Main St, CA" \
+    start_date "2024-01-01" renewal_date "2025-01-01"
+
+# Update policy premium (partial update)
+HSET policy:AUTO-001 premium "1150.00"
+HSET policy:AUTO-001 last_modified "2024-03-15"
+
+# Check if customer has specific coverage
+HEXISTS policy:AUTO-001 comprehensive_coverage
+
+# Get policy summary for customer portal
+HMGET policy:AUTO-001 type premium status renewal_date
+</code></pre>
+            </section>
+
+            <!-- Hash vs JSON Comparison -->
+            <section>
+                <h2>Hashes vs JSON Strings for Insurance Data</h2>
+                <div class="two-column">
+                    <div>
+                        <h3>🏆 Redis Hashes</h3>
+                        <div class="comparison-box">
+                            <ul>
+                                <li><strong>Partial Updates:</strong> Change single fields</li>
+                                <li><strong>Memory Efficient:</strong> Optimized encoding</li>
+                                <li><strong>Field-Level Operations:</strong> HINCRBY, HEXISTS</li>
+                                <li><strong>Type Safety:</strong> Field-based validation</li>
+                                <li><strong>Atomic Operations:</strong> Per-field guarantees</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <h3>📋 JSON Strings</h3>
+                        <div class="highlight-box">
+                            <ul>
+                                <li><strong>Complex Nesting:</strong> Deep object structures</li>
+                                <li><strong>Array Support:</strong> Lists within objects</li>
+                                <li><strong>Schema Flexibility:</strong> Dynamic structures</li>
+                                <li><strong>Full Replacement:</strong> All-or-nothing updates</li>
+                                <li><strong>Standard Format:</strong> API compatibility</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="pattern-box">
+                    <strong>Best Practice:</strong> Use Hashes for frequently updated fields (customer contact info, policy status). 
+                    Use JSON for complex nested data (claim details with multiple adjusters, coverage definitions).
+                </div>
+            </section>
+
+            <!-- Advanced Hash Operations -->
+            <section>
+                <h2>Advanced Hash Operations</h2>
+                <div class="two-column">
+                    <div>
+                        <h3>Numeric Operations</h3>
+                        <ul>
+                            <li><code>HINCRBY</code> - Increment integer field</li>
+                            <li><code>HINCRBYFLOAT</code> - Increment float field</li>
+                            <li><code>HLEN</code> - Get number of fields</li>
+                        </ul>
+                        <h3>Field Management</h3>
+                        <ul>
+                            <li><code>HKEYS</code> - Get all field names</li>
+                            <li><code>HVALS</code> - Get all values</li>
+                            <li><code>HSETNX</code> - Set if field doesn't exist</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <pre><code class="language-bash"># Increment claim count
+HINCRBY customer:12345 claim_count 1
+
+# Update premium with float precision
+HINCRBYFLOAT policy:AUTO-001 premium 25.50
+
+# Conditional field setting
+HSETNX customer:12345 signup_bonus "100"
+
+# Get field count
+HLEN policy:AUTO-001  # Returns number of fields
+
+# Get all field names
+HKEYS policy:AUTO-001
+</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Redis Lists Introduction -->
+            <section>
+                <h2>Redis Lists Overview</h2>
+                <div class="two-column">
+                    <div>
+                        <h3>What are Lists?</h3>
+                        <ul>
+                            <li>Ordered sequences of strings</li>
+                            <li>Support both stack and queue operations</li>
+                            <li>Fast insertion at head and tail</li>
+                            <li>Perfect for workflow processing</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Insurance Applications</h3>
+                        <ul>
+                            <li><strong>Claims Processing Queue:</strong> FIFO order</li>
+                            <li><strong>Policy Renewal Reminders:</strong> Scheduled tasks</li>
+                            <li><strong>Audit Logs:</strong> Chronological events</li>
+                            <li><strong>Notification Queue:</strong> Customer alerts</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="highlight-box">
+                    <strong>Key Feature:</strong> Blocking operations allow workers to wait for new tasks, 
+                    enabling efficient real-time processing of claims and policy updates.
+                </div>
+            </section>
+
+            <!-- Basic List Operations -->
+            <section>
+                <h2>Basic List Operations</h2>
+                <table class="command-table small-text">
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>Description</th>
+                            <th>Use Case</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>LPUSH key value</code></td>
+                            <td>Add to list head (left)</td>
+                            <td>Stack, recent items first</td>
+                        </tr>
+                        <tr>
+                            <td><code>RPUSH key value</code></td>
+                            <td>Add to list tail (right)</td>
+                            <td>Queue, FIFO processing</td>
+                        </tr>
+                        <tr>
+                            <td><code>LPOP key</code></td>
+                            <td>Remove from head</td>
+                            <td>Process most recent</td>
+                        </tr>
+                        <tr>
+                            <td><code>RPOP key</code></td>
+                            <td>Remove from tail</td>
+                            <td>Process oldest in queue</td>
+                        </tr>
+                        <tr>
+                            <td><code>LLEN key</code></td>
+                            <td>Get list length</td>
+                            <td>Queue size monitoring</td>
+                        </tr>
+                        <tr>
+                            <td><code>LRANGE key start stop</code></td>
+                            <td>Get range of elements</td>
+                            <td>View queue contents</td>
+                        </tr>
+                        <tr>
+                            <td><code>BLPOP key timeout</code></td>
+                            <td>Blocking pop from head</td>
+                            <td>Real-time processing</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Claims Processing Queue Example -->
+            <section>
+                <h2>Claims Processing Queue with Lists</h2>
+                <pre><code class="language-bash"># Add new claims to processing queue (FIFO)
+RPUSH claims:processing "CLAIM-2024-001:fender_bender:2500"
+RPUSH claims:processing "CLAIM-2024-002:water_damage:8500"
+RPUSH claims:processing "CLAIM-2024-003:theft:15000"
+
+# Add urgent claim to front of queue
+LPUSH claims:urgent "CLAIM-2024-004:total_loss:35000"
+
+# Check queue sizes
+LLEN claims:processing  # Returns: 3
+LLEN claims:urgent      # Returns: 1
+
+# View pending claims (don't remove)
+LRANGE claims:processing 0 -1  # Show all pending claims
+LRANGE claims:urgent 0 4       # Show next 5 urgent claims
+
+# Process next claim (remove from queue)
+LPOP claims:urgent           # Process urgent first
+RPOP claims:processing       # Process oldest regular claim
+
+# Worker process with blocking (waits for new claims)
+BLPOP claims:urgent claims:processing 30  # Wait 30 seconds for work
+</code></pre>
+            </section>
+
+            <!-- Workflow Patterns -->
+            <section>
+                <h2>Insurance Workflow Patterns</h2>
+                <div class="two-column">
+                    <div>
+                        <h3>🔄 FIFO Queue Pattern</h3>
+                        <pre><code class="language-bash"># Policy renewals queue
+RPUSH policy:renewals "POL-001"
+RPUSH policy:renewals "POL-002"
+RPOP policy:renewals  # Process oldest
+
+# Notification queue
+RPUSH notifications:email "customer@example.com:policy_renewal"
+RPOP notifications:email  # Send oldest email
+</code></pre>
+                    </div>
+                    <div>
+                        <h3>📚 LIFO Stack Pattern</h3>
+                        <pre><code class="language-bash"># Recent customer interactions
+LPUSH customer:12345:history "viewed_policy"
+LPUSH customer:12345:history "updated_contact"
+LPOP customer:12345:history  # Get latest action
+
+# Audit trail (most recent first)
+LPUSH audit:policy:AUTO-001 "premium_updated:2024-03-15"
+LRANGE audit:policy:AUTO-001 0 9  # Last 10 changes
+</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Producer-Consumer Pattern -->
+            <section>
+                <h2>Producer-Consumer with Blocking Operations</h2>
+                <pre><code class="language-javascript">// JavaScript example for Lab 7 preparation
+const redis = require('redis');
+const client = redis.createClient();
+
+// Producer: Add claims to processing queue
+async function submitClaim(claimData) {
+    const claimId = `CLAIM-${Date.now()}`;
+    await client.rPush('claims:processing', JSON.stringify({
+        id: claimId,
+        ...claimData,
+        timestamp: new Date().toISOString()
+    }));
+    console.log(`Claim ${claimId} submitted for processing`);
+}
+
+// Consumer: Process claims with blocking wait
+async function processClaimsWorker() {
+    while (true) {
+        try {
+            // Wait up to 30 seconds for new claim
+            const result = await client.blPop('claims:processing', 30);
+            if (result) {
+                const claimData = JSON.parse(result.element);
+                await processClaim(claimData);
+            }
+        } catch (error) {
+            console.error('Error processing claims:', error);
+        }
+    }
+}
+
+async function processClaim(claim) {
+    // Process the claim
+    console.log(`Processing claim ${claim.id}`);
+    // ... business logic ...
+}
+</code></pre>
+            </section>
+
+            <!-- Memory Optimization -->
+            <section>
+                <h2>Memory Optimization for Insurance Data</h2>
+                <div class="two-column">
+                    <div>
+                        <h3>Hash Optimization</h3>
+                        <ul>
+                            <li><strong>Small Hashes:</strong> Use zip encoding for efficiency</li>
+                            <li><strong>Field Names:</strong> Keep short but meaningful</li>
+                            <li><strong>Expiration:</strong> Set TTL for temporary data</li>
+                            <li><strong>Compression:</strong> Consider for large text fields</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>List Optimization</h3>
+                        <ul>
+                            <li><strong>Trim Lists:</strong> Use LTRIM to limit size</li>
+                            <li><strong>Batch Operations:</strong> Multiple RPUSH in one call</li>
+                            <li><strong>Queue Monitoring:</strong> Track length for alerts</li>
+                            <li><strong>Dead Letter Queues:</strong> Handle failed processing</li>
+                        </ul>
+                    </div>
+                </div>
+                <pre><code class="language-bash"># Keep recent customer activity (last 100 actions)
+LPUSH customer:12345:activity "viewed_policy"
+LTRIM customer:12345:activity 0 99
+
+# Batch claim submission
+RPUSH claims:processing "CLAIM-001" "CLAIM-002" "CLAIM-003"
+
+# Monitor queue depth
+LLEN claims:processing
+</code></pre>
+            </section>
+
+            <!-- Performance Considerations -->
+            <section>
+                <h2>Performance Best Practices</h2>
+                <div class="two-column">
+                    <div>
+                        <h3>Hash Performance</h3>
+                        <ul>
+                            <li><strong>HGETALL:</strong> Avoid on large hashes</li>
+                            <li><strong>Partial Updates:</strong> Use HSET for single fields</li>
+                            <li><strong>Batch Operations:</strong> HMGET/HMSET for multiple fields</li>
+                            <li><strong>Field Indexing:</strong> Consider separate indexes</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>List Performance</h3>
+                        <ul>
+                            <li><strong>Head/Tail Operations:</strong> O(1) performance</li>
+                            <li><strong>Middle Operations:</strong> Avoid LINSERT, LSET</li>
+                            <li><strong>Range Queries:</strong> Limit LRANGE size</li>
+                            <li><strong>Blocking Operations:</strong> Use reasonable timeouts</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lab 7 Announcement -->
+            <section>
+                <div class="callout">
+                    <h2>🚀 Upcoming Lab</h2>
+                    <p><strong>Lab 7: Customer Profiles & Policy Management</strong></p>
+                    <p>Duration: 45 minutes</p>
+                    <p>Build a complete customer profile system with policy management using Redis Hashes, 
+                    implement claims processing queues with Lists, and integrate everything with JavaScript</p>
+                </div>
+            </section>
+
+            <!-- Key Takeaways -->
+            <section>
+                <h2>Key Takeaways</h2>
+                <ul>
+                    <li><strong>Hashes:</strong> Perfect for customer profiles and policy records with field-level updates</li>
+                    <li><strong>Memory Efficient:</strong> Optimized storage for small to medium-sized objects</li>
+                    <li><strong>Lists:</strong> Ideal for workflow queues, processing pipelines, and audit trails</li>
+                    <li><strong>Blocking Operations:</strong> Enable real-time processing with BLPOP/BRPOP</li>
+                    <li><strong>Data Modeling:</strong> Choose structure based on access patterns and update frequency</li>
+                    <li><strong>JavaScript Ready:</strong> Both structures integrate seamlessly with Node.js applications</li>
+                </ul>
+                <div style="text-align: center; margin-top: 40px;">
+                    <p style="font-size: 1.1em; color: #e74c3c;">
+                        <strong>Ready to build real insurance applications with structured data!</strong>
+                    </p>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/notes/notes.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/markdown/markdown.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/highlight.min.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            controls: true,
+            progress: true,
+            center: false,
+            transition: 'slide',
+            plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+        });
+    </script>
+</body>
+</html>
