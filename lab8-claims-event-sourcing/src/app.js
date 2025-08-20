@@ -4,8 +4,6 @@
  */
 
 const redisClient = require('./utils/redisClient');
-const ClaimProducerService = require('./services/claimProducerService');
-const ClaimProcessor = require('./consumers/claimProcessor');
 
 async function main() {
     console.log('🚀 Starting Lab 8: Claims Event Sourcing');

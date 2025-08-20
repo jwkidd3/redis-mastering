@@ -83,117 +83,6 @@ class SetupValidator {
                     }
                 });
             } catch (error) {
-            this.addTest('Redis Connection', 'ERROR', error.message);
-        }
-    }
-
-    async testStreamOperations() {
-        console.log('\n📊 Test: Stream Operations');
-        console.log('-'.repeat(30));
-        
-        try {
-            const claim = new Claim(redisClient);
-            
-            // Test claim submission
-            const testClaim = {
-                customer_id: 'TEST-CUST-001',
-                policy_number: 'TEST-POL-001',
-                amount: 1000,
-                description: 'Test claim for verification'
-            };
-            
-            const result = await claim.submitClaim(testClaim);
-            
-            if (result.success) {
-                this.addTest('Claim Submission', 'PASS', `Claim created: ${result.claim_id}`);
-                this.score++;
-                
-                // Test claim history retrieval
-                const history = await claim.getClaimHistory(result.claim_id);
-                if (history.success && history.events.length > 0) {
-                    this.addTest('Claim History', 'PASS', `Retrieved ${history.events.length} events`);
-                    this.score++;
-                } else {
-                    this.addTest('Claim History', 'FAIL', 'Could not retrieve claim history');
-                }
-            } else {
-                this.addTest('Claim Submission', 'FAIL', result.error);
-            }
-        } catch (error) {
-            this.addTest('Stream Operations', 'ERROR', error.message);
-        }
-    }
-
-    async testClaimLifecycle() {
-        console.log('\n🔄 Test: Claim Lifecycle');
-        console.log('-'.repeat(30));
-        
-        try {
-            const claim = new Claim(redisClient);
-            const client = redisClient.getClient();
-            
-            // Submit test claim
-            const testClaim = {
-                customer_id: 'LIFECYCLE-TEST',
-                policy_number: 'POL-LIFECYCLE',
-                amount: 2500,
-                description: 'Lifecycle test claim'
-            };
-            
-            const submitResult = await claim.submitClaim(testClaim);
-            if (!submitResult.success) {
-                this.addTest('Claim Lifecycle', 'FAIL', 'Could not submit test claim');
-                return;
-            }
-            
-            const claimId = submitResult.claim_id;
-            
-            // Test status update
-            const updateResult = await claim.updateClaimStatus(claimId, 'under_review', {
-                reviewer: 'test_agent'
-            });
-            
-            if (updateResult.success) {
-                this.addTest('Status Update', 'PASS', 'Status updated successfully');
-                this.score++;
-            } else {
-                this.addTest('Status Update', 'FAIL', updateResult.error);
-            }
-            
-            // Test approval
-            const approveResult = await claim.approveClaim(claimId, 2500, 'test_reviewer');
-            if (approveResult.success) {
-                this.addTest('Claim Approval', 'PASS', 'Claim approved successfully');
-                this.score++;
-            } else {
-                this.addTest('Claim Approval', 'FAIL', approveResult.error);
-            }
-            
-            // Test payment
-            const paymentResult = await claim.processPayment(claimId, 2500);
-            if (paymentResult.success) {
-                this.addTest('Payment Processing', 'PASS', 'Payment processed successfully');
-                this.score++;
-            } else {
-                this.addTest('Payment Processing', 'FAIL', paymentResult.error);
-            }
-            
-        } catch (error) {
-            this.addTest('Claim Lifecycle', 'ERROR', error.message);
-        }
-    }
-
-    async testConsumerGroups() {
-        console.log('\n👥 Test: Consumer Groups');
-        console.log('-'.repeat(30));
-        
-        try {
-            const client = redisClient.getClient();
-            const streamName = 'claims:events';
-            const testGroupName = 'test-group-verification';
-            
-            // Create test consumer group
-            await redisClient.createConsumerGroup(streamName, testGroupName, 'error) {
                 this.addError('❌', 'Package.json', 'Invalid JSON format');
             }
         } else {
@@ -221,7 +110,8 @@ class SetupValidator {
             'src/services/claimProducer.js',
             'src/consumers/claimProcessor.js',
             'src/utils/redisClient.js',
-            'config/redis.js'
+            'config/redis.js',
+            'src/app.js'
         ];
 
         requiredFiles.forEach(file => {
@@ -237,7 +127,8 @@ class SetupValidator {
         const testFiles = [
             'tests/claim.test.js',
             'tests/producer.test.js',
-            'tests/consumer.test.js'
+            'tests/consumer.test.js',
+            'tests/run-all-tests.js'
         ];
 
         testFiles.forEach(file => {
@@ -266,7 +157,7 @@ class SetupValidator {
                         if (stats.mode & parseInt('111', 8)) {
                             this.addResult('✅', 'Permissions', `${script} executable`);
                         } else {
-                            this.addWarning('⚠️', 'Permissions', `${script} not executable`);
+                            this.addWarning('⚠️', 'Permissions', `${script} not executable - run: chmod +x ${script}`);
                         }
                     } catch (error) {
                         this.addWarning('⚠️', 'Permissions', `Cannot check ${script} permissions`);
@@ -288,45 +179,69 @@ class SetupValidator {
                 if (fs.existsSync(path.join('node_modules', module))) {
                     this.addResult('✅', 'Module', `${module} installed`);
                 } else {
-                    this.addError('❌', 'Module', `${module} not installed`);
+                    this.addError('❌', 'Module', `${module} not installed - run: npm install`);
                 }
             });
         } else {
-            this.addError('❌', 'Dependencies', 'node_modules missing - run npm install');
+            this.addError('❌', 'Dependencies', 'node_modules missing - run: npm install');
         }
     }
 
     async validateRedisConnection() {
         try {
-            // Dynamic import for Redis client
-            const { createClient } = require('redis');
-            
             // Load environment if available
             if (fs.existsSync('.env')) {
                 require('dotenv').config();
             }
 
+            // Check if Redis module is available
+            let redisModule;
+            try {
+                redisModule = require('redis');
+            } catch (error) {
+                this.addError('❌', 'Redis Module', 'Redis package not installed - run: npm install');
+                return;
+            }
+
             const redisConfig = {
                 host: process.env.REDIS_HOST || 'localhost',
-                port: process.env.REDIS_PORT || 6379,
+                port: parseInt(process.env.REDIS_PORT) || 6379,
                 password: process.env.REDIS_PASSWORD || undefined
             };
 
-            const client = createClient({
+            const client = redisModule.createClient({
                 socket: {
                     host: redisConfig.host,
-                    port: redisConfig.port
+                    port: redisConfig.port,
+                    connectTimeout: 5000
                 },
                 password: redisConfig.password
             });
 
+            // Set up error handler to prevent unhandled errors
+            client.on('error', (err) => {
+                // Error will be handled by the catch block
+            });
+
             await client.connect();
-            await client.ping();
+            const pong = await client.ping();
             await client.disconnect();
             
-            this.addResult('✅', 'Redis Connection', `Connected to ${redisConfig.host}:${redisConfig.port}`);
+            if (pong === 'PONG') {
+                this.addResult('✅', 'Redis Connection', `Connected to ${redisConfig.host}:${redisConfig.port}`);
+            } else {
+                this.addError('❌', 'Redis Connection', 'Unexpected ping response');
+            }
         } catch (error) {
-            this.addError('❌', 'Redis Connection', `Failed: ${error.message}`);
+            if (error.message.includes('ECONNREFUSED')) {
+                this.addError('❌', 'Redis Connection', `Connection refused - check if Redis is running and .env configuration`);
+            } else if (error.message.includes('ETIMEDOUT')) {
+                this.addError('❌', 'Redis Connection', 'Connection timeout - check Redis host and port in .env');
+            } else if (error.message.includes('ENOTFOUND')) {
+                this.addError('❌', 'Redis Connection', 'Redis host not found - check REDIS_HOST in .env');
+            } else {
+                this.addError('❌', 'Redis Connection', `Failed: ${error.message}`);
+            }
         }
     }
 
@@ -361,14 +276,20 @@ class SetupValidator {
         if (this.errors.length === 0) {
             console.log('\n🎉 VALIDATION PASSED!');
             console.log('Lab 8 environment is ready for use.');
+            console.log('\n🚀 Next steps:');
+            console.log('1. Follow lab8.md instructions');
+            console.log('2. Start with: npm run producer');
+            console.log('3. Process claims: npm run consumer');
+            console.log('4. View analytics: npm run analytics');
         } else {
             console.log('\n❌ VALIDATION FAILED!');
             console.log('Please fix the errors above before proceeding.');
-            console.log('\nCommon fixes:');
-            console.log('1. Run: npm install');
-            console.log('2. Copy .env.template to .env and configure Redis settings');
-            console.log('3. Ensure all required files are present');
-            console.log('4. Check Redis connection settings');
+            console.log('\n🔧 Common fixes:');
+            console.log('1. Install dependencies: npm install');
+            console.log('2. Configure environment: cp .env.template .env && nano .env');
+            console.log('3. Make scripts executable: chmod +x scripts/*.sh');
+            console.log('4. Check Redis connection in .env file');
+            console.log('5. Ensure Redis server is running and accessible');
         }
 
         if (this.warnings.length > 0) {
@@ -386,7 +307,11 @@ if (require.main === module) {
     validator.validate().then(success => {
         process.exit(success ? 0 : 1);
     }).catch(error => {
-        console.error('Validation failed:', error);
+        console.error('❌ Validation script error:', error.message);
+        console.log('\n🔧 Troubleshooting:');
+        console.log('1. Ensure you are in the lab8-claims-event-sourcing directory');
+        console.log('2. Run: npm install');
+        console.log('3. Check that all files were created properly');
         process.exit(1);
     });
 }

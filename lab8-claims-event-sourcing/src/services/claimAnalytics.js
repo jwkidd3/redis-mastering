@@ -23,6 +23,7 @@ class ClaimAnalytics {
             
             if (events.length === 0) {
                 console.log('📭 No events found. Submit some claims first!');
+                console.log('💡 Try: npm run load-data');
                 return;
             }
             
@@ -134,10 +135,10 @@ class ClaimAnalytics {
         // Amount statistics
         if (analytics.amountStats.total > 0) {
             console.log('\n💰 Amount Statistics:');
-            console.log(`   Total: ${analytics.amountStats.total.toLocaleString()}`);
-            console.log(`   Average: ${analytics.amountStats.average.toFixed(2)}`);
-            console.log(`   Maximum: ${analytics.amountStats.max.toLocaleString()}`);
-            console.log(`   Minimum: ${analytics.amountStats.min.toLocaleString()}`);
+            console.log(`   Total: $${analytics.amountStats.total.toLocaleString()}`);
+            console.log(`   Average: $${analytics.amountStats.average.toFixed(2)}`);
+            console.log(`   Maximum: $${analytics.amountStats.max.toLocaleString()}`);
+            console.log(`   Minimum: $${analytics.amountStats.min.toLocaleString()}`);
         }
         
         console.log('\n🎯 Recommendations:');

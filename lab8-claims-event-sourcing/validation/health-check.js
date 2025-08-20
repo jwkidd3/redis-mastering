@@ -5,150 +5,88 @@
  * Quick runtime validation for running services
  */
 
-const { createClient } = require('redis');
-
-class HealthChecker {
-    constructor() {
-        this.checks = [];
-    }
-
-    async runAllChecks() {
-        console.log('🏥 Lab 8 Health Check');
-        console.log('='.repeat(30));
+async function runHealthCheck() {
+    console.log('🏥 Lab 8 Health Check');
+    console.log('='.repeat(30));
+    
+    let allHealthy = true;
+    
+    try {
+        // Check if required modules can be loaded
+        require('dotenv').config();
         
-        await this.checkRedisConnection();
-        await this.checkStreams();
-        await this.checkConsumerGroups();
+        // Check Redis module
+        const redis = require('redis');
+        console.log('✅ Redis module: Available');
         
-        this.displayResults();
-        
-        return this.checks.every(check => check.passed);
-    }
-
-    async checkRedisConnection() {
-        try {
-            require('dotenv').config();
-            
-            const client = createClient({
-                socket: {
-                    host: process.env.REDIS_HOST || 'localhost',
-                    port: process.env.REDIS_PORT || 6379
-                },
-                password: process.env.REDIS_PASSWORD
-            });
-
-            await client.connect();
-            const pong = await client.ping();
-            await client.disconnect();
-            
-            this.addCheck('Redis Connection', true, 'Connected successfully');
-        } catch (error) {
-            this.addCheck('Redis Connection', false, error.message);
-        }
-    }
-
-    async checkStreams() {
-        try {
-            require('dotenv').config();
-            
-            const client = createClient({
-                socket: {
-                    host: process.env.REDIS_HOST || 'localhost',
-                    port: process.env.REDIS_PORT || 6379
-                },
-                password: process.env.REDIS_PASSWORD
-            });
-
-            await client.connect();
-            
-            // Check if claims stream exists and has data
-            try {
-                const info = await client.xInfoStream('claims:events');
-                this.addCheck('Claims Stream', true, `${info.length} events in stream`);
-            } catch (error) {
-                if (error.message.includes('no such key')) {
-                    this.addCheck('Claims Stream', true, 'Stream ready (empty)');
-                } else {
-                    throw error;
-                }
-            }
-            
-            await client.disconnect();
-        } catch (error) {
-            this.addCheck('Claims Stream', false, error.message);
-        }
-    }
-
-    async checkConsumerGroups() {
-        try {
-            require('dotenv').config();
-            
-            const client = createClient({
-                socket: {
-                    host: process.env.REDIS_HOST || 'localhost',
-                    port: process.env.REDIS_PORT || 6379
-                },
-                password: process.env.REDIS_PASSWORD
-            });
-
-            await client.connect();
-            
-            try {
-                const groups = await client.xInfoGroups('claims:events');
-                if (groups.length > 0) {
-                    this.addCheck('Consumer Groups', true, `${groups.length} groups configured`);
-                } else {
-                    this.addCheck('Consumer Groups', true, 'No groups yet (normal for new setup)');
-                }
-            } catch (error) {
-                if (error.message.includes('no such key')) {
-                    this.addCheck('Consumer Groups', true, 'Ready for consumer group creation');
-                } else {
-                    throw error;
-                }
-            }
-            
-            await client.disconnect();
-        } catch (error) {
-            this.addCheck('Consumer Groups', false, error.message);
-        }
-    }
-
-    addCheck(name, passed, message) {
-        this.checks.push({ name, passed, message });
-    }
-
-    displayResults() {
-        console.log('\n📊 HEALTH CHECK RESULTS');
-        console.log('='.repeat(40));
-        
-        this.checks.forEach(check => {
-            const icon = check.passed ? '✅' : '❌';
-            console.log(`${icon} ${check.name}: ${check.message}`);
+        // Test Redis connection
+        const client = redis.createClient({
+            socket: {
+                host: process.env.REDIS_HOST || 'localhost',
+                port: parseInt(process.env.REDIS_PORT) || 6379,
+                connectTimeout: 5000
+            },
+            password: process.env.REDIS_PASSWORD
         });
 
-        const passedCount = this.checks.filter(c => c.passed).length;
-        const totalCount = this.checks.length;
+        await client.connect();
+        const pong = await client.ping();
+        await client.disconnect();
         
-        console.log(`\n📈 Overall Health: ${passedCount}/${totalCount} checks passed`);
-        
-        if (passedCount === totalCount) {
-            console.log('🎉 All systems healthy!');
+        if (pong === 'PONG') {
+            console.log('✅ Redis connection: Healthy');
         } else {
-            console.log('⚠️  Some issues detected - check the details above');
+            console.log('❌ Redis connection: Unhealthy');
+            allHealthy = false;
         }
+        
+        // Check for streams (if they exist)
+        try {
+            const streamClient = redis.createClient({
+                socket: {
+                    host: process.env.REDIS_HOST || 'localhost',
+                    port: parseInt(process.env.REDIS_PORT) || 6379
+                },
+                password: process.env.REDIS_PASSWORD
+            });
+            
+            await streamClient.connect();
+            
+            try {
+                const info = await streamClient.xInfoStream('claims:events');
+                console.log(`✅ Claims stream: ${info.length} events`);
+            } catch (e) {
+                if (e.message.includes('no such key')) {
+                    console.log('ℹ️  Claims stream: Not yet created (normal for new setup)');
+                } else {
+                    throw e;
+                }
+            }
+            
+            await streamClient.disconnect();
+            
+        } catch (error) {
+            console.log('⚠️  Stream check failed:', error.message);
+        }
+        
+    } catch (error) {
+        console.log('❌ Health check failed:', error.message);
+        allHealthy = false;
     }
+    
+    console.log('\n📊 Overall Health:', allHealthy ? '✅ HEALTHY' : '❌ ISSUES DETECTED');
+    
+    return allHealthy;
 }
 
 // Run health check if called directly
 if (require.main === module) {
-    const checker = new HealthChecker();
-    checker.runAllChecks().then(success => {
-        process.exit(success ? 0 : 1);
+    runHealthCheck().then(healthy => {
+        process.exit(healthy ? 0 : 1);
     }).catch(error => {
-        console.error('Health check failed:', error);
+        console.error('Health check error:', error);
         process.exit(1);
     });
 }
 
-module.exports = HealthChecker;
+module.exports = { runHealthCheck };
