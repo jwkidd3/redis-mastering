@@ -1,135 +1,111 @@
 #!/bin/bash
 
-# Real-time Redis production monitoring dashboard
-echo "🔍 Starting Redis Production Monitoring Dashboard"
-echo "Press Ctrl+C to stop monitoring"
-echo ""
+# Production-grade Redis monitoring script
+# Monitors key metrics and provides real-time dashboard
 
-# Redis connection configuration
-REDIS_HOST=${REDIS_HOST:-localhost}
-REDIS_PORT=${REDIS_PORT:-6379}
-REDIS_PASSWORD=${REDIS_PASSWORD:-}
+REDIS_HOST="redis-server.training.com"
+REDIS_PORT="6379"
+ALERT_LOG="monitoring/alerts.log"
+METRICS_LOG="monitoring/metrics.log"
 
-# Build Redis CLI command with connection parameters
-REDIS_CLI_CMD="redis-cli -h $REDIS_HOST -p $REDIS_PORT"
-if [ -n "$REDIS_PASSWORD" ]; then
-    REDIS_CLI_CMD="$REDIS_CLI_CMD -a $REDIS_PASSWORD"
-fi
-
-echo "🔗 Monitoring Redis at $REDIS_HOST:$REDIS_PORT"
-
-MONITOR_LOG="monitoring/monitor.log"
+# Create monitoring directory
 mkdir -p monitoring
 
-# Create monitoring header
-echo "========================================" > $MONITOR_LOG
-echo "Redis Production Monitoring Started" >> $MONITOR_LOG
-echo "Timestamp: $(date)" >> $MONITOR_LOG
-echo "Redis Host: $REDIS_HOST:$REDIS_PORT" >> $MONITOR_LOG
-echo "========================================" >> $MONITOR_LOG
+echo "🔍 Starting Redis Production Monitor"
+echo "Press Ctrl+C to stop monitoring"
+echo "Logging to: $METRICS_LOG"
+
+# Trap Ctrl+C for clean exit
+trap 'echo -e "\n\n🛑 Monitoring stopped."; exit 0' INT
 
 while true; do
     clear
-    echo "🚀 Redis Production Monitoring Dashboard"
-    echo "========================================"
-    echo "🔗 Connected to: $REDIS_HOST:$REDIS_PORT"
-    echo "⏰ $(date)"
-    echo ""
     
-    # Server Information
-    echo "🖥️  Server Information:"
-    $REDIS_CLI_CMD INFO server | grep -E "(redis_version|uptime_in_seconds|tcp_port)" | sed 's/^/   /'
-    echo ""
+    # Header
+    echo "┌─────────────────────────────────────────────────────────┐"
+    echo "│                 Redis Production Monitor                 │"
+    echo "│                  $(date '+%Y-%m-%d %H:%M:%S')                    │"
+    echo "└─────────────────────────────────────────────────────────┘"
     
-    # Memory Information
-    echo "💾 Memory Usage:"
-    MEMORY_INFO=$($REDIS_CLI_CMD INFO memory)
-    USED_MEMORY=$(echo "$MEMORY_INFO" | grep "used_memory:" | cut -d: -f2 | sed 's/\r//')
-    USED_MEMORY_PEAK=$(echo "$MEMORY_INFO" | grep "used_memory_peak:" | cut -d: -f2 | sed 's/\r//')
-    FRAGMENTATION=$(echo "$MEMORY_INFO" | grep "mem_fragmentation_ratio:" | cut -d: -f2 | sed 's/\r//')
+    # Get Redis info
+    INFO_OUTPUT=$(redis-cli -h $REDIS_HOST -p $REDIS_PORT INFO 2>/dev/null)
     
-    echo "   Used Memory: $(($USED_MEMORY / 1024 / 1024)) MB"
-    echo "   Peak Memory: $(($USED_MEMORY_PEAK / 1024 / 1024)) MB"
-    echo "   Fragmentation: ${FRAGMENTATION}"
-    echo ""
-    
-    # Client Information
-    echo "👥 Client Connections:"
-    CLIENT_INFO=$($REDIS_CLI_CMD INFO clients)
-    CONNECTED_CLIENTS=$(echo "$CLIENT_INFO" | grep "connected_clients:" | cut -d: -f2 | sed 's/\r//')
-    echo "   Connected: $CONNECTED_CLIENTS"
-    echo ""
-    
-    # Database Information
-    echo "🗄️  Database Statistics:"
-    DB_INFO=$($REDIS_CLI_CMD INFO keyspace)
-    if [ -n "$DB_INFO" ]; then
-        echo "$DB_INFO" | sed 's/^/   /'
-    else
-        echo "   No databases with keys"
-    fi
-    echo ""
-    
-    # Performance Metrics
-    echo "⚡ Performance Metrics:"
-    STATS_INFO=$($REDIS_CLI_CMD INFO stats)
-    TOTAL_COMMANDS=$(echo "$STATS_INFO" | grep "total_commands_processed:" | cut -d: -f2 | sed 's/\r//')
-    OPS_PER_SEC=$(echo "$STATS_INFO" | grep "instantaneous_ops_per_sec:" | cut -d: -f2 | sed 's/\r//')
-    echo "   Total Commands: $TOTAL_COMMANDS"
-    echo "   Ops/sec: $OPS_PER_SEC"
-    echo ""
-    
-    # Hit Ratio
-    echo "🎯 Cache Performance:"
-    KEYSPACE_HITS=$(echo "$STATS_INFO" | grep "keyspace_hits:" | cut -d: -f2 | sed 's/\r//')
-    KEYSPACE_MISSES=$(echo "$STATS_INFO" | grep "keyspace_misses:" | cut -d: -f2 | sed 's/\r//')
-    if [ "$KEYSPACE_HITS" -gt 0 ] || [ "$KEYSPACE_MISSES" -gt 0 ]; then
-        TOTAL_REQUESTS=$((KEYSPACE_HITS + KEYSPACE_MISSES))
-        HIT_RATIO=$(echo "scale=2; $KEYSPACE_HITS * 100 / $TOTAL_REQUESTS" | bc -l 2>/dev/null || echo "0")
-        echo "   Hits: $KEYSPACE_HITS"
-        echo "   Misses: $KEYSPACE_MISSES"
-        echo "   Hit Ratio: ${HIT_RATIO}%"
-    else
-        echo "   No cache activity yet"
-    fi
-    echo ""
-    
-    # Slow Log
-    echo "🐌 Recent Slow Operations:"
-    SLOW_LOG=$($REDIS_CLI_CMD SLOWLOG GET 3)
-    if [ -n "$SLOW_LOG" ]; then
-        echo "$SLOW_LOG" | head -10 | sed 's/^/   /'
-    else
-        echo "   No slow operations"
-    fi
-    echo ""
-    
-    # Key Expiration Tracking
-    echo "⏱️  TTL Information:"
-    EXPIRING_KEYS=$($REDIS_CLI_CMD EVAL "
+    if [ $? -eq 0 ]; then
+        # Extract key metrics
+        USED_MEMORY=$(echo "$INFO_OUTPUT" | grep "used_memory_human:" | cut -d: -f2 | tr -d '\r')
+        CONNECTED_CLIENTS=$(echo "$INFO_OUTPUT" | grep "connected_clients:" | cut -d: -f2 | tr -d '\r')
+        TOTAL_COMMANDS=$(echo "$INFO_OUTPUT" | grep "total_commands_processed:" | cut -d: -f2 | tr -d '\r')
+        KEYSPACE_HITS=$(echo "$INFO_OUTPUT" | grep "keyspace_hits:" | cut -d: -f2 | tr -d '\r')
+        KEYSPACE_MISSES=$(echo "$INFO_OUTPUT" | grep "keyspace_misses:" | cut -d: -f2 | tr -d '\r')
+        TOTAL_KEYS=$(redis-cli -h $REDIS_HOST -p $REDIS_PORT DBSIZE 2>/dev/null)
+        
+        # Calculate hit ratio
+        if [ "$KEYSPACE_HITS" != "" ] && [ "$KEYSPACE_MISSES" != "" ]; then
+            TOTAL_HITS=$((KEYSPACE_HITS + KEYSPACE_MISSES))
+            if [ $TOTAL_HITS -gt 0 ]; then
+                HIT_RATIO=$(echo "scale=2; $KEYSPACE_HITS * 100 / $TOTAL_HITS" | bc -l 2>/dev/null || echo "0")
+            else
+                HIT_RATIO="0"
+            fi
+        else
+            HIT_RATIO="0"
+        fi
+        
+        # Display metrics
+        echo "📊 SYSTEM METRICS:"
+        echo "   Memory Usage: ${USED_MEMORY:-Unknown}"
+        echo "   Connected Clients: ${CONNECTED_CLIENTS:-0}"
+        echo "   Total Keys: ${TOTAL_KEYS:-0}"
+        echo "   Commands Processed: ${TOTAL_COMMANDS:-0}"
+        echo "   Cache Hit Ratio: ${HIT_RATIO}%"
+        echo ""
+        
+        # Key Distribution
+        echo "🗝️  KEY DISTRIBUTION:"
+        redis-cli -h $REDIS_HOST -p $REDIS_PORT EVAL "
+        local stats = {}
+        stats.customers = #redis.call('KEYS', 'customer:*')
+        stats.policies = #redis.call('KEYS', 'policy:*')
+        stats.claims = #redis.call('KEYS', 'claim:*')
+        stats.sessions = #redis.call('KEYS', 'session:*')
+        stats.analytics = #redis.call('KEYS', 'analytics:*')
+        stats.cache = #redis.call('KEYS', 'cache:*')
+        return cjson.encode(stats)
+        " 0 2>/dev/null | sed 's/[{}"]//g' | sed 's/,/\n   /g' | sed 's/:/: /'
+        
+        echo ""
+        
+        # TTL Analysis
+        echo "⏰ TTL ANALYSIS:"
+        EXPIRING_KEYS=$(redis-cli -h $REDIS_HOST -p $REDIS_PORT EVAL "
+        local count = 0
         local keys = redis.call('KEYS', '*')
-        local expiring = 0
-        local expired_soon = 0
         for i=1,#keys do
             local ttl = redis.call('TTL', keys[i])
-            if ttl > 0 then
-                expiring = expiring + 1
-                if ttl < 3600 then
-                    expired_soon = expired_soon + 1
-                end
+            if ttl > 0 and ttl < 3600 then
+                count = count + 1
             end
         end
-        return {expiring, expired_soon}
-    " 0)
-    echo "   Keys with TTL: $(echo $EXPIRING_KEYS | cut -d' ' -f1)"
-    echo "   Expiring < 1hr: $(echo $EXPIRING_KEYS | cut -d' ' -f2)"
-    echo ""
-    
-    # Log current stats
-    echo "$(date): Memory=${USED_MEMORY}B, Clients=${CONNECTED_CLIENTS}, Ops/sec=${OPS_PER_SEC}" >> $MONITOR_LOG
-    
-    echo "📊 Monitoring log: $MONITOR_LOG"
-    echo "Press Ctrl+C to stop monitoring..."
+        return count
+        " 0 2>/dev/null)
+        echo "   Keys expiring in < 1 hour: ${EXPIRING_KEYS:-0}"
+        
+        # Log metrics
+        echo "$(date '+%Y-%m-%d %H:%M:%S'),${USED_MEMORY:-0},${CONNECTED_CLIENTS:-0},${TOTAL_KEYS:-0},${HIT_RATIO}" >> $METRICS_LOG
+        
+        # Alerts
+        if [ "${CONNECTED_CLIENTS:-0}" -gt 100 ]; then
+            echo "$(date '+%Y-%m-%d %H:%M:%S') ALERT: High client connections: $CONNECTED_CLIENTS" >> $ALERT_LOG
+        fi
+        
+        echo ""
+        echo "🔄 Refreshing in 5 seconds... (Press Ctrl+C to stop)"
+        
+    else
+        echo "❌ Cannot connect to Redis server"
+        echo "   Host: $REDIS_HOST:$REDIS_PORT"
+        echo "   Check connection and try again"
+    fi
     
     sleep 5
 done
