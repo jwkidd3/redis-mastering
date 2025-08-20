@@ -1,22 +1,22 @@
-# Lab 13: Basic Production Configuration
+# Lab 13: Production Configuration for Insurance Systems
 
 **Duration:** 45 minutes  
-**Objective:** Configure Redis for basic production deployment with insurance data persistence, security, and backup strategies
+**Objective:** Configure Redis for production deployment in insurance environments with proper persistence, security, memory management, and backup strategies
 
 ## 🎯 Learning Objectives
 
 By the end of this lab, you will be able to:
-- Configure RDB persistence for insurance data backup
-- Set up AOF (Append Only File) for transaction logging
-- Implement memory management and eviction policies
-- Configure basic authentication for production security
-- Create automated backup scripts for insurance data
-- Set up production-ready Redis configuration files
-- Monitor production Redis instances with Redis Insight
+- Configure RDB persistence for insurance data backup and compliance
+- Set up AOF (Append Only File) for transaction-level insurance data protection
+- Implement memory management and eviction policies for insurance data retention
+- Configure basic authentication and security for insurance production environments
+- Create automated backup scripts for insurance data protection
+- Set up production-ready Redis configuration files for insurance compliance
+- Monitor production Redis instances with Redis Insight for insurance operations
 
 ---
 
-## Part 1: RDB Persistence Configuration (15 minutes)
+## Part 1: Production Configuration Setup (15 minutes)
 
 ### Step 1: Environment Setup
 
@@ -25,7 +25,7 @@ By the end of this lab, you will be able to:
 ```bash
 # Set your Redis connection parameters
 export REDIS_HOST="your-redis-host.com"  # Replace with actual host
-export REDIS_PORT="6379"                  # Replace with actual port
+export REDIS_PORT="6379"                  # Replace with actual port  
 export REDIS_PASSWORD=""                  # Replace if password required
 
 # Test connection to remote Redis instance
@@ -33,265 +33,332 @@ redis-cli -h $REDIS_HOST -p $REDIS_PORT ping
 
 # Create production configuration directory
 mkdir -p /tmp/redis-production-config
+cd /tmp/redis-production-config
 
-# Start with our insurance sample data
+# Load sample insurance data for production testing
 ./scripts/load-insurance-production-data.sh
 ```
 
-### Step 2: Configure RDB Snapshots for Insurance Data
+### Step 2: Configure RDB Persistence for Insurance Data
 
-RDB (Redis Database) provides point-in-time snapshots of your insurance data.
+RDB (Redis Database) provides point-in-time snapshots of your insurance data for backup and compliance.
 
 ```bash
-# Connect to Redis and configure RDB settings
-redis-cli -h $REDIS_HOST -p $REDIS_PORT
-
-# Configure automatic snapshots based on insurance data changes
-CONFIG SET save "900 1 300 10 60 10000"
-# Explanation:
-# - Save if at least 1 key changed in 900 seconds (15 minutes) - for low activity
-# - Save if at least 10 keys changed in 300 seconds (5 minutes) - for moderate activity  
-# - Save if at least 10,000 keys changed in 60 seconds - for high activity (claims processing)
-
-# Set RDB filename for insurance backups
-CONFIG SET dbfilename "insurance-data.rdb"
-
-# Configure RDB compression (saves disk space for large datasets)
-CONFIG SET rdbcompression yes
-
-# Enable RDB checksum for data integrity
-CONFIG SET rdbchecksum yes
+# Create production Redis configuration file
+cp config/redis-production.conf redis-production-custom.conf
 
 # View current RDB configuration
-CONFIG GET save
-CONFIG GET dbfilename
-CONFIG GET rdbcompression
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG GET save
+
+# Configure RDB snapshots for insurance data protection
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG SET save "900 1 300 10 60 1000"
+
+# Set RDB file location (if you have write permissions)
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG GET dir
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG GET dbfilename
+
+# Enable RDB compression for efficient storage
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG SET rdbcompression yes
+
+# Configure RDB checksum for data integrity
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG SET rdbchecksum yes
 ```
 
-### Step 3: Test RDB Backup Process
+**💡 Understanding RDB Configuration:**
+- `save "900 1"` - Save if at least 1 key changed in 900 seconds (15 minutes)
+- `save "300 10"` - Save if at least 10 keys changed in 300 seconds (5 minutes)
+- `save "60 1000"` - Save if at least 1000 keys changed in 60 seconds (1 minute)
+
+### Step 3: Test RDB Snapshot Creation
 
 ```bash
-# Load sample insurance data for testing
-HSET policy:12345 policyholder "Sarah Johnson" type "Auto" premium 1200 status "Active"
-HSET policy:12346 policyholder "Mike Chen" type "Home" premium 800 status "Active"
-HSET policy:12347 policyholder "Lisa Rodriguez" type "Life" premium 300 status "Pending"
+# Force an immediate snapshot
+redis-cli -h $REDIS_HOST -p $REDIS_PORT BGSAVE
 
-# Set claims processing queues
-LPUSH claims:urgent "claim:54321:total_loss" "claim:54322:theft"
-LPUSH claims:standard "claim:54323:fender_bender" "claim:54324:glass_damage"
+# Check last save time
+redis-cli -h $REDIS_HOST -p $REDIS_PORT LASTSAVE
 
-# Trigger manual backup
-BGSAVE
-
-# Check backup status
-LASTSAVE
-
-# Monitor backup progress
-INFO persistence
+# Monitor background save status
+redis-cli -h $REDIS_HOST -p $REDIS_PORT INFO persistence | grep rdb
 ```
 
 ---
 
-## Part 2: AOF Configuration for Transaction Logging (15 minutes)
+## Part 2: AOF Configuration for Transaction Logging (10 minutes)
 
-### Step 4: Enable AOF (Append Only File)
+### Step 1: Enable AOF for Insurance Transaction Durability
 
-AOF logs every write operation, providing better durability for critical insurance transactions.
+AOF (Append Only File) logs every write operation for maximum durability of insurance transactions.
 
 ```bash
-# Enable AOF logging
-CONFIG SET appendonly yes
+# Check current AOF status
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG GET appendonly
 
-# Set AOF filename
-CONFIG SET appendfilename "insurance-transactions.aof"
+# Enable AOF for transaction logging
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG SET appendonly yes
 
-# Configure AOF sync policy for insurance compliance
-CONFIG SET appendfsync everysec
-# Options:
-# - always: Sync every write (highest durability, slower performance)
-# - everysec: Sync every second (good balance for insurance data)
-# - no: Let OS decide when to sync (fastest, least durable)
+# Configure AOF sync policy for insurance transactions
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG SET appendfsync everysec
 
-# Enable AOF rewrite to compact the log file
-CONFIG SET auto-aof-rewrite-percentage 100
-CONFIG SET auto-aof-rewrite-min-size 64mb
+# Configure AOF rewrite settings
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG SET auto-aof-rewrite-percentage 100
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG SET auto-aof-rewrite-min-size 67108864
 
 # Check AOF configuration
-CONFIG GET appendonly
-CONFIG GET appendfilename
-CONFIG GET appendfsync
+redis-cli -h $REDIS_HOST -p $REDIS_PORT INFO persistence | grep aof
 ```
 
-### Step 5: Test AOF Logging
+**💡 AOF Sync Policies:**
+- `always` - Sync every write (slowest, safest)
+- `everysec` - Sync every second (recommended for insurance)
+- `no` - Let OS decide when to sync (fastest, least safe)
+
+### Step 2: Test AOF Functionality
 
 ```bash
-# Simulate insurance business operations
-HSET customer:67890 name "Jennifer Walsh" email "j.walsh@email.com" phone "555-0123"
-SADD customer:67890:policies "policy:12345" "policy:12346"
+# Perform some insurance data operations to generate AOF entries
+redis-cli -h $REDIS_HOST -p $REDIS_PORT SET policy:P123456 "Auto Policy - Customer ID: C789"
+redis-cli -h $REDIS_HOST -p $REDIS_PORT SET claim:C987654 "Active claim for policy P123456"
+redis-cli -h $REDIS_HOST -p $REDIS_PORT HSET customer:C789 name "John Smith" policy_count 3
 
-# Process claim updates
-HSET claim:54321 status "investigating" adjuster "John Smith" amount 25000
-HSET claim:54322 status "approved" adjuster "Maria Garcia" amount 1200
+# Force AOF rewrite to optimize file size
+redis-cli -h $REDIS_HOST -p $REDIS_PORT BGREWRITEAOF
 
-# Update policy premiums (rate changes)
-HINCRBY policy:12345 premium 50
-HINCRBY policy:12346 premium -25
-
-# Check AOF file growth
-INFO persistence
-
-# View recent AOF entries (be careful with large files)
-# tail -20 /path/to/insurance-transactions.aof
+# Check AOF status
+redis-cli -h $REDIS_HOST -p $REDIS_PORT INFO persistence | grep aof_rewrite
 ```
 
 ---
 
-## Part 3: Memory Management & Eviction Policies (10 minutes)
+## Part 3: Memory Management & Security Configuration (15 minutes)
 
-### Step 6: Configure Memory Limits and Eviction
+### Step 1: Configure Memory Management for Insurance Data
 
 ```bash
-# Set memory limit (adjust based on available system memory)
-CONFIG SET maxmemory 256mb
+# Check current memory usage
+redis-cli -h $REDIS_HOST -p $REDIS_PORT INFO memory | grep used_memory
+
+# Set maximum memory limit (adjust based on your system)
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG SET maxmemory 1gb
 
 # Configure eviction policy for insurance data
-CONFIG SET maxmemory-policy allkeys-lru
-# Policy options for insurance systems:
-# - noeviction: Return errors when memory limit reached (safest for critical data)
-# - allkeys-lru: Remove least recently used keys (good for cache scenarios)
-# - volatile-lru: Remove LRU keys with TTL set (good for temporary data like quotes)
-# - allkeys-lfu: Remove least frequently used keys (good for diverse data patterns)
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG SET maxmemory-policy allkeys-lru
 
-# Set memory usage samples for eviction algorithm
-CONFIG SET maxmemory-samples 5
+# Set memory sampling for eviction
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG SET maxmemory-samples 5
 
-# Check current memory usage
-INFO memory
-
-# View eviction statistics
-INFO stats
+# Check memory configuration
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG GET maxmemory*
 ```
 
-### Step 7: Memory Optimization Settings
+**💡 Eviction Policies for Insurance:**
+- `allkeys-lru` - Remove least recently used keys (recommended)
+- `volatile-lru` - Remove LRU keys with expire set
+- `allkeys-lfu` - Remove least frequently used keys
+- `noeviction` - Don't evict, return errors (for critical insurance data)
+
+### Step 2: Configure Basic Security
 
 ```bash
-# Configure memory-efficient encoding for insurance data
-CONFIG SET hash-max-ziplist-entries 512
-CONFIG SET hash-max-ziplist-value 64
-
-CONFIG SET list-max-ziplist-size -2
-CONFIG SET list-compress-depth 0
-
-CONFIG SET set-max-intset-entries 512
-
-CONFIG SET zset-max-ziplist-entries 128
-CONFIG SET zset-max-ziplist-value 64
-
-# Enable key expiration notifications for monitoring
-CONFIG SET notify-keyspace-events Ex
-
-# View current encoding settings
-CONFIG GET "*ziplist*"
-CONFIG GET "*intset*"
-```
-
----
-
-## Part 4: Basic Authentication & Security (10 minutes)
-
-### Step 8: Configure Authentication
-
-```bash
-# Set a strong password for production (replace with secure password)
-CONFIG SET requirepass "Insurance2024$ecur3!"
-
-# Restart Redis connection with authentication
-# redis-cli -h $REDIS_HOST -p $REDIS_PORT -a "Insurance2024$ecur3!"
-
-# Test authentication
-AUTH "Insurance2024$ecur3!"
-PING
-
-# Create read-only user for monitoring (Redis 6+)
-ACL SETUSER monitoring on +@read +ping +info ~* &Insurance2024$ecur3!
-
-# Create application user with specific permissions
-ACL SETUSER insurance-app on +@all -flushdb -flushall -shutdown ~* &Insurance2024$ecur3!
-
-# List all users
-ACL LIST
-
-# Check current user permissions
-ACL WHOAMI
-```
-
-### Step 9: Network Security Configuration
-
-```bash
-# Configure protected mode (if applicable)
-CONFIG GET protected-mode
-
-# Set bind address for production (example - adjust for your environment)
-# CONFIG SET bind "127.0.0.1 192.168.1.100"
+# Set a password for production security (if supported)
+# redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG SET requirepass "your-secure-password"
 
 # Disable dangerous commands in production
-CONFIG SET rename-command-flushdb ""
-CONFIG SET rename-command-flushall ""
-CONFIG SET rename-command-debug ""
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG SET rename-command FLUSHDB "DANGEROUS_FLUSHDB_RENAMED"
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG SET rename-command FLUSHALL "DANGEROUS_FLUSHALL_RENAMED"
 
-# Check command renaming
-CONFIG GET "*command*"
+# Configure timeout for idle clients
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG SET timeout 300
+
+# Limit number of client connections
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG SET maxclients 1000
+
+# Check security settings
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG GET "*timeout*"
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG GET maxclients
+```
+
+### Step 3: Performance Monitoring Setup
+
+```bash
+# Enable slow log for performance monitoring
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG SET slowlog-log-slower-than 10000
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG SET slowlog-max-len 128
+
+# Check slow log settings
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG GET slowlog*
+
+# View current slow log
+redis-cli -h $REDIS_HOST -p $REDIS_PORT SLOWLOG GET 5
+
+# Monitor real-time operations (run briefly)
+timeout 10s redis-cli -h $REDIS_HOST -p $REDIS_PORT MONITOR | head -20 || true
 ```
 
 ---
 
-## Part 5: Backup Script Creation (10 minutes)
+## Part 4: Backup & Monitoring (5 minutes)
 
-### Step 10: Create Automated Backup Script
+### Step 1: Create Production Backup Script
 
 ```bash
-# Create backup script
-cat > scripts/backup-insurance-redis.sh << 'BACKUP_SCRIPT'
-#!/bin/bash
+# Run the automated backup script
+./scripts/backup-insurance-redis.sh
 
-# Insurance Redis Backup Script
-# Creates both RDB and AOF backups with timestamps
+# Check backup creation
+ls -la backup/
 
-REDIS_HOST="${REDIS_HOST:-localhost}"
-REDIS_PORT="${REDIS_PORT:-6379}"
-REDIS_PASSWORD="${REDIS_PASSWORD:-Insurance2024\$ecur3!}"
-BACKUP_DIR="/tmp/redis-backups"
-TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+# Test backup validation
+./scripts/validate-backup.sh
+```
 
-# Create backup directory
-mkdir -p "$BACKUP_DIR"
+### Step 2: Health Check Implementation
 
-echo "Starting Redis backup for insurance data at $(date)"
+```bash
+# Run comprehensive health check
+./scripts/health-check.sh
 
-# Trigger RDB backup
-echo "Creating RDB snapshot..."
-redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_PASSWORD" BGSAVE
+# Run performance benchmark
+./scripts/benchmark-production.sh
 
-# Wait for backup to complete
-while [ "$(redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_PASSWORD" LASTSAVE)" = "$(redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_PASSWORD" LASTSAVE)" ]; do
-    sleep 1
-done
+# Generate configuration report
+./scripts/generate-config-report.sh
+```
 
-# Copy RDB file with timestamp
-echo "Copying RDB file..."
-cp /tmp/insurance-data.rdb "$BACKUP_DIR/insurance-data_$TIMESTAMP.rdb"
+### Step 3: Redis Insight Monitoring Setup
 
-# Copy AOF file with timestamp  
-echo "Copying AOF file..."
-cp /tmp/insurance-transactions.aof "$BACKUP_DIR/insurance-transactions_$TIMESTAMP.aof"
+```bash
+# Setup monitoring configuration for Redis Insight
+./scripts/setup-monitoring.sh
 
-# Create backup info file
-cat > "$BACKUP_DIR/backup_info_$TIMESTAMP.txt" << EOF
-Backup Created: $(date)
-Redis Host: $REDIS_HOST:$REDIS_PORT
-RDB File: insurance-data_$TIMESTAMP.rdb
-AOF File: insurance-transactions_$TIMESTAMP.aof
-Database Info:
-$(redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_PASSWORD" INFO keyspace)
-Memory Usage:
-$(redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_PASSWORD" INFO memory | grep used_memory_human)
+echo ""
+echo "🔍 Redis Insight Setup:"
+echo "1. Open Redis Insight application"
+echo "2. Add new database connection:"
+echo "   - Host: $REDIS_HOST"
+echo "   - Port: $REDIS_PORT"
+echo "   - Name: Insurance Production"
+echo "3. Navigate to Analysis section"
+echo "4. Review memory usage patterns"
+echo "5. Check slow operations"
+echo "6. Monitor key patterns"
+```
+
+---
+
+## 🧪 Verification Steps
+
+### Test Production Configuration
+
+```bash
+# Verify persistence configuration
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG GET save
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG GET appendonly
+
+# Test memory limits
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG GET maxmemory
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG GET maxmemory-policy
+
+# Check security settings
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG GET timeout
+redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG GET maxclients
+
+# Verify backup automation
+./scripts/test-backup-automation.sh
+
+# Run final validation
+./scripts/validate-production-config.sh
+```
+
+### Expected Results
+
+```bash
+✅ RDB persistence: Enabled with appropriate save intervals
+✅ AOF logging: Enabled with everysec sync policy
+✅ Memory management: Configured with LRU eviction
+✅ Security: Basic timeout and connection limits set
+✅ Monitoring: Slow log and performance tracking enabled
+✅ Backups: Automated backup scripts functional
+```
+
+---
+
+## 📊 Key Configuration Summary
+
+| Setting | Production Value | Purpose |
+|---------|------------------|---------|
+| `save` | "900 1 300 10 60 1000" | RDB snapshots for backup |
+| `appendonly` | yes | Transaction durability |
+| `appendfsync` | everysec | Balance performance/safety |
+| `maxmemory` | 1gb | Memory limit |
+| `maxmemory-policy` | allkeys-lru | Eviction strategy |
+| `timeout` | 300 | Client timeout |
+| `maxclients` | 1000 | Connection limit |
+| `slowlog-log-slower-than` | 10000 | Performance monitoring |
+
+---
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+1. **RDB Save Failures:**
+   ```bash
+   # Check disk space and permissions
+   redis-cli -h $REDIS_HOST -p $REDIS_PORT INFO persistence | grep rdb_last_save_time
+   redis-cli -h $REDIS_HOST -p $REDIS_PORT CONFIG GET dir
+   ```
+
+2. **AOF File Growing Too Large:**
+   ```bash
+   # Force AOF rewrite
+   redis-cli -h $REDIS_HOST -p $REDIS_PORT BGREWRITEAOF
+   # Check rewrite status
+   redis-cli -h $REDIS_HOST -p $REDIS_PORT INFO persistence | grep aof_rewrite
+   ```
+
+3. **Memory Usage Issues:**
+   ```bash
+   # Check memory fragmentation
+   redis-cli -h $REDIS_HOST -p $REDIS_PORT INFO memory | grep fragmentation
+   # Analyze big keys
+   redis-cli -h $REDIS_HOST -p $REDIS_PORT --bigkeys
+   ```
+
+---
+
+## 🎓 Lab Completion
+
+**Congratulations!** You have successfully:
+
+✅ **Configured RDB persistence** for insurance data backup and compliance  
+✅ **Set up AOF logging** for transaction-level insurance data protection  
+✅ **Implemented memory management** with appropriate eviction policies  
+✅ **Configured basic security** for production insurance environments  
+✅ **Created automated backup scripts** for insurance data protection  
+✅ **Set up monitoring** with Redis Insight for production operations  
+
+### Next Steps
+
+- **Lab 14:** Comprehensive monitoring and alerting for insurance operations
+- **Lab 15:** Microservices integration patterns for insurance systems
+
+### Production Readiness Checklist
+
+- [ ] RDB persistence configured with appropriate intervals
+- [ ] AOF enabled for transaction durability
+- [ ] Memory limits and eviction policies set
+- [ ] Basic security measures implemented
+- [ ] Automated backup procedures tested
+- [ ] Monitoring and alerting configured
+- [ ] Performance baselines established
+- [ ] Disaster recovery procedures documented
+
+---
+
+## 📚 Additional Resources
+
+- [Redis Persistence Guide](https://redis.io/topics/persistence)
+- [Redis Security Best Practices](https://redis.io/topics/security)
+- [Redis Memory Optimization](https://redis.io/topics/memory-optimization)
+- [Redis Production Deployment](https://redis.io/topics/admin)

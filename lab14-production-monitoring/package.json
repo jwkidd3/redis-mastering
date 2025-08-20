@@ -1,0 +1,35 @@
+{
+  "name": "lab14-production-monitoring",
+  "version": "1.0.0",
+  "description": "Lab 14: Monitoring & Health Checks for Production Operations",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node src/main.js",
+    "dev": "nodemon src/main.js",
+    "test": "npm run test:health && npm run test:monitoring",
+    "test:health": "curl -f http://localhost:3000/health || exit 1",
+    "test:monitoring": "curl -f http://localhost:4000/api/metrics/realtime || exit 1",
+    "load-data": "node scripts/load-production-monitoring-data.js",
+    "setup": "npm install && npm run load-data"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "ioredis": "^5.7.0",
+    "node-cron": "^3.0.3",
+    "redis": "^4.7.1",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  },
+  "keywords": [
+    "redis",
+    "monitoring",
+    "production",
+    "health-checks",
+    "alerts"
+  ],
+  "author": "Production DevOps Team",
+  "license": "MIT",
+  "type": "commonjs"
+}

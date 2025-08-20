@@ -1,0 +1,28 @@
+{
+  "name": "lab11-session-management",
+  "version": "1.0.0",
+  "description": "Customer portal session management with Redis",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node src/app.js",
+    "test": "node tests/session-tests.js",
+    "test-rbac": "node tests/rbac-tests.js",
+    "test-security": "node tests/security-tests.js",
+    "monitor": "node scripts/monitor-sessions.js",
+    "cleanup": "node scripts/cleanup-sessions.js"
+  },
+  "dependencies": {
+    "redis": "^4.6.0",
+    "express": "^4.18.2",
+    "uuid": "^9.0.0",
+    "bcrypt": "^5.1.0",
+    "cors": "^2.8.5",
+    "helmet": "^6.0.1",
+    "dotenv": "^16.0.3",
+    "express-rate-limit": "^6.7.0"
+  },
+  "keywords": ["redis", "session-management", "security", "portal"],
+  "author": "Redis Mastering Course",
+  "license": "MIT"
+}
