@@ -1,0 +1,4 @@
+📈 Redis Capacity Planning Report
+=================================
+Generated: Wed Aug 20 09:39:33 CDT 2025
+
