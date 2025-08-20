@@ -1,327 +1,110 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Content 4: JavaScript Redis Integration</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.min.css">
     <style>
-        /* Ensure content fits on screen */
         .reveal .slides section {
             text-align: left;
-            font-size: 22px;
-            line-height: 1.3;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 20px;
-            box-sizing: border-box;
+            font-size: 0.95em;
+            line-height: 1.5;
         }
-        
         .reveal h1, .reveal h2, .reveal h3 {
             color: #2c3e50;
             text-align: center;
-            margin-bottom: 20px;
-            font-size: 1.8em;
+            margin-bottom: 0.5em;
         }
-        
-        .reveal h2 {
-            font-size: 1.5em;
-            margin-bottom: 15px;
-        }
-        
-        .reveal h3 {
-            font-size: 1.2em;
-            margin-bottom: 10px;
-        }
-        
-        /* Main title styling */
-        .reveal .title-block {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-            padding: 25px;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
-        }
-        .reveal .title-block h1 {
-            color: white;
-            font-size: 2em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        /* Session headers */
-        .reveal .session-header {
-            background: linear-gradient(135deg, #ecf0f1, #bdc3c7);
-            color: #2c3e50;
-            padding: 15px;
+        .main-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            padding: 2em;
             border-radius: 10px;
             text-align: center;
-            font-weight: bold;
-            margin: 15px 0;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-        
-        /* Code blocks */
-        .reveal .code-block {
+        .session-header {
+            background: #f8f9fa;
+            color: #2c3e50 !important;
+            padding: 1em;
+            border-left: 5px solid #3498db;
+            margin-bottom: 1em;
+        }
+        .code-block {
             background: #2c3e50;
             color: #ecf0f1;
-            padding: 12px;
+            border: 2px solid #34495e;
             border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            margin: 10px 0;
-            font-size: 0.65em;
-            line-height: 1.2;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            padding: 1em;
+            font-family: 'Courier New', 'Monaco', monospace;
+            font-size: 0.7em;
+            margin: 0.5em 0;
+            line-height: 1.4;
             overflow-x: auto;
-            max-height: 40vh;
-            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
-        
-        /* Highlight elements */
-        .reveal .highlight {
-            background: #f39c12;
-            color: white;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: bold;
+        .highlight {
+            background: #ffffcc;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
         }
-        
-        /* Lab callout styling */
-        .reveal .lab-callout {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            margin: 15px 0;
-            box-shadow: 0 8px 20px rgba(231,76,60,0.3);
-        }
-        .reveal .lab-callout h2 {
-            background: transparent;
-            color: white;
-            margin: 0 0 10px 0;
-            font-size: 1.4em;
-        }
-        
-        /* Comparison boxes */
-        .reveal .comparison-box {
-            display: flex;
-            gap: 15px;
-            margin: 15px 0;
-        }
-        .reveal .comparison-item {
-            flex: 1;
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 0.85em;
-        }
-        .reveal .old-approach {
-            background: #ffebee;
-            border: 2px solid #f44336;
-        }
-        .reveal .new-approach {
-            background: #e8f5e8;
-            border: 2px solid #4caf50;
-        }
-        
-        /* Feature grids */
-        .reveal .feature-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin: 15px 0;
-        }
-        .reveal .feature-box {
-            background: #f8f9fa;
-            padding: 12px;
-            border-radius: 8px;
-            border-left: 4px solid #3498db;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .reveal .feature-box h3 {
-            margin-top: 0;
-            color: #2c3e50;
-            font-size: 1em;
-        }
-        .reveal .feature-box ul {
-            margin: 8px 0;
-            font-size: 0.85em;
-        }
-        .reveal .feature-box li {
-            margin: 4px 0;
-        }
-        
-        /* Stream benefits */
-        .reveal .streams-benefit {
-            background: #e8f5e8;
-            border-left: 4px solid #27ae60;
-            padding: 12px;
-            margin: 12px 0;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(39,174,96,0.1);
-            font-size: 0.9em;
-        }
-        
-        /* Tables */
-        .reveal table {
-            border-collapse: collapse;
-            width: 100%;
-            margin: 10px 0;
-            font-size: 0.65em;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .reveal table th,
-        .reveal table td {
-            border: 1px solid #bdc3c7;
-            padding: 6px 8px;
-            text-align: left;
-            line-height: 1.2;
-        }
-        .reveal table th {
-            background: #3498db;
-            color: white;
-            font-weight: bold;
-        }
-        .reveal table tr:nth-child(even) {
-            background: #f8f9fa;
-        }
-        
-        /* Architecture diagrams */
-        .reveal .architecture-diagram {
-            background: #f8f9fa;
-            border: 2px solid #3498db;
+        .lab-callout {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white !important;
+            padding: 1.5em;
             border-radius: 10px;
-            padding: 15px;
-            margin: 15px 0;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        .reveal .architecture-diagram h3 {
-            margin-top: 0;
             font-size: 1.1em;
+            margin: 1em 0;
         }
-        .reveal .architecture-diagram pre {
-            font-size: 0.6em;
-            margin: 8px 0;
+        .bullet-point {
+            margin: 0.4em 0;
+            line-height: 1.5;
         }
-        
-        /* Warning and tip boxes */
-        .reveal .warning-box {
+        .two-column {
+            display: flex;
+            gap: 2em;
+        }
+        .column {
+            flex: 1;
+        }
+        .warning {
             background: #fff3cd;
-            border-left: 4px solid #f39c12;
-            padding: 10px;
-            border-radius: 8px;
-            margin: 10px 0;
-            font-size: 0.85em;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 0.8em;
+            margin: 0.5em 0;
+            font-size: 0.8em;
         }
-        .reveal .tip-box {
+        .success {
             background: #d4edda;
-            border-left: 4px solid #28a745;
-            padding: 10px;
-            border-radius: 8px;
-            margin: 10px 0;
-            font-size: 0.85em;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 0.8em;
+            margin: 0.5em 0;
+            font-size: 0.8em;
         }
-        
-        /* Info boxes */
-        .reveal .info-box {
-            background: #d1ecf1;
-            border-left: 4px solid #17a2b8;
-            padding: 10px;
-            border-radius: 8px;
-            margin: 10px 0;
-            font-size: 0.85em;
-        }
-        
-        /* Lists */
-        .reveal ul {
-            margin: 10px 0;
-        }
-        .reveal li {
-            margin: 3px 0;
-            font-size: 0.9em;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .reveal .slides section {
-                font-size: 18px;
-                padding: 15px;
-            }
-            .reveal .feature-grid {
-                grid-template-columns: 1fr;
-            }
-            .reveal .comparison-box {
-                flex-direction: column;
-            }
-        }
-        
-        /* Ensure slides fit viewport */
-        .reveal .slides {
-            width: 100%;
-            height: 100%;
-        }
-        
-        .reveal .slides > section {
-            max-height: 100vh;
-            overflow: hidden;
-        }
-        
-        /* Auto-scale content that might overflow */
-        .reveal .slides > section.present {
-            transform-origin: center center;
-        }
-        
-        /* Scale down content if needed */
-        @media (max-height: 768px) {
-            .reveal .slides section {
-                font-size: 20px;
-                padding: 15px;
-            }
-            .reveal .code-block {
-                font-size: 0.6em;
-                padding: 10px;
-                max-height: 35vh;
-            }
-            .reveal table {
-                font-size: 0.6em;
-            }
-        }
-        
-        @media (max-height: 600px) {
-            .reveal .slides section {
-                font-size: 18px;
-                padding: 10px;
-            }
-            .reveal .code-block {
-                font-size: 0.55em;
-                padding: 8px;
-                max-height: 30vh;
-            }
-            .reveal table {
-                font-size: 0.55em;
-            }
-            .reveal .feature-box {
-                padding: 8px;
-            }
+        .info {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 5px;
+            padding: 0.8em;
+            margin: 0.5em 0;
+            font-size: 0.8em;
         }
     </style>
 </head>
 <body>
     <div class="reveal">
         <div class="slides">
-            
             <!-- Title Slide -->
             <section>
-                <div class="title-block">
-                    <h1>Hash & Streams Data Structures</h1>
-                    <p style="font-size: 1.3em; margin-top: 25px;">
-                        <strong>Content 4</strong><br>
-                        Advanced Data Modeling & Event Sourcing<br>
-                        Day 2 - Morning Session (50 minutes)
-                    </p>
+                <div class="main-title">
+                    <h1>Content 4: JavaScript Redis Integration</h1>
+                    <h2>Building Applications with Node.js & Redis</h2>
+                    <p><strong>Focus:</strong> JavaScript client libraries and application development</p>
                 </div>
             </section>
 
@@ -330,782 +113,1133 @@
                 <div class="session-header">
                     <h2>Session Objectives</h2>
                 </div>
-                <ul style="font-size: 0.9em;">
-                    <li><strong>Master Redis Hashes</strong> for complex insurance data modeling</li>
-                    <li><strong>Understand Redis Streams</strong> for event sourcing and audit trails</li>
-                    <li><strong>Implement event-driven architecture</strong> for claims processing</li>
-                    <li><strong>Design immutable audit trails</strong> for regulatory compliance</li>
-                    <li><strong>Build scalable consumer patterns</strong> with stream processing</li>
-                    <li><strong>Compare Lists vs Streams</strong> for enterprise applications</li>
+                <ul>
+                    <li class="bullet-point">Set up and configure Node.js Redis client</li>
+                    <li class="bullet-point">Implement asynchronous Redis operations</li>
+                    <li class="bullet-point">Build data management applications</li>
+                    <li class="bullet-point">Handle connections and error management</li>
+                    <li class="bullet-point">Create customer and policy data workflows</li>
+                </ul>
+            </section>
+
+            <!-- Node.js Redis Client Setup -->
+            <section>
+                <div class="session-header">
+                    <h3>Node.js Redis Client Setup</h3>
+                </div>
+                <h4>Installing the Redis Client</h4>
+                <p>The official Redis client for Node.js provides comprehensive support for all Redis features with modern async/await syntax.</p>
+                
+                <h4>Connection Overview</h4>
+                <ul>
+                    <li class="bullet-point">Install the official Redis client package</li>
+                    <li class="bullet-point">Configure connection to remote Redis instance</li>
+                    <li class="bullet-point">Set up proper error handling and event listeners</li>
+                    <li class="bullet-point">Implement connection monitoring and recovery</li>
                 </ul>
                 
-                <div class="info-box">
-                    <strong>🎯 Focus:</strong> Moving from simple queues to enterprise event sourcing patterns for production insurance systems
+                <div class="info">
+                    <strong>Important:</strong> Always handle connection events to monitor Redis connectivity status in your application.
                 </div>
             </section>
 
-            <!-- Redis Hashes Definition -->
+            <!-- Node.js Setup Code Examples -->
             <section>
-                <h2>What are Redis Hashes?</h2>
-                
-                <div class="info-box">
-                    <strong>🔑 Definition:</strong> Redis Hashes are maps between string fields and string values, making them perfect for representing objects with multiple attributes.
+                <div class="session-header">
+                    <h3>Node.js Redis Setup - Code Examples</h3>
                 </div>
-
-                <div class="feature-grid">
-                    <div class="feature-box">
-                        <h3>📊 Key Characteristics</h3>
-                        <ul>
-                            <li><strong>Field-Value pairs:</strong> Like a dictionary or object</li>
-                            <li><strong>Nested structure:</strong> One key contains multiple fields</li>
-                            <li><strong>Efficient storage:</strong> Optimized memory usage</li>
-                            <li><strong>Atomic operations:</strong> Update individual fields</li>
-                            <li><strong>Type consistency:</strong> All values stored as strings</li>
-                        </ul>
-                    </div>
-                    <div class="feature-box">
-                        <h3>🎯 Common Use Cases</h3>
-                        <ul>
-                            <li><strong>User profiles:</strong> Name, email, preferences</li>
-                            <li><strong>Product catalogs:</strong> Price, description, inventory</li>
-                            <li><strong>Configuration:</strong> Application settings</li>
-                            <li><strong>Counters & metrics:</strong> Statistics tracking</li>
-                            <li><strong>Session data:</strong> User state information</li>
-                        </ul>
-                    </div>
-                </div>
-
+                <h4>Package Installation</h4>
                 <div class="code-block">
-// Hash structure visualization
-// Key: user:1001
-// ├── name → "John Smith"
-// ├── email → "john@example.com" 
-// ├── phone → "555-0123"
-// ├── status → "active"
-// ├── join_date → "2023-01-15"
-// ├── login_count → "42"
-// ├── last_login → "2024-08-19T09:30:00Z"
-// └── preferences → "email_notifications:true"
-
-// Creating this hash:
-HSET user:1001 
-  name "John Smith" 
-  email "john@example.com" 
-  phone "555-0123"
-  status "active" 
-  join_date "2023-01-15"
-  login_count "42"
-  last_login "2024-08-19T09:30:00Z"
-  preferences "email_notifications:true"
-                </div>
-            </section>
-
-            <!-- Hash Operations Deep Dive -->
-            <section>
-                <h2>Hash Operations & Commands</h2>
-                
+npm install redis
+</div>
+                <h4>Basic Connection Setup</h4>
                 <div class="code-block">
-// Single field operations
-HGET user:1001 email                    // Get one field
-HSET user:1001 last_login "2024-08-19"  // Set one field
-HEXISTS user:1001 phone                 // Check if field exists
-HDEL user:1001 temp_token               // Delete a field
+const redis = require('redis');
 
-// Multiple field operations  
-HMGET user:1001 name email status       // Get multiple fields
-HMSET product:P001 
-  name "Laptop Pro" 
-  price "1299.99" 
-  category "electronics"
-  stock "25"
-  description "High-performance laptop"
+const client = redis.createClient({
+    host: 'your-redis-host',
+    port: 6379,
+    password: 'your-password'
+});
 
-// Atomic numeric operations
-HINCRBY user:1001 login_count 1         // Increment integer
-HINCRBYFLOAT product:P001 price 50.00   // Increment float
-HINCRBY metrics:daily page_views 1      // Count events
+client.on('error', (err) => {
+    console.log('Redis Client Error', err);
+});
 
-// Hash introspection
-HLEN user:1001                          // Count fields
-HKEYS user:1001                         // Get all field names
-HVALS user:1001                         // Get all values
-HGETALL user:1001                       // Get all field-value pairs
+client.on('connect', () => {
+    console.log('Connected to Redis successfully');
+});
+
+await client.connect();
+</div>
+            </section>
+
+            <!-- Connection Configuration -->
+            <section>
+                <div class="session-header">
+                    <h3>Connection Configuration Options</h3>
                 </div>
-
-                <div class="tip-box">
-                    <strong>💡 Best Practice:</strong> Use HMGET for multiple fields instead of multiple HGET calls to reduce network round trips
+                <h4>Production-Ready Connection Settings</h4>
+                <p>Configure robust connection handling with retry logic and timeout management for production environments.</p>
+                
+                <h4>Key Configuration Areas</h4>
+                <ul>
+                    <li class="bullet-point"><strong>Retry Strategy:</strong> Implement exponential backoff for reconnection attempts</li>
+                    <li class="bullet-point"><strong>Timeout Management:</strong> Set appropriate connection and command timeouts</li>
+                    <li class="bullet-point"><strong>Error Handling:</strong> Handle different types of connection errors gracefully</li>
+                    <li class="bullet-point"><strong>Security:</strong> Configure authentication and SSL/TLS when required</li>
+                </ul>
+                
+                <div class="warning">
+                    <strong>Best Practice:</strong> Implement exponential backoff for reconnection attempts to avoid overwhelming the Redis server during outages.
                 </div>
             </section>
 
-            <!-- Hash vs JSON Performance -->
+            <!-- Connection Configuration Code -->
             <section>
-                <h2>Hash vs JSON Storage: Performance Analysis</h2>
-                
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Feature</th>
-                            <th>Redis Hash</th>
-                            <th>JSON String</th>
-                            <th>Best Use Case</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Memory Usage</strong></td>
-                            <td>✅ 30-50% less memory</td>
-                            <td>❌ Higher JSON overhead</td>
-                            <td>Large datasets</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Partial Updates</strong></td>
-                            <td>✅ Single field updates</td>
-                            <td>❌ Full object rewrite</td>
-                            <td>Frequent updates</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Atomic Operations</strong></td>
-                            <td>✅ HINCRBY, HINCRBYFLOAT</td>
-                            <td>❌ Requires Lua scripts</td>
-                            <td>Counters, scores</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Query Flexibility</strong></td>
-                            <td>❌ Field-level only</td>
-                            <td>✅ Complex JSON queries</td>
-                            <td>Complex searches</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Type Safety</strong></td>
-                            <td>❌ All strings</td>
-                            <td>✅ Native JSON types</td>
-                            <td>Type-critical apps</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Network Efficiency</strong></td>
-                            <td>✅ Field-level transfers</td>
-                            <td>❌ Full object transfers</td>
-                            <td>Mobile/slow networks</td>
-                        </tr>
-                    </tbody>
-                </table>
-                
-                <div class="tip-box">
-                    <strong>✅ Best Practice:</strong> Use hashes for frequently updated entities (customers, policies), JSON for complex nested data or when you need complex queries
+                <div class="session-header">
+                    <h3>Connection Configuration - Code Example</h3>
                 </div>
-            </section>
-
-            <!-- Real-world Hash Examples -->
-            <section>
-                <h2>Real-World Hash Examples</h2>
-                
+                <h4>Advanced Connection Setup</h4>
                 <div class="code-block">
-// E-commerce product with comprehensive fields
-HMSET product:PRD001
-  name "Wireless Headphones"
-  brand "AudioTech"
-  price "199.99"
-  category "electronics"
-  subcategory "audio"
-  stock_quantity "150"
-  rating "4.7"
-  reviews_count "1,247"
-  description "Premium wireless headphones with noise cancellation"
-  color "black"
-  weight "280g"
-  warranty "2_years"
-  featured "true"
-  created_date "2024-01-15"
-  updated_date "2024-08-19"
-  
-// Blog post with metadata
-HMSET post:POST001
-  title "Getting Started with Redis"
-  author "jane_doe"
-  content "Redis is a powerful in-memory data structure store..."
-  status "published"
-  tags "redis,database,tutorial"
-  views "1,524"
-  likes "89"
-  published_date "2024-08-15"
-  reading_time "8"
-  category "technology"
-  featured "false"
-                </div>
+const client = redis.createClient({
+    url: 'redis://your-redis-host:6379',
+    socket: {
+        reconnectStrategy: (retries) => 
+            Math.min(retries * 50, 500)
+    },
+    retry_strategy: (options) => {
+        if (options.error && 
+            options.error.code === 'ECONNREFUSED') {
+            return new Error('Redis server refused connection');
+        }
+        if (options.total_retry_time > 1000 * 60 * 60) {
+            return new Error('Retry time exhausted');
+        }
+        return Math.min(options.attempt * 100, 3000);
+    }
+});
+</div>
+            </section>
 
-                <div class="feature-grid">
-                    <div class="feature-box">
-                        <h3>🛒 E-commerce Applications</h3>
-                        <ul>
-                            <li>Product catalogs with pricing</li>
-                            <li>Shopping cart contents</li>
-                            <li>User preferences & settings</li>
-                            <li>Order tracking information</li>
-                            <li>Inventory management</li>
-                        </ul>
-                    </div>
-                    <div class="feature-box">
-                        <h3>📱 Web Applications</h3>
-                        <ul>
-                            <li>User profile management</li>
-                            <li>Content management systems</li>
-                            <li>Configuration settings</li>
-                            <li>Analytics & metrics</li>
-                            <li>Session data storage</li>
-                        </ul>
-                    </div>
+            <!-- Basic Operations Concepts -->
+            <section>
+                <div class="session-header">
+                    <h3>Fundamental Redis Operations in JavaScript</h3>
+                </div>
+                <h4>String Operations - Core Data Storage</h4>
+                <p>String operations form the foundation of Redis data manipulation. These operations are atomic and provide excellent performance for simple key-value storage.</p>
+                
+                <h4>Key String Operation Types</h4>
+                <ul>
+                    <li class="bullet-point"><strong>SET/GET:</strong> Basic key-value storage and retrieval</li>
+                    <li class="bullet-point"><strong>MSET/MGET:</strong> Batch operations for multiple keys</li>
+                    <li class="bullet-point"><strong>SETEX:</strong> Set with automatic expiration (TTL)</li>
+                    <li class="bullet-point"><strong>INCR/DECR:</strong> Atomic numeric operations</li>
+                </ul>
+                
+                <div class="info">
+                    <strong>Performance Tip:</strong> Use mSet and mGet for batch operations to reduce network round trips and improve application performance.
                 </div>
             </section>
 
-            <!-- Introduction to Event Sourcing -->
+            <!-- Basic Operations Code -->
             <section>
-                <h2>Why Event Sourcing for Modern Applications?</h2>
-                
-                <div class="comparison-box">
-                    <div class="comparison-item old-approach">
-                        <h3>❌ Traditional Database Approach</h3>
-                        <ul style="text-align: left; font-size: 0.8em;">
-                            <li>UPDATE statements overwrite data</li>
-                            <li>Lost audit trail of changes</li>
-                            <li>No replay capability</li>
-                            <li>Difficult to debug issues</li>
-                            <li>Limited compliance support</li>
-                            <li>Single point of failure</li>
-                            <li>Hard to scale reads</li>
-                        </ul>
-                    </div>
-                    <div class="comparison-item new-approach">
-                        <h3>✅ Event Sourcing Approach</h3>
-                        <ul style="text-align: left; font-size: 0.8em;">
-                            <li>Immutable append-only log</li>
-                            <li>Complete audit trail forever</li>
-                            <li>Event replay & time travel</li>
-                            <li>Easy debugging with events</li>
-                            <li>Built-in compliance support</li>
-                            <li>Distributed and scalable</li>
-                            <li>Multiple read models</li>
-                        </ul>
-                    </div>
+                <div class="session-header">
+                    <h3>String Operations - Code Examples</h3>
                 </div>
-
-                <div class="streams-benefit">
-                    <strong>🏢 Business Value:</strong> Complete user interaction history, fraud detection patterns, audit trails for compliance, customer journey analysis, system performance insights
-                </div>
-            </section>
-
-            <!-- Regulatory Compliance -->
-            <section>
-                <h2>Audit Requirements with Event Sourcing</h2>
-                
-                <div class="feature-grid">
-                    <div class="feature-box">
-                        <h3>📋 Audit Trail Essentials</h3>
-                        <ul>
-                            <li><strong>Who:</strong> User identification</li>
-                            <li><strong>What:</strong> Action performed</li>
-                            <li><strong>When:</strong> Precise timestamps</li>
-                            <li><strong>Why:</strong> Business context</li>
-                            <li><strong>How:</strong> System traces</li>
-                        </ul>
-                    </div>
-                    <div class="feature-box">
-                        <h3>🔒 Compliance Benefits</h3>
-                        <ul>
-                            <li>Immutable evidence trail</li>
-                            <li>Real-time monitoring</li>
-                            <li>Automated reporting</li>
-                            <li>Pattern detection</li>
-                            <li>Complete transparency</li>
-                        </ul>
-                    </div>
-                </div>
-
                 <div class="code-block">
-// Compliance-ready event example
-XADD orders:events * 
-  eventType "order.completed"
-  orderId "ORD-2024-001"
-  userId "USER001"
-  productId "PRD001"
-  userRole "customer"
-  originalAmount "299.99"
-  finalAmount "249.99"
-  discountCode "SAVE50"
-  paymentMethod "credit_card"
-  shippingAddress "123 Main St"
-  complianceFlags "none"
-  auditLevel "standard"
+// Set a single value
+await client.set('customer:1001:name', 'John Doe');
+
+// Retrieve the stored value
+const customerName = await client.get('customer:1001:name');
+console.log('Customer Name:', customerName);
+
+// Set value with expiration (TTL in seconds)
+await client.setEx('session:abc123', 3600, 
+    'active_user_session');
+
+// Set multiple key-value pairs
+await client.mSet({
+    'customer:1001:email': 'john.doe@email.com',
+    'customer:1001:status': 'active',
+    'customer:1002:name': 'Jane Smith'
+});
+
+// Retrieve multiple values efficiently
+const customerData = await client.mGet([
+    'customer:1001:name', 
+    'customer:1001:email'
+]);
+</div>
+            </section>
+
+            <!-- Working with JSON Data Concepts -->
+            <section>
+                <div class="session-header">
+                    <h3>Working with Complex JSON Data</h3>
+                </div>
+                <h4>Storing and Retrieving JavaScript Objects</h4>
+                <p>Redis stores data as strings, so JavaScript objects must be serialized. JSON serialization provides a simple way to store complex data structures.</p>
+                
+                <h4>JSON Storage Considerations</h4>
+                <ul>
+                    <li class="bullet-point"><strong>Serialization:</strong> Convert objects to JSON strings for storage</li>
+                    <li class="bullet-point"><strong>Deserialization:</strong> Parse JSON strings back to objects</li>
+                    <li class="bullet-point"><strong>Performance:</strong> Good for read-heavy workloads</li>
+                    <li class="bullet-point"><strong>Limitations:</strong> Requires full object rewrite for updates</li>
+                </ul>
+                
+                <div class="warning">
+                    <strong>Consideration:</strong> JSON serialization works well for read-heavy workloads, but consider Redis hashes for frequently updated fields to avoid full object rewrites.
                 </div>
             </section>
 
-            <!-- Redis Streams Architecture -->
+            <!-- JSON Data Code Examples -->
             <section>
-                <h2>Redis Streams: Enterprise Event Sourcing</h2>
-                
-                <div class="architecture-diagram">
-                    <h3>Event Processing Architecture</h3>
-                    <pre style="text-align: left; font-size: 0.65em; margin: 0;">
-🏭 Event Producers              📨 events:stream                    👥 Consumer Groups
-                                                                     
-📱 Mobile App      ────┐                                      ┌──→ ⚙️  Processors Group
-🌐 Web Portal      ────┤                                      │     ├─ Business logic
-📞 API Calls       ────┼──→ Immutable Event Log ──────────────┤     ├─ State updates  
-🤖 Microservices   ────┤   (Guaranteed Ordering)              │     └─ Integrations
-📧 Batch Jobs      ────┘                                      │
-                                                              ├──→ 📊 Analytics Group
-                                                              │     ├─ Real-time metrics
-                                                              │     ├─ Performance KPIs
-                                                              │     └─ Business intelligence
-                                                              │
-                                                              ├──→ 🔔 Notifications Group  
-                                                              │     ├─ User alerts
-                                                              │     ├─ System notifications
-                                                              │     └─ Email campaigns
-                                                              │
-                                                              └──→ 📋 Audit Group
-                                                                    ├─ Compliance logs
-                                                                    ├─ Security monitoring
-                                                                    └─ Fraud detection
-                    </pre>
+                <div class="session-header">
+                    <h3>JSON Data - Code Examples</h3>
                 </div>
-
-                <div class="info-box">
-                    <strong>🔄 Key Benefit:</strong> Each consumer group processes ALL events independently, enabling different business functions to operate simultaneously without interference
-                </div>
-            </section>
-
-            <!-- Stream Operations -->
-            <section>
-                <h2>Essential Stream Operations</h2>
-                
                 <div class="code-block">
-// 1. Add events to stream (Producer)
-XADD orders:events * 
-  eventType "order.created" 
-  orderId "ORD-2024-001" 
-  userId "USER001" 
-  amount "299.99" 
-  status "pending"
-  priority "normal"
-  channel "web_app"
-  timestamp "2024-08-19T10:30:00Z"
+const customerData = {
+    id: 1001,
+    name: 'John Doe',
+    email: 'john.doe@email.com',
+    policies: [
+        { id: 'POL001', type: 'auto', premium: 1200 },
+        { id: 'POL002', type: 'home', premium: 800 }
+    ],
+    preferences: { notifications: true, paperless: true },
+    lastLogin: new Date().toISOString(),
+    loyaltyPoints: 2500
+};
 
-// 2. Create consumer groups (Setup)
-XGROUP CREATE orders:events processors 0 MKSTREAM
-XGROUP CREATE orders:events analytics 0 
-XGROUP CREATE orders:events notifications 0
+// Store complex object as JSON string
+await client.set('customer:1001:profile', 
+    JSON.stringify(customerData));
 
-// 3. Read as consumer group (Consumer)
-XREADGROUP processors worker-1 
-  STREAMS orders:events > 
-  BLOCK 1000 COUNT 5
+// Retrieve and deserialize
+const storedData = await client.get('customer:1001:profile');
+const customer = JSON.parse(storedData);
 
-// 4. Process and acknowledge (Consumer)
-XACK orders:events processors 1692441000123-0
+console.log('Customer policies:', customer.policies.length);
+console.log('Total premium:', 
+    customer.policies.reduce((sum, policy) => 
+        sum + policy.premium, 0));
+</div>
+            </section>
 
-// 5. Monitor stream health (Operations)
-XINFO STREAM orders:events
-XINFO GROUPS orders:events
-XPENDING orders:events processors
+            <!-- Hash Operations Concepts -->
+            <section>
+                <div class="session-header">
+                    <h3>Redis Hash Operations - Structured Data</h3>
+                </div>
+                <h4>Efficient Field-Level Data Management</h4>
+                <p>Redis hashes provide an efficient way to store objects with multiple fields, allowing atomic updates to individual properties without affecting the entire record.</p>
+                
+                <h4>Hash Operation Benefits</h4>
+                <ul>
+                    <li class="bullet-point"><strong>Partial Updates:</strong> Modify individual fields without rewriting entire objects</li>
+                    <li class="bullet-point"><strong>Memory Efficient:</strong> Optimized storage for small to medium-sized objects</li>
+                    <li class="bullet-point"><strong>Atomic Operations:</strong> Field-level operations are atomic</li>
+                    <li class="bullet-point"><strong>Type Flexibility:</strong> Store different data types in the same hash</li>
+                </ul>
+                
+                <div class="success">
+                    <strong>Use Case:</strong> Hashes are perfect for customer profiles, configuration settings, and any data where you need to update individual fields frequently.
                 </div>
             </section>
 
-            <!-- Event Types -->
+            <!-- Hash Operations Code Part 1 -->
             <section>
-                <h2>Common Event Types in Applications</h2>
-                
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Event Type</th>
-                            <th>Trigger</th>
-                            <th>Key Data</th>
-                            <th>Next Actions</th>
-                            <th>Priority</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>user.registered</strong></td>
-                            <td>New user signup</td>
-                            <td>Email, profile data</td>
-                            <td>Send welcome email</td>
-                            <td>High</td>
-                        </tr>
-                        <tr>
-                            <td><strong>order.created</strong></td>
-                            <td>Order placed</td>
-                            <td>Items, total, address</td>
-                            <td>Payment processing</td>
-                            <td>High</td>
-                        </tr>
-                        <tr>
-                            <td><strong>payment.completed</strong></td>
-                            <td>Payment processed</td>
-                            <td>Amount, method, ref</td>
-                            <td>Fulfillment start</td>
-                            <td>Critical</td>
-                        </tr>
-                        <tr>
-                            <td><strong>product.viewed</strong></td>
-                            <td>User views product</td>
-                            <td>Product ID, user ID</td>
-                            <td>Analytics update</td>
-                            <td>Low</td>
-                        </tr>
-                        <tr>
-                            <td><strong>cart.abandoned</strong></td>
-                            <td>User leaves with cart</td>
-                            <td>Cart contents, time</td>
-                            <td>Reminder email</td>
-                            <td>Medium</td>
-                        </tr>
-                        <tr>
-                            <td><strong>review.submitted</strong></td>
-                            <td>Product review added</td>
-                            <td>Rating, comment</td>
-                            <td>Moderation queue</td>
-                            <td>Medium</td>
-                        </tr>
-                        <tr>
-                            <td><strong>user.login</strong></td>
-                            <td>User authentication</td>
-                            <td>Session ID, location</td>
-                            <td>Security check</td>
-                            <td>Medium</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
-
-            <!-- Consumer Groups Deep Dive -->
-            <section>
-                <h2>Consumer Groups: Scalable Processing</h2>
-                
-                <div class="feature-grid">
-                    <div class="feature-box">
-                        <h3>⚙️ Business Logic Group</h3>
-                        <ul>
-                            <li><strong>Order processing:</strong> Validate and process orders</li>
-                            <li><strong>State management:</strong> Update order status</li>
-                            <li><strong>Workflow routing:</strong> Direct to next steps</li>
-                            <li><strong>Business rules:</strong> Apply complex validation</li>
-                            <li><strong>System integration:</strong> Update databases</li>
-                        </ul>
-                    </div>
-                    <div class="feature-box">
-                        <h3>📊 Analytics Group</h3>
-                        <ul>
-                            <li><strong>Real-time metrics:</strong> Orders per hour</li>
-                            <li><strong>Performance KPIs:</strong> Processing times</li>
-                            <li><strong>Trend analysis:</strong> Usage patterns</li>
-                            <li><strong>Business intelligence:</strong> Executive dashboards</li>
-                            <li><strong>Predictive models:</strong> Demand forecasting</li>
-                        </ul>
-                    </div>
+                <div class="session-header">
+                    <h3>Hash Operations - Basic Examples</h3>
                 </div>
-
-                <div class="feature-grid">
-                    <div class="feature-box">
-                        <h3>🔔 Notifications Group</h3>
-                        <ul>
-                            <li><strong>User alerts:</strong> Order status updates</li>
-                            <li><strong>System notifications:</strong> Admin alerts</li>
-                            <li><strong>Marketing campaigns:</strong> Personalized offers</li>
-                            <li><strong>Support tickets:</strong> Issue escalation</li>
-                            <li><strong>Automated emails:</strong> Transaction confirmations</li>
-                        </ul>
-                    </div>
-                    <div class="feature-box">
-                        <h3>📋 Audit Group</h3>
-                        <ul>
-                            <li><strong>Security monitoring:</strong> Suspicious activity</li>
-                            <li><strong>Compliance logging:</strong> Regulatory requirements</li>
-                            <li><strong>Data protection:</strong> Privacy compliance</li>
-                            <li><strong>Risk management:</strong> Fraud detection</li>
-                            <li><strong>Reporting:</strong> Automated compliance reports</li>
-                        </ul>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Event Replay & Time Travel -->
-            <section>
-                <h2>Event Replay & Temporal Queries</h2>
-                
                 <div class="code-block">
-// 1. Replay all events for a specific entity
-XRANGE orders:events - + 
-// Filter client-side: grep "orderId.*ORD-2024-001"
+// Set multiple hash fields atomically
+await client.hSet('customer:1001:details', {
+    'name': 'John Doe',
+    'email': 'john.doe@email.com',
+    'phone': '+1-555-0123',
+    'status': 'active',
+    'premium_member': 'true',
+    'join_date': '2020-01-15',
+    'last_contact': new Date().toISOString()
+});
 
-// 2. Time-based queries: "What happened on August 15th?"
-XRANGE orders:events 
-  1692057600000-0   // Aug 15, 2024 00:00:00 UTC
-  1692143999999-0   // Aug 15, 2024 23:59:59 UTC
+// Retrieve specific field
+const customerName = await client.hGet(
+    'customer:1001:details', 'name');
+const isPremium = await client.hGet(
+    'customer:1001:details', 'premium_member');
 
-// 3. Debug production issue: "Trace this order's journey"
-XRANGE orders:events 
-  2024-08-15-14:30:00 
-  2024-08-15-14:35:00
+// Get all customer fields as object
+const customerDetails = await client.hGetAll(
+    'customer:1001:details');
+console.log('Complete customer record:', customerDetails);
 
-// 4. Rebuild entity state from events (JavaScript example)
-const events = await redis.xRange('orders:events', '-', '+');
-const orderState = events
-  .filter(event => event.orderId === 'ORD-2024-001')
-  .reduce((state, event) => applyEvent(state, event), initialState);
-
-// 5. Audit query: "Who processed orders over $1000 this month?"
-XRANGE orders:events 
-  1691020800000-0   // Start of current month
-  +                 // Current time
-// Filter: eventType="order.processed" AND amount > 1000
-                </div>
-
-                <div class="streams-benefit">
-                    <strong>🔍 Business Power:</strong> "On August 15th at 2:30 PM, what was the exact status of order ORD-2024-001 and who made the last change?" - Instantly answerable with event replay!
-                </div>
+// Atomically increment numeric fields
+await client.hIncrBy('customer:1001:stats', 'login_count', 1);
+await client.hIncrByFloat('customer:1001:stats', 
+    'total_premium', 150.75);
+</div>
             </section>
 
-            <!-- Streams vs Lists Detailed Comparison -->
+            <!-- Hash Operations Part 2 -->
             <section>
-                <h2>Why Streams Beat Lists for Event Processing</h2>
-                
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Feature</th>
-                            <th>Lists (Traditional Queues)</th>
-                            <th>Streams (Event Sourcing)</th>
-                            <th>Business Impact</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Data Persistence</strong></td>
-                            <td>❌ Lost when consumed</td>
-                            <td>✅ Permanent event log</td>
-                            <td>Complete audit trail</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Multiple Consumers</strong></td>
-                            <td>❌ Single consumer only</td>
-                            <td>✅ Consumer groups</td>
-                            <td>Parallel processing</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Event Replay</strong></td>
-                            <td>❌ Not possible</td>
-                            <td>✅ Full replay capability</td>
-                            <td>Debugging & analysis</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Scalability</strong></td>
-                            <td>❌ Vertical scaling only</td>
-                            <td>✅ Horizontal scaling</td>
-                            <td>Handle high volume</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Recovery</strong></td>
-                            <td>❌ Data loss risk</td>
-                            <td>✅ Complete recovery</td>
-                            <td>Business continuity</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Message Ordering</strong></td>
-                            <td>⚠️ Basic FIFO only</td>
-                            <td>✅ Guaranteed chronological</td>
-                            <td>Event causality</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Monitoring</strong></td>
-                            <td>❌ Limited visibility</td>
-                            <td>✅ Rich monitoring</td>
-                            <td>Operational insights</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Time-based Queries</strong></td>
-                            <td>❌ Not supported</td>
-                            <td>✅ Native timestamp support</td>
-                            <td>Historical analysis</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <div class="warning-box">
-                    <strong>⚠️ Migration Path:</strong> Existing List-based systems can gradually migrate to Streams by running both in parallel during transition period
+                <div class="session-header">
+                    <h3>Advanced Hash Operations</h3>
                 </div>
+                <h4>Selective Updates and Field Management</h4>
+                <p>Hash operations excel at partial updates and field-specific operations, making them ideal for frequently changing data.</p>
+                
+                <h4>Advanced Hash Features</h4>
+                <ul>
+                    <li class="bullet-point"><strong>Selective Updates:</strong> Update only specific fields as needed</li>
+                    <li class="bullet-point"><strong>Field Existence:</strong> Check if fields exist before operations</li>
+                    <li class="bullet-point"><strong>Field Management:</strong> Add, remove, and count fields dynamically</li>
+                    <li class="bullet-point"><strong>Batch Retrieval:</strong> Get multiple fields in single operation</li>
+                </ul>
             </section>
 
-            <!-- Integration Patterns -->
+            <!-- Hash Operations Code Part 2 -->
             <section>
-                <h2>Hash + Stream Integration Patterns</h2>
-                
-                <div class="architecture-diagram">
-                    <h3>Complete Event-Driven Architecture</h3>
-                    <pre style="text-align: left; font-size: 0.6em; margin: 0;">
-1. Event Producer (Application APIs)
-              ↓
-2. Events Stream (Immutable Event Log)
-              ↓
-3. Consumer Groups (Process Events in Parallel)
-              ↓
-4. Update Current State (Hash Snapshots) + Analytics
-              ↓
-5. Business Actions (Notifications, Reports, Integrations)
-
-Data Flow Example:
-order.created → [Stream] → [Processors] → HSET order:ORD001 status "pending"
-                        → [Analytics]  → HINCRBY metrics:daily orders_created 1
-                        → [Notifications] → Send confirmation email
-                    </pre>
+                <div class="session-header">
+                    <h3>Advanced Hash Operations - Code Examples</h3>
                 </div>
-
                 <div class="code-block">
-// Complete integration example
-// 1. Event added to stream
-XADD orders:events * 
-  eventType "order.completed" 
-  orderId "ORD001" 
-  amount "299.99"
-  userId "USER001"
+// Update only specific fields
+await client.hSet('customer:1001:details', {
+    'last_login': new Date().toISOString(),
+    'status': 'active'
+});
 
-// 2. Business logic consumer updates current state
-HSET order:ORD001 
-  status "completed" 
-  completed_amount "299.99" 
-  completed_at "2024-08-19T10:30:00Z"
-  processed_by "SYSTEM"
+// Get multiple specific fields efficiently
+const contactInfo = await client.hmGet(
+    'customer:1001:details', ['name', 'email', 'phone']);
 
-// 3. Analytics consumer updates metrics
-HINCRBY analytics:daily orders_completed 1
-ZADD leaderboard:customers 299.99 "USER001"
-HINCRBYFLOAT analytics:revenue daily_total 299.99
+// Get all field names (keys) in the hash
+const fieldNames = await client.hKeys('customer:1001:details');
+console.log('Available fields:', fieldNames);
 
-// 4. Notifications consumer triggers alerts
-LPUSH notifications:user:USER001 "order_completed:ORD001"
-                </div>
+// Count total fields in customer record
+const fieldCount = await client.hLen('customer:1001:details');
+
+// Delete specific fields
+await client.hDel('customer:1001:details', 'temporary_note');
+
+// Check if specific field exists
+const hasPhone = await client.hExists(
+    'customer:1001:details', 'phone');
+</div>
             </section>
 
-            <!-- Performance & Best Practices -->
+            <!-- List Operations Concepts -->
             <section>
-                <h2>Performance & Production Best Practices</h2>
+                <div class="session-header">
+                    <h3>Redis List Operations - Ordered Collections</h3>
+                </div>
+                <h4>Managing Sequential and Time-Ordered Data</h4>
+                <p>Redis lists maintain insertion order and provide efficient operations at both ends, making them perfect for activity logs, queues, and chronological data.</p>
                 
-                <div class="feature-grid">
-                    <div class="feature-box">
-                        <h3>🚀 Hash Optimization</h3>
-                        <ul>
-                            <li><strong>Field naming:</strong> Use short field names for memory efficiency</li>
-                            <li><strong>Ziplist config:</strong> Set hash-max-ziplist-entries appropriately</li>
-                            <li><strong>Batch operations:</strong> Use HMSET for multiple fields</li>
-                            <li><strong>Memory monitoring:</strong> Track hash sizes and memory usage</li>
-                            <li><strong>Field cleanup:</strong> Remove unused fields with HDEL</li>
-                        </ul>
-                    </div>
-                    <div class="feature-box">
-                        <h3>⚡ Stream Optimization</h3>
-                        <ul>
-                            <li><strong>Stream trimming:</strong> Set MAXLEN to prevent infinite growth</li>
-                            <li><strong>Consumer scaling:</strong> Add consumers to handle load</li>
-                            <li><strong>Lag monitoring:</strong> Watch consumer group lag metrics</li>
-                            <li><strong>Failed messages:</strong> Implement dead letter queues</li>
-                            <li><strong>Batch processing:</strong> Use COUNT parameter for efficiency</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="code-block">
-// Production configuration examples
-// Stream with automatic trimming
-XADD claims:events MAXLEN ~ 100000 * eventType "claim.submitted" ...
-
-// Efficient hash operations
-HMSET policy:POL001 t "auto" p "1200" s "active" d "500"  // Short field names
-
-// Monitoring commands
-XINFO STREAM claims:events     // Stream health
-XINFO GROUPS claims:events     // Consumer group status
-XPENDING claims:events processors  // Unprocessed messages
-MEMORY USAGE claim:CLM001      // Hash memory usage
-                </div>
-
-                <div class="warning-box">
-                    <strong>⚠️ Production Checklist:</strong> Set appropriate MAXLEN for streams, monitor consumer lag, implement retry logic for failed events, use short hash field names, configure proper persistence settings
+                <h4>List Operation Categories</h4>
+                <ul>
+                    <li class="bullet-point"><strong>Push/Pop Operations:</strong> Add and remove items from either end</li>
+                    <li class="bullet-point"><strong>Range Operations:</strong> Retrieve specific ranges of items</li>
+                    <li class="bullet-point"><strong>Index Operations:</strong> Access items by position</li>
+                    <li class="bullet-point"><strong>Blocking Operations:</strong> Wait for items in real-time processing</li>
+                </ul>
+                
+                <div class="info">
+                    <strong>Queue Pattern:</strong> Use LPUSH + BRPOP for FIFO queues, or RPUSH + BLPOP for LIFO stacks. Blocking operations enable real-time task processing.
                 </div>
             </section>
 
-            <!-- Lab Callout -->
+            <!-- List Operations Code Part 1 -->
+            <section>
+                <div class="session-header">
+                    <h3>List Operations - Basic Examples</h3>
+                </div>
+                <div class="code-block">
+// Add new items to the beginning (left) of list
+await client.lPush('customer:1001:claims', 'CLM003_2024');
+await client.lPush('customer:1001:claims', 'CLM004_2024');
+
+// Add items to the end (right) of the list
+await client.rPush('customer:1001:activities', 
+    JSON.stringify({
+        action: 'policy_update',
+        timestamp: Date.now(),
+        details: 'Updated contact information'
+    })
+);
+
+// Retrieve range of items (0 = first, -1 = last)
+const recentClaims = await client.lRange(
+    'customer:1001:claims', 0, 4);
+console.log('Last 5 claims:', recentClaims);
+
+// Get specific item by index (0-based)
+const latestClaim = await client.lIndex(
+    'customer:1001:claims', 0);
+
+// Remove and return items from either end
+const processedClaim = await client.lPop('customer:1001:claims');
+const oldestActivity = await client.rPop('customer:1001:activities');
+</div>
+            </section>
+
+            <!-- List Operations Part 2 -->
+            <section>
+                <div class="session-header">
+                    <h3>Advanced List Operations</h3>
+                </div>
+                <h4>List Manipulation and Queue Operations</h4>
+                <p>Lists support advanced operations for queue management, data cleaning, and complex list manipulations.</p>
+                
+                <h4>Advanced List Features</h4>
+                <ul>
+                    <li class="bullet-point"><strong>List Trimming:</strong> Keep only recent items for log rotation</li>
+                    <li class="bullet-point"><strong>Item Insertion:</strong> Insert items at specific positions</li>
+                    <li class="bullet-point"><strong>Value Removal:</strong> Remove specific values from lists</li>
+                    <li class="bullet-point"><strong>Blocking Operations:</strong> Real-time queue processing</li>
+                </ul>
+            </section>
+
+            <!-- List Operations Code Part 2 -->
+            <section>
+                <div class="session-header">
+                    <h3>Advanced List Operations - Code Examples</h3>
+                </div>
+                <div class="code-block">
+// Get list length for pagination or validation
+const claimCount = await client.lLen('customer:1001:claims');
+console.log(`Customer has ${claimCount} claims on record`);
+
+// Trim list to keep only recent items (useful for logs)
+await client.lTrim('customer:1001:activities', 0, 99); // Keep last 100
+
+// Insert item before or after existing element
+await client.lInsert('customer:1001:claims', 'BEFORE', 
+    'CLM003_2024', 'CLM002_2024');
+
+// Remove specific items by value (count: positive = from head)
+await client.lRem('customer:1001:claims', 1, 'CLM001_CANCELLED');
+
+// Set value at specific index
+await client.lSet('customer:1001:claims', 0, 'CLM004_UPDATED');
+
+// Blocking operations for real-time processing
+// Note: Use separate connection for blocking operations
+const blockingClient = client.duplicate();
+const nextItem = await blockingClient.blPop('work_queue', 30); // 30 sec timeout
+</div>
+            </section>
+
+            <!-- Set Operations Concepts -->
+            <section>
+                <div class="session-header">
+                    <h3>Redis Set Operations - Unique Collections</h3>
+                </div>
+                <h4>Managing Unique Values and Set Mathematics</h4>
+                <p>Redis sets automatically ensure uniqueness and provide powerful set operations for data analysis and relationship management.</p>
+                
+                <h4>Set Operation Categories</h4>
+                <ul>
+                    <li class="bullet-point"><strong>Membership Operations:</strong> Add, remove, and check set membership</li>
+                    <li class="bullet-point"><strong>Set Mathematics:</strong> Union, intersection, and difference operations</li>
+                    <li class="bullet-point"><strong>Random Operations:</strong> Get random members for sampling</li>
+                    <li class="bullet-point"><strong>Cardinality:</strong> Count unique elements efficiently</li>
+                </ul>
+                
+                <div class="success">
+                    <strong>Analytics Use Case:</strong> Set operations are perfect for customer segmentation, A/B testing groups, and feature flag management.
+                </div>
+            </section>
+
+            <!-- Set Operations Code Part 1 -->
+            <section>
+                <div class="session-header">
+                    <h3>Set Operations - Basic Examples</h3>
+                </div>
+                <div class="code-block">
+// Add multiple unique tags to a customer
+await client.sAdd('customer:1001:tags', 'premium', 'loyal', 'high-value');
+await client.sAdd('customer:1001:tags', 'premium'); // Duplicate ignored
+
+// Check if customer has specific tag
+const isPremium = await client.sIsMember('customer:1001:tags', 'premium');
+console.log('Customer is premium:', isPremium); // true
+
+// Get all tags for customer
+const customerTags = await client.sMembers('customer:1001:tags');
+console.log('Customer tags:', customerTags);
+
+// Count unique tags
+const tagCount = await client.sCard('customer:1001:tags');
+
+// Remove tags
+await client.sRem('customer:1001:tags', 'temporary-tag');
+
+// Get and remove random tag
+const randomTag = await client.sPop('customer:1001:tags');
+</div>
+            </section>
+
+            <!-- Set Operations Part 2 -->
+            <section>
+                <div class="session-header">
+                    <h3>Advanced Set Operations</h3>
+                </div>
+                <h4>Set Mathematics for Customer Analytics</h4>
+                <p>Use set operations to analyze customer segments and find relationships between different groups:</p>
+                <div class="code-block">
+// Create customer groups
+await client.sAdd('group:premium', '1001', '1002', '1003', '1004');
+await client.sAdd('group:loyal', '1001', '1004', '1005', '1006');
+await client.sAdd('group:young', '1002', '1005', '1007', '1008');
+
+// Find customers who are both premium AND loyal
+const premiumLoyal = await client.sInter('group:premium', 'group:loyal');
+console.log('Premium + Loyal customers:', premiumLoyal); // ['1001', '1004']
+
+// Find all premium OR loyal customers
+const premiumOrLoyal = await client.sUnion('group:premium', 'group:loyal');
+
+// Find premium customers who are NOT loyal
+const premiumNotLoyal = await client.sDiff('group:premium', 'group:loyal');
+
+// Store intersection result for later use
+await client.sInterStore('group:premium_loyal', 'group:premium', 'group:loyal');
+</div>
+                <div class="success">
+                    <strong>Analytics Use Case:</strong> Set operations are perfect for customer segmentation, A/B testing groups, and feature flag management.
+                </div>
+            </section>
+
+            <!-- Sorted Sets Part 1 -->
+            <section>
+                <div class="session-header">
+                    <h3>Redis Sorted Sets - Ranked Data</h3>
+                </div>
+                <h4>Score-Based Ordering and Rankings</h4>
+                <p>Sorted sets combine the uniqueness of sets with automatic ordering by score, perfect for leaderboards and rankings:</p>
+                <div class="code-block">
+// Add customers with their premium amounts as scores
+await client.zAdd('leaderboard:premium_value', [
+    { score: 1500.50, value: 'customer:1001' },
+    { score: 1200.75, value: 'customer:1002' },
+    { score: 1800.25, value: 'customer:1003' },
+    { score: 950.00, value: 'customer:1004' }
+]);
+
+// Get top customers by premium value (highest first)
+const topCustomers = await client.zRevRange(
+    'leaderboard:premium_value', 0, 2, { WITHSCORES: true }
+);
+console.log('Top 3 premium customers:', topCustomers);
+
+// Get customer's rank (0-based, highest score = rank 0)
+const customerRank = await client.zRevRank(
+    'leaderboard:premium_value', 'customer:1001'
+);
+console.log('Customer 1001 rank:', customerRank + 1);
+</div>
+            </section>
+
+            <!-- Sorted Sets Part 2 -->
+            <section>
+                <div class="session-header">
+                    <h3>Advanced Sorted Set Operations</h3>
+                </div>
+                <h4>Range Queries and Score-Based Analytics</h4>
+                <p>Sorted sets excel at range queries and score-based filtering for business analytics:</p>
+                <div class="code-block">
+// Find customers with premium value above $1400
+const highValueCustomers = await client.zRangeByScore(
+    'leaderboard:premium_value', 1400, '+inf', { WITHSCORES: true }
+);
+
+// Count customers in specific premium range
+const midTierCount = await client.zCount(
+    'leaderboard:premium_value', 1000, 1500
+);
+
+// Get customer's current score
+const customerScore = await client.zScore(
+    'leaderboard:premium_value', 'customer:1001'
+);
+
+// Update customer's score (increment by amount)
+await client.zIncrBy('leaderboard:premium_value', 200.50, 'customer:1001');
+
+// Remove customers below minimum threshold
+await client.zRemRangeByScore('leaderboard:premium_value', 0, 500);
+
+// Get customers within rank range
+const middleRanked = await client.zRange(
+    'leaderboard:premium_value', 5, 10, { WITHSCORES: true }
+);
+</div>
+                <div class="info">
+                    <strong>Business Use:</strong> Perfect for premium tiers, loyalty points, credit scores, and any ranking system where order matters.
+                </div>
+            </section>
+
+            <!-- Lab Introduction -->
             <section>
                 <div class="lab-callout">
-                    <h2>🧪 Coming Up: Labs 7-8</h2>
-                    <div style="display: flex; gap: 25px; margin-top: 20px;">
-                        <div style="flex: 1;">
-                            <h3>Lab 7: User Profiles & Data Management</h3>
-                            <p><strong>Duration:</strong> 45 minutes</p>
-                            <p><strong>Focus:</strong> Complex data modeling with Redis Hashes</p>
-                            <ul style="text-align: left; font-size: 0.85em; margin: 10px 0;">
-                                <li>User profile CRUD operations</li>
-                                <li>Product catalog management</li>
-                                <li>Hash field manipulation & atomic updates</li>
-                                <li>Performance optimization techniques</li>
-                                <li>Memory-efficient data modeling</li>
-                            </ul>
-                        </div>
-                        <div style="flex: 1;">
-                            <h3>Lab 8: Event Sourcing with Streams</h3>
-                            <p><strong>Duration:</strong> 45 minutes</p>
-                            <p><strong>Focus:</strong> Event-driven architecture implementation</p>
-                            <ul style="text-align: left; font-size: 0.85em; margin: 10px 0;">
-                                <li>Application event sourcing implementation</li>
-                                <li>Consumer group processing patterns</li>
-                                <li>Real-time analytics & monitoring</li>
-                                <li>Event replay & debugging capabilities</li>
-                                <li>Production monitoring & alerting</li>
-                            </ul>
-                        </div>
+                    <h3>🛠️ Lab 4: JavaScript Redis Integration</h3>
+                    <p><strong>Duration:</strong> 45 minutes</p>
+                    <p>Build a customer data management application using Node.js and Redis</p>
+                </div>
+            </section>
+
+            <!-- Error Handling Part 1 -->
+            <section>
+                <div class="session-header">
+                    <h3>Error Handling Strategies</h3>
+                </div>
+                <h4>Robust Error Management Patterns</h4>
+                <p>Implement comprehensive error handling to ensure application stability and provide meaningful feedback:</p>
+                <div class="code-block">
+async function safeRedisOperation(key, operation) {
+    try {
+        const result = await operation();
+        return { success: true, data: result };
+    } catch (error) {
+        console.error(`Redis operation failed for key ${key}:`, error);
+        
+        // Handle specific error types
+        if (error.code === 'ECONNREFUSED') {
+            console.log('Redis connection refused - server down?');
+            // Trigger reconnection logic or fallback
+        } else if (error.code === 'ENOTFOUND') {
+            console.log('Redis host not found - check configuration');
+        }
+        
+        return { success: false, error: error.message };
+    }
+}
+</div>
+            </section>
+
+            <!-- Error Handling Part 2 -->
+            <section>
+                <div class="session-header">
+                    <h3>Advanced Error Handling</h3>
+                </div>
+                <h4>Circuit Breaker and Fallback Patterns</h4>
+                <p>Implement circuit breaker patterns to handle Redis outages gracefully and maintain application availability:</p>
+                <div class="code-block">
+class RedisCircuitBreaker {
+    constructor(threshold = 5, timeout = 60000) {
+        this.failureCount = 0;
+        this.threshold = threshold;
+        this.timeout = timeout;
+        this.state = 'CLOSED'; // CLOSED, OPEN, HALF_OPEN
+        this.nextAttempt = Date.now();
+    }
+    
+    async execute(operation) {
+        if (this.state === 'OPEN') {
+            if (Date.now() < this.nextAttempt) {
+                throw new Error('Circuit breaker is OPEN');
+            }
+            this.state = 'HALF_OPEN';
+        }
+        
+        try {
+            const result = await operation();
+            this.onSuccess();
+            return result;
+        } catch (error) {
+            this.onFailure();
+            throw error;
+        }
+    }
+    
+    onSuccess() {
+        this.failureCount = 0;
+        this.state = 'CLOSED';
+    }
+    
+    onFailure() {
+        this.failureCount++;
+        if (this.failureCount >= this.threshold) {
+            this.state = 'OPEN';
+            this.nextAttempt = Date.now() + this.timeout;
+        }
+    }
+}
+</div>
+            </section>
+
+            <!-- Connection Management Part 1 -->
+            <section>
+                <div class="session-header">
+                    <h3>Connection Lifecycle Management</h3>
+                </div>
+                <h4>Professional Connection Handling</h4>
+                <p>Implement proper connection management with monitoring and automatic recovery for production applications:</p>
+                <div class="code-block">
+class RedisConnectionManager {
+    constructor(config) {
+        this.config = config;
+        this.client = null;
+        this.isConnecting = false;
+        this.reconnectAttempts = 0;
+        this.maxReconnectAttempts = 10;
+    }
+    
+    async connect() {
+        if (this.client && this.client.isOpen) {
+            return this.client;
+        }
+        
+        if (this.isConnecting) {
+            // Wait for existing connection attempt
+            while (this.isConnecting) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            return this.client;
+        }
+        
+        this.isConnecting = true;
+        
+        try {
+            this.client = redis.createClient(this.config);
+            this.setupEventHandlers();
+            await this.client.connect();
+            this.reconnectAttempts = 0;
+            this.isConnecting = false;
+            return this.client;
+        } catch (error) {
+            this.isConnecting = false;
+            throw error;
+        }
+    }
+</div>
+            </section>
+
+            <!-- Connection Management Part 2 -->
+            <section>
+                <div class="session-header">
+                    <h3>Advanced Connection Features</h3>
+                </div>
+                <h4>Event Handling and Monitoring</h4>
+                <p>Set up comprehensive event monitoring to track connection health and performance:</p>
+                <div class="code-block">
+    setupEventHandlers() {
+        this.client.on('connect', () => {
+            console.log('✅ Redis connected successfully');
+            this.reconnectAttempts = 0;
+        });
+        
+        this.client.on('ready', () => {
+            console.log('🚀 Redis client ready for operations');
+        });
+        
+        this.client.on('error', (err) => {
+            console.error('❌ Redis connection error:', err.message);
+            this.handleConnectionError(err);
+        });
+        
+        this.client.on('end', () => {
+            console.log('🔌 Redis connection ended');
+        });
+        
+        this.client.on('reconnecting', () => {
+            this.reconnectAttempts++;
+            console.log(`🔄 Reconnecting to Redis (attempt ${this.reconnectAttempts})`);
+        });
+    }
+    
+    async disconnect() {
+        if (this.client) {
+            await this.client.disconnect();
+            this.client = null;
+            console.log('👋 Redis disconnected cleanly');
+        }
+    }
+    
+    isHealthy() {
+        return this.client && this.client.isOpen;
+    }
+}
+</div>
+            </section>
+
+            <!-- Async/Await Patterns Part 1 -->
+            <section>
+                <div class="session-header">
+                    <h3>Modern JavaScript Patterns</h3>
+                </div>
+                <h4>Async/Await with Redis Operations</h4>
+                <p>Leverage modern JavaScript async patterns for clean, readable Redis code with proper error handling:</p>
+                <div class="code-block">
+async function processCustomerData(customerId) {
+    try {
+        // Sequential operations when data depends on previous results
+        const customerExists = await client.exists(`customer:${customerId}`);
+        if (!customerExists) {
+            throw new Error(`Customer ${customerId} not found`);
+        }
+        
+        const customerInfo = await client.hGetAll(`customer:${customerId}:profile`);
+        
+        // Use customer data to determine what other data to fetch
+        const dataPromises = [
+            client.lRange(`customer:${customerId}:claims`, 0, -1),
+            client.sMembers(`customer:${customerId}:preferences`)
+        ];
+        
+        // Add policy data if customer is premium
+        if (customerInfo.premium === 'true') {
+            dataPromises.push(
+                client.zRange(`customer:${customerId}:policies`, 0, -1, 
+                    { WITHSCORES: true })
+            );
+        }
+        
+        const results = await Promise.all(dataPromises);
+        return this.formatCustomerResponse(customerInfo, results);
+        
+    } catch (error) {
+        console.error('Failed to process customer data:', error);
+        throw new CustomerDataError(`Cannot process customer ${customerId}`, error);
+    }
+}
+</div>
+            </section>
+
+            <!-- Async/Await Patterns Part 2 -->
+            <section>
+                <div class="session-header">
+                    <h3>Performance Optimization Patterns</h3>
+                </div>
+                <h4>Parallel Operations and Batch Processing</h4>
+                <p>Optimize performance by running independent Redis operations in parallel and batching related operations:</p>
+                <div class="code-block">
+async function getCustomerDashboardData(customerId) {
+    // Run all independent operations in parallel
+    const [
+        customerProfile,
+        recentClaims,
+        policyData,
+        activityLog,
+        preferences,
+        loyaltyPoints
+    ] = await Promise.all([
+        client.hGetAll(`customer:${customerId}:profile`),
+        client.lRange(`customer:${customerId}:claims`, 0, 4),
+        client.zRevRange(`customer:${customerId}:policies`, 0, -1, 
+            { WITHSCORES: true }),
+        client.lRange(`customer:${customerId}:activities`, 0, 9),
+        client.sMembers(`customer:${customerId}:preferences`),
+        client.zScore('loyalty_leaderboard', customerId)
+    ]);
+    
+    return {
+        profile: customerProfile,
+        recentClaims: recentClaims.map(claim => JSON.parse(claim)),
+        policies: this.formatPolicyData(policyData),
+        activities: activityLog.map(activity => JSON.parse(activity)),
+        preferences: preferences,
+        loyaltyPoints: loyaltyPoints || 0,
+        timestamp: new Date().toISOString()
+    };
+}
+
+// Handle Promise.all failures gracefully
+async function safeParallelOperations(operations) {
+    const results = await Promise.allSettled(operations);
+    return results.map((result, index) => {
+        if (result.status === 'fulfilled') {
+            return result.value;
+        } else {
+            console.error(`Operation ${index} failed:`, result.reason);
+            return null; // or appropriate default value
+        }
+    });
+}
+</div>
+            </section>
+
+            <!-- Pipeline Operations Part 1 -->
+            <section>
+                <div class="session-header">
+                    <h3>Pipeline Operations for Performance</h3>
+                </div>
+                <h4>Batch Operations with Redis Multi/Pipeline</h4>
+                <p>Use pipelines to send multiple commands in a single network round trip, dramatically improving performance for batch operations:</p>
+                <div class="code-block">
+async function batchUpdateCustomers(customers) {
+    const pipeline = client.multi();
+    
+    // Queue multiple operations without waiting for responses
+    customers.forEach(customer => {
+        // Update customer profile
+        pipeline.hSet(`customer:${customer.id}:profile`, {
+            name: customer.name,
+            email: customer.email,
+            last_updated: new Date().toISOString()
+        });
+        
+        // Add to active customers set
+        pipeline.sAdd('active_customers', customer.id);
+        
+        // Update customer score in leaderboard
+        pipeline.zAdd('customer_value_leaderboard', {
+            score: customer.totalValue,
+            value: customer.id
+        });
+        
+        // Log the update activity
+        pipeline.lPush(`customer:${customer.id}:activities`, 
+            JSON.stringify({
+                action: 'profile_update',
+                timestamp: Date.now()
+            })
+        );
+    });
+    
+    // Execute all operations atomically
+    const results = await pipeline.exec();
+    console.log(`Batch update completed: ${results.length} operations executed`);
+    return results;
+}
+</div>
+            </section>
+
+            <!-- Pipeline Operations Part 2 -->
+            <section>
+                <div class="session-header">
+                    <h3>Advanced Pipeline Techniques</h3>
+                </div>
+                <h4>Transaction Safety and Error Handling</h4>
+                <p>Handle pipeline results and implement transaction-like behavior with proper error management:</p>
+                <div class="code-block">
+async function safeCustomerTransaction(customerId, updates) {
+    const pipeline = client.multi();
+    
+    try {
+        // Watch key for changes (optimistic locking)
+        await client.watch(`customer:${customerId}:profile`);
+        
+        // Verify customer exists before updates
+        const exists = await client.exists(`customer:${customerId}:profile`);
+        if (!exists) {
+            await client.unwatch();
+            throw new Error(`Customer ${customerId} does not exist`);
+        }
+        
+        // Queue conditional updates
+        Object.entries(updates).forEach(([field, value]) => {
+            pipeline.hSet(`customer:${customerId}:profile`, field, value);
+        });
+        
+        // Add audit trail
+        pipeline.lPush(`customer:${customerId}:audit`, JSON.stringify({
+            action: 'profile_update',
+            changes: updates,
+            timestamp: new Date().toISOString(),
+            user: 'system'
+        }));
+        
+        const results = await pipeline.exec();
+        
+        if (!results) {
+            throw new Error('Transaction failed - key was modified during execution');
+        }
+        
+        console.log('Customer update transaction completed successfully');
+        return results;
+        
+    } catch (error) {
+        await client.unwatch(); // Clean up watch
+        console.error('Customer transaction failed:', error);
+        throw error;
+    }
+}
+</div>
+                <div class="warning">
+                    <strong>Important:</strong> Pipeline operations are atomic but not transactional. Use WATCH/MULTI/EXEC for true transactional behavior.
+                </div>
+            </section>
+
+            <!-- Redis Streams -->
+            <section>
+                <div class="session-header">
+                    <h3>Working with Redis Streams</h3>
+                </div>
+                <h4>Event Streaming for Customer Activities</h4>
+                <div class="code-block">
+// Add to stream
+async function logCustomerActivity(customerId, activity) {
+    const streamKey = `customer:${customerId}:activities`;
+    
+    await client.xAdd(streamKey, '*', {
+        action: activity.action,
+        timestamp: Date.now(),
+        details: JSON.stringify(activity.details)
+    });
+}
+
+// Read from stream
+async function getCustomerActivities(customerId, count = 10) {
+    const streamKey = `customer:${customerId}:activities`;
+    
+    const activities = await client.xRevRange(streamKey, '+', '-', {
+        COUNT: count
+    });
+    
+    return activities.map(activity => ({
+        id: activity.id,
+        ...activity.message
+    }));
+}
+</div>
+            </section>
+
+            <!-- Pub/Sub Operations -->
+            <section>
+                <div class="session-header">
+                    <h3>Pub/Sub for Real-time Updates</h3>
+                </div>
+                <h4>Real-time Customer Notifications</h4>
+                <div class="code-block">
+// Publisher
+async function notifyPolicyUpdate(customerId, policyId) {
+    const message = JSON.stringify({
+        customerId,
+        policyId,
+        timestamp: Date.now(),
+        event: 'policy_updated'
+    });
+    
+    await client.publish('policy_updates', message);
+}
+
+// Subscriber
+async function setupPolicyUpdateListener() {
+    const subscriber = client.duplicate();
+    await subscriber.connect();
+    
+    await subscriber.subscribe('policy_updates', (message) => {
+        const update = JSON.parse(message);
+        console.log('Policy update received:', update);
+        // Process the update
+    });
+}
+</div>
+            </section>
+
+            <!-- Testing Redis Operations -->
+            <section>
+                <div class="session-header">
+                    <h3>Testing Redis Operations</h3>
+                </div>
+                <h4>Unit Testing with Jest</h4>
+                <div class="code-block">
+const redis = require('redis-mock');
+
+describe('Customer Service', () => {
+    let client;
+    
+    beforeEach(() => {
+        client = redis.createClient();
+    });
+    
+    afterEach(() => {
+        client.flushall();
+    });
+    
+    test('should store customer data', async () => {
+        await client.hSet('customer:1001', 'name', 'John Doe');
+        const name = await client.hGet('customer:1001', 'name');
+        expect(name).toBe('John Doe');
+    });
+});
+</div>
+                <div class="info">
+                    <strong>Testing Tip:</strong> Use redis-mock for unit tests to avoid dependencies on actual Redis instances.
+                </div>
+            </section>
+
+            <!-- Monitoring and Debugging -->
+            <section>
+                <div class="session-header">
+                    <h3>Monitoring and Debugging</h3>
+                </div>
+                <h4>Debugging Redis Operations</h4>
+                <div class="code-block">
+// Enable command logging
+client.on('ready', () => {
+    console.log('Redis client ready');
+});
+
+client.on('error', (err) => {
+    console.error('Redis error:', err);
+});
+
+// Monitor commands (development only)
+if (process.env.NODE_ENV === 'development') {
+    client.monitor((err, res) => {
+        console.log('Entering monitoring mode.');
+    });
+    
+    client.on('monitor', (time, args) => {
+        console.log('Redis command:', args);
+    });
+}
+</div>
+            </section>
+
+            <!-- Production Considerations -->
+            <section>
+                <div class="session-header">
+                    <h3>Production Considerations</h3>
+                </div>
+                <div class="two-column">
+                    <div class="column">
+                        <h4>Performance Optimization</h4>
+                        <ul>
+                            <li class="bullet-point">Use connection pooling</li>
+                            <li class="bullet-point">Implement proper error handling</li>
+                            <li class="bullet-point">Use pipelines for batch operations</li>
+                            <li class="bullet-point">Monitor memory usage</li>
+                        </ul>
                     </div>
-                    <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.2); border-radius: 8px;">
-                        <p style="margin: 0; font-size: 1.1em;"><strong>Total Lab Time: 90 minutes</strong></p>
-                        <p style="margin: 5px 0 0 0; font-size: 0.9em;">Building production-ready applications with complete audit trails!</p>
+                    <div class="column">
+                        <h4>Security Best Practices</h4>
+                        <ul>
+                            <li class="bullet-point">Use authentication</li>
+                            <li class="bullet-point">Enable SSL/TLS</li>
+                            <li class="bullet-point">Validate input data</li>
+                            <li class="bullet-point">Implement rate limiting</li>
+                        </ul>
                     </div>
                 </div>
             </section>
 
             <!-- Session Summary -->
             <section>
-                <h2>Session Summary & Next Steps</h2>
-                
-                <div class="feature-grid">
-                    <div class="feature-box">
-                        <h3>✅ Hashes Mastered</h3>
-                        <ul>
-                            <li>Complex application data modeling</li>
-                            <li>Efficient field-level operations</li>
-                            <li>Memory optimization strategies</li>
-                            <li>Atomic update patterns</li>
-                            <li>Production best practices</li>
-                        </ul>
-                    </div>
-                    <div class="feature-box">
-                        <h3>✅ Streams Foundation</h3>
-                        <ul>
-                            <li>Event sourcing architecture</li>
-                            <li>Consumer group processing</li>
-                            <li>Audit trail implementation</li>
-                            <li>Compliance patterns</li>
-                            <li>Scalability & monitoring</li>
-                        </ul>
-                    </div>
+                <div class="session-header">
+                    <h2>Session Summary</h2>
                 </div>
-
-                <div class="streams-benefit">
-                    <strong>🎯 Ready for Labs:</strong> You now understand both the data modeling (Hashes) and event processing (Streams) foundations needed to build enterprise-grade applications with complete audit trails and compliance support!
-                </div>
-
-                <div class="info-box">
-                    <strong>📚 Key Takeaway:</strong> Modern applications require both efficient data storage (Hashes) and complete audit trails (Streams) to meet business and regulatory requirements
+                <ul>
+                    <li class="bullet-point">Successfully configured Node.js Redis client</li>
+                    <li class="bullet-point">Implemented all major Redis data types in JavaScript</li>
+                    <li class="bullet-point">Applied error handling and connection management</li>
+                    <li class="bullet-point">Built data management workflows</li>
+                    <li class="bullet-point">Explored advanced features like streams and pub/sub</li>
+                </ul>
+                <div class="success">
+                    <strong>Next:</strong> We'll explore Set and Sorted Set applications for analytics and reporting.
                 </div>
             </section>
-            
         </div>
     </div>
 
@@ -1113,28 +1247,15 @@ MEMORY USAGE claim:CLM001      // Hash memory usage
     <script>
         Reveal.initialize({
             hash: true,
-            transition: 'slide',
-            transitionSpeed: 'default',
-            backgroundTransition: 'fade',
             controls: true,
             progress: true,
-            center: true,
-            touch: true,
-            loop: false,
-            rtl: false,
-            fragments: true,
-            embedded: false,
-            help: true,
-            showNotes: false,
-            autoSlide: 0,
-            autoSlideStoppable: true,
-            mouseWheel: false,
-            hideAddressBar: true,
-            previewLinks: false,
-            focusBodyOnPageVisibilityChange: true,
-            viewDistance: 3,
-            parallaxBackgroundImage: '',
-            parallaxBackgroundSize: ''
+            center: false,
+            transition: 'slide',
+            width: 1400,
+            height: 1000,
+            margin: 0.05,
+            minScale: 0.1,
+            maxScale: 1.2
         });
     </script>
 </body>
