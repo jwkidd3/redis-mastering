@@ -1,7 +1,7 @@
 # Lab 8: Claims Event Sourcing with Redis Streams
 
 **Duration:** 45 minutes  
-**Objective:** Implement event-driven claims processing using Redis Streams for audit trails, real-time analytics, and scalable event sourcing patterns
+**Objective:** Implement complete event-driven claims processing using Redis Streams for audit trails, real-time analytics, and scalable event sourcing patterns
 
 ## 🎯 Learning Objectives
 
@@ -13,6 +13,8 @@ By the end of this lab, you will be able to:
 - Implement claim analytics using stream aggregation
 - Handle stream partitioning and consumer groups for high availability
 - Create time-based claim analytics and reporting
+- Validate and test Redis Streams implementations
+- Monitor stream performance and troubleshoot issues
 
 ---
 
@@ -21,7 +23,7 @@ By the end of this lab, you will be able to:
 This lab supports flexible Redis connection configuration through environment variables:
 
 ```bash
-# Configure Redis connection (optional)
+# Configure Redis connection (required for remote host)
 export REDIS_HOST=your-redis-host    # Default: localhost
 export REDIS_PORT=6379               # Default: 6379
 export REDIS_PASSWORD=your-password  # Default: none
@@ -42,34 +44,49 @@ All scripts and applications will automatically use these environment variables.
 
 ---
 
-## Part 1: Event Sourcing Architecture Setup (15 minutes)
+## Part 1: Environment Setup (10 minutes)
 
-### Step 1: Environment Setup
+### Step 1: Validate Environment
 
 ```bash
-# Start Redis container with persistence
-docker run -d --name redis-lab8 \
-  -p 6379:6379 \
-  -v redis-lab8-data:/data \
-  redis:7-alpine redis-server --appendonly yes
+# Run validation script
+./validation/validate-environment.sh
 
-# Install Node.js dependencies
-npm install redis uuid
-
-# Verify Redis connection
-node -e "
-const redis = require('redis');
-const client = redis.createClient({
-  host: process.env.REDIS_HOST || 'localhost',
-  port: process.env.REDIS_PORT || 6379,
-  password: process.env.REDIS_PASSWORD || undefined
-});
-client.on('connect', () => console.log('✅ Connected to Redis'));
-client.on('error', (err) => console.log('❌ Redis error:', err));
-"
+# This will check:
+# - Node.js version
+# - Docker availability
+# - Redis connection
+# - Required packages
 ```
 
-### Step 2: Understanding Claims Event Sourcing
+### Step 2: Install Dependencies
+
+```bash
+# Install all required packages
+npm install
+
+# Verify installation
+npm run validate-setup
+```
+
+### Step 3: Setup Redis Connection
+
+```bash
+# Test Redis connection
+npm run test-connection
+
+# Load initial sample data
+npm run load-data
+
+# Verify data loading
+npm run verify-data
+```
+
+---
+
+## Part 2: Event Sourcing Implementation (15 minutes)
+
+### Step 4: Understanding Claims Event Sourcing
 
 **Event Sourcing Benefits for Claims:**
 - **Immutable Audit Trail:** Every claim action is recorded permanently
@@ -88,272 +105,243 @@ client.on('error', (err) => console.log('❌ Redis error:', err));
 - `claim.payment.initiated` - Payment processing started
 - `claim.payment.completed` - Payment finalized
 
-### Step 3: Load Sample Data
+### Step 5: Build Claims Producer
 
 ```bash
-# Load initial customers and policies
-node scripts/load-sample-data.js
+# Start the claims producer service
+npm run producer
 
-# Verify data loaded
-node -e "
-const redis = require('redis');
-const client = redis.createClient();
-client.connect().then(async () => {
-  const customers = await client.keys('customer:*');
-  const policies = await client.keys('policy:*');
-  console.log(\`Loaded \${customers.length} customers and \${policies.length} policies\`);
-  await client.quit();
-});
-"
+# In Redis Insight, watch the claims:events stream
+# Run: XREAD STREAMS claims:events $
+```
+
+### Step 6: Implement Consumer Groups
+
+```bash
+# Start all consumer services (in separate terminals)
+npm run consumer:processor     # Claims business logic
+npm run consumer:analytics     # Real-time analytics
+npm run consumer:notifications # Customer notifications
+
+# Monitor consumer groups in Redis Insight
+# Run: XINFO GROUPS claims:events
+```
+
+### Step 7: Submit Test Claims
+
+```bash
+# Submit sample claims for processing
+npm run submit-claims
+
+# Watch real-time processing
+npm run monitor-processing
 ```
 
 ---
 
-## Part 2: Claims Event Stream Implementation (15 minutes)
+## Part 3: Analytics and Monitoring (10 minutes)
 
-### Step 4: Claims Event Producer
-
-Create the claims event producer to handle claim submissions and updates:
+### Step 8: Real-time Analytics Dashboard
 
 ```bash
-# Test the claims event producer
-node src/services/claims-producer.js
+# Start analytics dashboard
+npm run dashboard
+
+# Generate analytics reports
+npm run generate-report
+
+# View analytics in Redis Insight:
+# ZRANGE analytics:claims:daily:$(date +%Y-%m-%d) 0 -1 WITHSCORES
 ```
 
-**Key Features:**
-- Validates claim data before creating events
-- Generates unique claim IDs and event timestamps
-- Handles different event types with proper schemas
-- Implements retry logic for stream failures
-
-### Step 5: Claims Event Consumers
-
-**Consumer Architecture:**
-- **Processor Consumer:** Handles claim state transitions
-- **Analytics Consumer:** Aggregates data for reporting
-- **Notification Consumer:** Sends alerts and notifications
-- **Audit Consumer:** Creates compliance reports
+### Step 9: Stream Monitoring
 
 ```bash
-# Start claims processor (in separate terminal)
-node src/consumers/claims-processor.js
+# Monitor stream health
+npm run monitor-streams
 
-# Start analytics consumer (in separate terminal)
-node src/consumers/analytics-consumer.js
+# Check consumer lag
+npm run check-consumer-lag
 
-# Start notification consumer (in separate terminal)
-node src/consumers/notification-consumer.js
+# View stream info in Redis Insight:
+# XINFO STREAM claims:events
 ```
 
-### Step 6: Stream Monitoring with Redis Insight
-
-1. **Open Redis Insight** and connect to your Redis instance
-2. **Navigate to Streams** section
-3. **Examine Stream Structure:**
-   - `claims:events` - Main event stream
-   - `claims:analytics` - Aggregated analytics
-   - `claims:notifications` - Alert stream
-
-4. **Monitor Consumer Groups:**
-   - `processors` - Claim state management
-   - `analytics` - Business intelligence
-   - `notifications` - Alert system
-
----
-
-## Part 3: Real-time Claims Processing (10 minutes)
-
-### Step 7: Submit Claims and Observe Events
+### Step 10: Event Replay and Recovery
 
 ```bash
-# Submit multiple test claims
-node scripts/submit-test-claims.js
+# Test event replay functionality
+npm run test-replay
 
-# Monitor claims processing in real-time
-node scripts/monitor-claims.js
-```
+# Test consumer recovery
+npm run test-recovery
 
-**Processing Workflow:**
-1. **Claim Submitted** → Stream event created
-2. **Processors** → Validate and assign claim
-3. **Analytics** → Update metrics and KPIs
-4. **Notifications** → Alert stakeholders
-
-### Step 8: Claims Analytics Dashboard
-
-```bash
-# Run analytics dashboard
-node src/services/analytics-dashboard.js
-```
-
-**Analytics Features:**
-- **Real-time Metrics:** Claims per hour, average processing time
-- **Status Distribution:** Submitted, processing, approved, rejected
-- **Amount Analysis:** Total claim values, average amounts
-- **Processing Performance:** Adjuster workload, resolution times
-
-### Step 9: Event Replay and Recovery
-
-```bash
-# Demonstrate event replay capability
-node scripts/replay-events.js
-
-# Test consumer recovery after failure
-node scripts/test-consumer-recovery.js
-```
-
-**Recovery Features:**
-- **Stream Persistence:** Events survive Redis restarts
-- **Consumer Position:** Resume from last processed message
-- **Failed Message Handling:** Dead letter queue for problematic events
-- **Replay Capability:** Reprocess events from any point in time
-
----
-
-## Part 4: Advanced Stream Operations (5 minutes)
-
-### Step 10: Stream Aggregation and Analysis
-
-```bash
-# Generate comprehensive analytics report
-node scripts/generate-analytics-report.js
-
-# View the generated report
-cat data/claims-analytics-report.json
-```
-
-### Step 11: Stream Maintenance and Optimization
-
-```bash
-# Check stream information
-node -e "
-const redis = require('redis');
-const client = redis.createClient();
-client.connect().then(async () => {
-  const info = await client.xInfo('STREAM', 'claims:events');
-  console.log('Stream Info:', info);
-  
-  const groups = await client.xInfo('GROUPS', 'claims:events');
-  console.log('Consumer Groups:', groups);
-  
-  await client.quit();
-});
-"
-
-# Trim old events (optional, for production)
-# node scripts/trim-old-events.js
+# View event history
+npm run view-event-history
 ```
 
 ---
 
-## 🏆 Lab 8 Completion
+## Part 4: Testing and Validation (10 minutes)
 
-### ✅ What You've Accomplished
+### Step 11: Run Comprehensive Tests
 
-- **Event Sourcing Mastery:** Implemented immutable audit trails for claims
-- **Stream Architecture:** Built scalable, event-driven claims processing
-- **Real-time Analytics:** Created live dashboards and reporting systems
-- **Consumer Groups:** Implemented fault-tolerant message processing
-- **Event Replay:** Designed systems for audit and recovery scenarios
-- **Production Patterns:** Applied enterprise-grade event sourcing practices
+```bash
+# Run all automated tests
+npm test
 
-### 📊 Key Metrics Achieved
+# Run specific test categories
+npm run test:streams      # Stream operations
+npm run test:consumers    # Consumer functionality
+npm run test:analytics    # Analytics processing
+npm run test:recovery     # Error recovery
+```
 
-- Event-driven claims processing with complete audit trails
-- Multiple consumer groups processing events simultaneously
-- Real-time analytics and monitoring dashboards
-- Fault-tolerant message processing with recovery capabilities
-- Scalable architecture supporting high-volume claim processing
+### Step 12: Performance Testing
 
-### 🚀 Claims Processing Capabilities
+```bash
+# Run performance benchmarks
+npm run benchmark
 
-You now have a production-ready system that can:
-- Process thousands of claims events per minute
-- Maintain complete audit trails for regulatory compliance
-- Provide real-time analytics and business intelligence
-- Scale horizontally with consumer group partitioning
-- Recover gracefully from failures with event replay
+# Test high-volume processing
+npm run load-test
 
----
+# Check memory usage
+npm run memory-test
+```
 
-## 🎯 Event Sourcing vs Traditional Approaches
+### Step 13: Final Validation
 
-### ✅ **Event Sourcing Advantages:**
-- **Complete Audit Trail:** Every state change is recorded
-- **Temporal Queries:** "What was the claim status on date X?"
-- **Event Replay:** Rebuild state or test new logic
-- **Scalability:** Multiple consumers process independently
-- **Compliance:** Immutable records for regulatory requirements
+```bash
+# Comprehensive lab validation
+./validation/validate-lab-completion.sh
 
-### ⚠️ **Traditional Database Limitations:**
-- **Lost History:** Updates overwrite previous state
-- **Limited Scalability:** Single database bottleneck
-- **Complex Auditing:** Requires separate audit tables
-- **Difficult Recovery:** Hard to replay business events
+# This validates:
+# - All streams created correctly
+# - Consumer groups functioning
+# - Events processed successfully
+# - Analytics data generated
+# - Monitoring tools working
+```
 
 ---
 
-## 📚 Advanced Concepts Covered
+## 🔍 Using Redis Insight
 
-### Stream Commands Mastered
-- `XADD` - Add events to streams
-- `XREAD` - Read events from streams
-- `XGROUP` - Manage consumer groups
-- `XREADGROUP` - Consumer group processing
-- `XINFO` - Stream information and monitoring
-- `XPENDING` - Track unprocessed messages
-- `XACK` - Acknowledge processed messages
-- `XTRIM` - Stream maintenance and cleanup
+### Stream Visualization
+1. Open Redis Insight
+2. Connect to your Redis instance
+3. Navigate to Browser → claims:events
+4. View stream contents and consumer groups
+5. Monitor real-time processing
 
-### Event Sourcing Patterns
-- **Event Store:** Stream as single source of truth
-- **Projection:** Creating read models from events
-- **Saga Pattern:** Coordinating multi-service transactions
-- **CQRS:** Command Query Responsibility Segregation
-- **Event Replay:** Reconstructing state from events
+### Key Commands in Redis Insight CLI:
+```bash
+# View stream information
+XINFO STREAM claims:events
 
-### Production Considerations
-- **Stream Partitioning:** Scaling with multiple Redis instances
-- **Memory Management:** Stream trimming and archival strategies
-- **Monitoring:** Consumer lag and processing metrics
-- **Error Handling:** Dead letter queues and retry policies
+# Check consumer groups
+XINFO GROUPS claims:events
+
+# View latest events
+XREAD COUNT 10 STREAMS claims:events $
+
+# Check consumer lag
+XPENDING claims:events processors
+
+# View analytics data
+ZRANGE analytics:processing_times:$(date +%Y-%m-%d) 0 -1 WITHSCORES
+```
+
+---
+
+## 📊 Expected Outcomes
+
+After completing this lab, you should have:
+
+### ✅ **Functional Components:**
+- Event sourcing system processing claims events
+- Multiple consumer groups handling different business functions
+- Real-time analytics generating business insights
+- Monitoring and alerting system for stream health
+- Complete audit trail with event replay capabilities
+
+### ✅ **Technical Skills:**
+- Stream creation and management with XADD
+- Consumer group implementation with XREADGROUP
+- Event sourcing patterns and best practices
+- Real-time analytics with stream aggregation
+- Error handling and recovery strategies
+- Performance monitoring and optimization
+
+### ✅ **Business Value:**
+- Immutable audit trails for regulatory compliance
+- Real-time claim processing reducing customer wait times
+- Scalable architecture supporting business growth
+- Analytics enabling data-driven business decisions
+- Robust error handling ensuring business continuity
 
 ---
 
 ## 🔧 Troubleshooting
 
-### Common Stream Issues
+### Common Issues
 
 1. **Consumer Lag:**
    ```bash
    # Check pending messages
-   redis-cli XPENDING claims:events processors
+   npm run check-lag
    
-   # Monitor consumer group status
-   redis-cli XINFO GROUPS claims:events
+   # Reset consumer group if needed
+   npm run reset-consumers
    ```
 
 2. **Stream Memory Usage:**
    ```bash
-   # Check stream length
-   redis-cli XLEN claims:events
+   # Check stream size
+   npm run check-memory
    
-   # Monitor memory usage
-   redis-cli MEMORY USAGE claims:events
+   # Trim old events
+   npm run trim-streams
    ```
 
-3. **Event Processing Errors:**
+3. **Connection Issues:**
    ```bash
-   # Check failed messages
-   node scripts/check-failed-messages.js
+   # Test connection
+   npm run test-connection
    
-   # Replay failed events
-   node scripts/replay-failed-events.js
+   # Verify environment variables
+   npm run check-config
    ```
+
+### Getting Help
+- Check the troubleshooting guide: `docs/troubleshooting.md`
+- View error logs: `logs/error.log`
+- Run diagnostics: `npm run diagnose`
 
 ---
 
-## 🎓 Next Steps
+## 🎓 Lab Completion
+
+### Verification Checklist
+- [ ] All tests pass (`npm test`)
+- [ ] Consumer groups processing events
+- [ ] Analytics data being generated
+- [ ] Monitoring tools functioning
+- [ ] Event replay working correctly
+- [ ] Performance benchmarks completed
+
+### Skills Demonstrated
+- **Event Sourcing:** Implemented complete event-driven architecture
+- **Stream Processing:** Used Redis Streams for real-time data processing
+- **Consumer Groups:** Built scalable message processing system
+- **Analytics:** Created real-time business intelligence capabilities
+- **Monitoring:** Implemented comprehensive system observability
+- **Testing:** Built automated validation and testing frameworks
+
+---
+
+## 🎯 Next Steps
 
 ### **Lab 9:** Insurance Analytics with Sets and Sorted Sets
 - Aggregate stream data into analytical data structures
@@ -369,13 +357,13 @@ You now have a production-ready system that can:
 
 ---
 
-**Excellent work!** You've mastered event sourcing with Redis Streams and built a production-ready claims processing system. Ready for advanced analytics in Lab 9! 🚀
+**Excellent work!** You've mastered event sourcing with Redis Streams and built a production-ready claims processing system with complete monitoring, testing, and validation capabilities. Ready for advanced analytics in Lab 9! 🚀
 
 ## 📖 Additional Resources
 
 ### Redis Streams Documentation
 - [Redis Streams Introduction](https://redis.io/topics/streams-intro)
-- [Consumer Groups](https://redis.io/commands#stream)
+- [Consumer Groups Guide](https://redis.io/commands#stream)
 - [Stream Commands Reference](https://redis.io/commands#stream)
 
 ### Event Sourcing Patterns
