@@ -11,13 +11,13 @@
             text-align: left;
         }
         .reveal .slides section {
-            padding: 15px;
+            padding: 10px;
             box-sizing: border-box;
-            height: 100vh;
+            height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
-            overflow: hidden;
+            overflow: auto;
         }
         .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
             color: #2c3e50;
@@ -25,19 +25,19 @@
             line-height: 1.1;
         }
         .reveal h1 {
-            font-size: 1.8em;
+            font-size: 1.6em;
             text-align: center;
         }
         .reveal h2 {
-            font-size: 1.4em;
+            font-size: 1.3em;
         }
         .reveal h3 {
-            font-size: 1.1em;
-            margin-bottom: 10px;
+            font-size: 1.05em;
+            margin-bottom: 8px;
         }
         .reveal h4 {
-            font-size: 1.0em;
-            margin-bottom: 8px;
+            font-size: 0.95em;
+            margin-bottom: 6px;
         }
         .main-title {
             background: #f8f9fa;
@@ -68,11 +68,11 @@
             margin: 0;
         }
         .bullet-point {
-            margin: 8px 0;
+            margin: 6px 0;
             padding-left: 15px;
             position: relative;
-            line-height: 1.3;
-            font-size: 0.8em;
+            line-height: 1.25;
+            font-size: 0.75em;
         }
         .bullet-point:before {
             content: "•";
@@ -592,11 +592,11 @@ appendfsync everysec
             rtl: false,
             keyboard: true,
             overview: true,
-            width: 1200,
-            height: 800,
-            margin: 0.04,
-            minScale: 0.2,
-            maxScale: 2.0
+            width: '100%',
+            height: '100%',
+            margin: 0.01,
+            minScale: 0.1,
+            maxScale: 3.0
         });
     </script>
 </body>
