@@ -1,67 +1,65 @@
 #!/bin/bash
 
 # Test script for Lab 14 monitoring system
-# Validates all monitoring components are working
 
 set -e
 
 echo "🧪 Testing Lab 14 Monitoring System..."
+echo ""
 
-# Check if services are running
-echo "🔍 Checking if services are running..."
+# Colors for output
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
 
-# Test health check service
-echo "Testing health check service..."
-if curl -f http://localhost:3000/health > /dev/null 2>&1; then
-    echo "✅ Health check service is running"
-else
-    echo "❌ Health check service is not responding"
-    exit 1
-fi
+# Test function
+test_endpoint() {
+    local url=$1
+    local description=$2
+    
+    echo -n "Testing $description... "
+    
+    if curl -f -s "$url" > /dev/null; then
+        echo -e "${GREEN}✓ PASSED${NC}"
+        return 0
+    else
+        echo -e "${RED}✗ FAILED${NC}"
+        return 1
+    fi
+}
 
-# Test business metrics endpoint
-echo "Testing business metrics endpoint..."
-if curl -f http://localhost:3000/health/business > /dev/null 2>&1; then
-    echo "✅ Business metrics endpoint is working"
-else
-    echo "❌ Business metrics endpoint is not responding"
-    exit 1
-fi
+# Check if servers are running
+echo "📡 Checking server availability..."
+echo ""
 
-# Test performance metrics endpoint
-echo "Testing performance metrics endpoint..."
-if curl -f http://localhost:3000/health/performance > /dev/null 2>&1; then
-    echo "✅ Performance metrics endpoint is working"
-else
-    echo "❌ Performance metrics endpoint is not responding"
-    exit 1
-fi
-
-# Test monitoring dashboard API
-echo "Testing monitoring dashboard API..."
-if curl -f http://localhost:4000/api/metrics/realtime > /dev/null 2>&1; then
-    echo "✅ Monitoring dashboard API is working"
-else
-    echo "❌ Monitoring dashboard API is not responding"
-    exit 1
-fi
-
-# Test Redis connectivity
-echo "Testing Redis connectivity..."
-if redis-cli -h ${REDIS_HOST:-redis.training.local} -p ${REDIS_PORT:-6379} ping > /dev/null 2>&1; then
-    echo "✅ Redis connectivity is working"
-else
-    echo "❌ Redis is not accessible"
-    exit 1
-fi
+# Test health endpoints
+test_endpoint "http://localhost:3000/health" "Main health check"
+test_endpoint "http://localhost:3000/metrics" "Metrics endpoint"
+test_endpoint "http://localhost:3000/redis/info" "Redis info endpoint"
 
 echo ""
-echo "🎉 All monitoring components are working correctly!"
-echo "📊 Monitoring system is ready for production use"
+
+# Test dashboard endpoints
+test_endpoint "http://localhost:4000" "Dashboard homepage"
+test_endpoint "http://localhost:4000/api/metrics/realtime" "Real-time metrics API"
+
 echo ""
-echo "📝 Available endpoints:"
-echo "   • Health Check: http://localhost:3000/health"
-echo "   • Business Metrics: http://localhost:3000/health/business"
-echo "   • Performance: http://localhost:3000/health/performance"
-echo "   • Dashboard: http://localhost:4000"
-echo "   • Real-time API: http://localhost:4000/api/metrics/realtime"
+
+# Display sample health check response
+echo "📊 Sample Health Check Response:"
+echo "--------------------------------"
+curl -s http://localhost:3000/health | python3 -m json.tool 2>/dev/null || curl -s http://localhost:3000/health
+
+echo ""
+echo ""
+
+# Display sample metrics
+echo "📈 Sample Metrics Response:"
+echo "--------------------------"
+curl -s http://localhost:3000/metrics | python3 -m json.tool 2>/dev/null | head -20 || curl -s http://localhost:3000/metrics | head -20
+
+echo ""
+echo ""
+echo "✅ All tests completed!"
+echo ""
+echo "🔗 Access the monitoring dashboard at: http://localhost:4000"
