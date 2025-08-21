@@ -3,7 +3,7 @@ const Redis = require('ioredis');
 class ProductionMonitoringDataLoader {
     constructor() {
         this.redis = new Redis({
-            host: process.env.REDIS_HOST || 'redis.training.local',
+            host: process.env.REDIS_HOST || 'localhost',
             port: process.env.REDIS_PORT || 6379,
             password: process.env.REDIS_PASSWORD,
             retryDelayOnFailover: 100

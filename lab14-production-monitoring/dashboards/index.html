@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redis Production Monitoring Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .dashboard {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .metric-title {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-change {
+            font-size: 0.8rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+        }
+
+        .positive { background: #e8f5e8; color: #27ae60; }
+        .negative { background: #ffeaea; color: #e74c3c; }
+        .neutral { background: #f0f0f0; color: #666; }
+
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-healthy { background: #27ae60; }
+        .status-warning { background: #f39c12; }
+        .status-critical { background: #e74c3c; }
+
+        .refresh-info {
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .error-message {
+            background: #ffeaea;
+            color: #e74c3c;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔍 Redis Production Monitoring Dashboard</h1>
+        <p>Real-time monitoring and health checks for production Redis instances</p>
+    </div>
+
+    <div class="dashboard">
+        <div class="metrics-grid" id="metricsGrid">
+            <!-- Metrics cards will be populated by JavaScript -->
+        </div>
+
+        <div class="chart-container">
+            <h3>System Status</h3>
+            <div id="systemStatus">
+                <span class="status-indicator status-healthy"></span>
+                <span>Initializing...</span>
+            </div>
+        </div>
+
+        <div class="refresh-info">
+            <p>Dashboard auto-refreshes every 30 seconds</p>
+            <p>Last updated: <span id="lastUpdate">Never</span></p>
+        </div>
+    </div>
+
+    <script>
+        let metricsHistory = [];
+        
+        async function fetchMetrics() {
+            try {
+                const response = await fetch('/api/metrics/realtime');
+                const data = await response.json();
+                
+                updateMetricsDisplay(data);
+                updateSystemStatus('healthy');
+                updateLastUpdateTime();
+                
+                // Store for trend analysis
+                metricsHistory.push({
+                    timestamp: data.timestamp,
+                    ...data
+                });
+                
+                // Keep only last 100 data points
+                if (metricsHistory.length > 100) {
+                    metricsHistory.shift();
+                }
+                
+            } catch (error) {
+                console.error('Failed to fetch metrics:', error);
+                updateSystemStatus('critical');
+                showError('Failed to connect to monitoring API. Check if the server is running.');
+            }
+        }
+        
+        function updateMetricsDisplay(data) {
+            const metrics = [
+                {
+                    title: 'Connected Clients',
+                    value: data.connected_clients,
+                    change: calculateChange('connected_clients'),
+                    format: (val) => val.toString()
+                },
+                {
+                    title: 'Memory Usage',
+                    value: data.used_memory_human,
+                    change: calculateChange('used_memory'),
+                    format: (val) => val
+                },
+                {
+                    title: 'Operations/sec',
+                    value: data.instantaneous_ops_per_sec,
+                    change: calculateChange('instantaneous_ops_per_sec'),
+                    format: (val) => val.toLocaleString()
+                },
+                {
+                    title: 'Keyspace Hits',
+                    value: data.keyspace_hits,
+                    change: calculateChange('keyspace_hits'),
+                    format: (val) => val.toLocaleString()
+                },
+                {
+                    title: 'Keyspace Misses',
+                    value: data.keyspace_misses,
+                    change: calculateChange('keyspace_misses'),
+                    format: (val) => val.toLocaleString()
+                },
+                {
+                    title: 'Total Commands',
+                    value: data.total_commands_processed,
+                    change: calculateChange('total_commands_processed'),
+                    format: (val) => val.toLocaleString()
+                }
+            ];
+            
+            const grid = document.getElementById('metricsGrid');
+            grid.innerHTML = metrics.map(metric => `
+                <div class="metric-card">
+                    <div class="metric-title">${metric.title}</div>
+                    <div class="metric-value">${metric.format(metric.value)}</div>
+                    <div class="metric-change ${getChangeClass(metric.change)}">
+                        ${formatChange(metric.change)}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function calculateChange(metric) {
+            if (metricsHistory.length < 2) return 0;
+            
+            const current = metricsHistory[metricsHistory.length - 1][metric] || 0;
+            const previous = metricsHistory[metricsHistory.length - 2][metric] || 0;
+            
+            if (previous === 0) return 0;
+            return ((current - previous) / previous) * 100;
+        }
+        
+        function getChangeClass(change) {
+            if (change > 5) return 'positive';
+            if (change < -5) return 'negative';
+            return 'neutral';
+        }
+        
+        function formatChange(change) {
+            if (change === 0) return 'No change';
+            const sign = change > 0 ? '+' : '';
+            return `${sign}${change.toFixed(1)}%`;
+        }
+        
+        function updateSystemStatus(status) {
+            const statusElement = document.getElementById('systemStatus');
+            const indicator = statusElement.querySelector('.status-indicator');
+            
+            indicator.className = `status-indicator status-${status}`;
+            
+            const statusText = {
+                healthy: 'All systems operational',
+                warning: 'Some issues detected',
+                critical: 'System errors detected'
+            };
+            
+            statusElement.innerHTML = `
+                <span class="status-indicator status-${status}"></span>
+                <span>${statusText[status]}</span>
+            `;
+        }
+        
+        function updateLastUpdateTime() {
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = now.toLocaleTimeString();
+        }
+        
+        function showError(message) {
+            const dashboard = document.querySelector('.dashboard');
+            const existingError = dashboard.querySelector('.error-message');
+            
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            dashboard.insertBefore(errorDiv, dashboard.firstChild);
+        }
+        
+        // Initialize dashboard
+        fetchMetrics();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(fetchMetrics, 30000);
+        
+        // Initial status update
+        updateLastUpdateTime();
+    </script>
+</body>
+</html>
