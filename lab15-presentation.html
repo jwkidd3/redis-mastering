@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lab 15: Redis Cluster with High Availability</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/reset.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/theme/black.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/highlight/monokai.css">
+    
+    <style>
+        .reveal h1, .reveal h2, .reveal h3 {
+            color: #ff6b6b;
+        }
+        .reveal .progress {
+            color: #ff6b6b;
+        }
+        .reveal .controls button {
+            color: #ff6b6b;
+        }
+        .architecture-diagram {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .highlight-red { color: #ff6b6b !important; }
+        .highlight-green { color: #51cf66 !important; }
+        .highlight-blue { color: #339af0 !important; }
+        .highlight-yellow { color: #ffd43b !important; }
+        
+        /* Prevent content cutoff */
+        .reveal .slides section {
+            box-sizing: border-box;
+            max-width: 100%;
+            overflow: visible;
+        }
+        
+        .reveal pre {
+            font-size: 0.45em;
+            line-height: 1.2;
+            max-width: 100%;
+            overflow-x: auto;
+            word-wrap: break-word;
+        }
+        
+        .reveal code {
+            font-size: 0.85em;
+            word-break: break-all;
+        }
+        
+        .reveal table {
+            font-size: 0.6em;
+            margin: 10px auto;
+            max-width: 100%;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .reveal h1 { font-size: 1.8em; }
+            .reveal h2 { font-size: 1.4em; }
+            .reveal h3 { font-size: 1.2em; }
+            .reveal pre { font-size: 0.35em; }
+            .reveal table { font-size: 0.5em; }
+        }
+        
+        .cluster-node {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            border: 2px solid #ff6b6b;
+            border-radius: 5px;
+            background: rgba(255, 107, 107, 0.1);
+        }
+        
+        .master-node {
+            border-color: #51cf66;
+            background: rgba(81, 207, 102, 0.1);
+        }
+        
+        .replica-node {
+            border-color: #339af0;
+            background: rgba(51, 154, 240, 0.1);
+        }
+        
+        .slot-range {
+            font-size: 0.8em;
+            color: #ffd43b;
+        }
+        
+        .performance-metric {
+            display: inline-block;
+            padding: 15px;
+            margin: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            min-width: 150px;
+        }
+        
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ffd43b;
+        }
+        
+        .metric-label {
+            font-size: 0.8em;
+            color: #ccc;
+        }
+        
+        table.comparison-table {
+            font-size: 0.8em;
+            margin: 20px auto;
+        }
+        
+        table.comparison-table th {
+            background: rgba(255, 107, 107, 0.3);
+            padding: 10px;
+        }
+        
+        table.comparison-table td {
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .code-container {
+            background: #282c34;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .reveal pre {
+            box-shadow: none;
+            font-size: 0.8em;
+        }
+        
+        .reveal code {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        
+        .icon-large {
+            font-size: 3em;
+            margin: 20px;
+        }
+        
+        .failover-step {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #ff6b6b;
+            text-align: left;
+        }
+        
+        .best-practice {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            text-align: left;
+        }
+        
+        .reveal .slides section .fragment.highlight-current-blue.current-fragment {
+            color: #339af0;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+            
+            <!-- Title Slide -->
+            <section data-background="linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)">
+                <h1>Redis Cluster</h1>
+                <h3>High Availability, Sharding & Replication</h3>
+                <p class="highlight-yellow">Lab 15: Building Production-Grade Distributed Redis</p>
+                <p style="margin-top: 50px;">
+                    <small>Duration: 3-4 hours | Level: Advanced</small>
+                </p>
+            </section>
+
+            <!-- Learning Objectives -->
+            <section>
+                <h2>Learning Objectives</h2>
+                <ul>
+                    <li class="fragment">Deploy a 6-node Redis Cluster</li>
+                    <li class="fragment">Configure automatic sharding (16384 slots)</li>
+                    <li class="fragment">Implement master-replica replication</li>
+                    <li class="fragment">Test automatic failover scenarios</li>
+                    <li class="fragment">Monitor cluster health & performance</li>
+                    <li class="fragment">Handle network partitions</li>
+                    <li class="fragment">Scale cluster dynamically</li>
+                    <li class="fragment">Build cluster-aware applications</li>
+                </ul>
+            </section>
+
+            <!-- Why Redis Cluster? -->
+            <section>
+                <h2>Why Redis Cluster?</h2>
+                <div class="fragment">
+                    <h3 class="highlight-red">Single Instance Limitations</h3>
+                    <ul>
+                        <li>Memory constraints</li>
+                        <li>CPU bottlenecks</li>
+                        <li>Single point of failure</li>
+                        <li>No horizontal scaling</li>
+                    </ul>
+                </div>
+                <div class="fragment" style="margin-top: 30px;">
+                    <h3 class="highlight-green">Cluster Benefits</h3>
+                    <ul>
+                        <li>Linear scalability</li>
+                        <li>Automatic failover</li>
+                        <li>Data sharding</li>
+                        <li>High availability</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Architecture Overview -->
+            <section>
+                <h2>Cluster Architecture</h2>
+                <div class="architecture-diagram">
+                    <div>
+                        <div class="cluster-node master-node">
+                            Master-1<br>
+                            <span class="slot-range">Slots: 0-5460</span>
+                        </div>
+                        <div class="cluster-node replica-node">
+                            Replica-1
+                        </div>
+                    </div>
+                    <div>
+                        <div class="cluster-node master-node">
+                            Master-2<br>
+                            <span class="slot-range">Slots: 5461-10922</span>
+                        </div>
+                        <div class="cluster-node replica-node">
+                            Replica-2
+                        </div>
+                    </div>
+                    <div>
+                        <div class="cluster-node master-node">
+                            Master-3<br>
+                            <span class="slot-range">Slots: 10923-16383</span>
+                        </div>
+                        <div class="cluster-node replica-node">
+                            Replica-3
+                        </div>
+                    </div>
+                </div>
+                <p class="fragment highlight-yellow">Total: 16384 hash slots distributed across masters</p>
+            </section>
+
+            <!-- Hash Slots Concept -->
+            <section>
+                <section>
+                    <h2>Understanding Hash Slots</h2>
+                    <div class="fragment">
+                        <h3>Key Distribution Formula</h3>
+                        <pre><code class="language-javascript">
+function getHashSlot(key) {
+    // Extract hash tag if present
+    if (key.includes('{')) {
+        key = extractHashTag(key);
+    }
+    
+    // Calculate CRC16 and mod by 16384
+    return crc16(key) % 16384;
+}
+                        </code></pre>
+                    </div>
+                    <div class="fragment">
+                        <p class="highlight-blue">Every key maps to exactly one slot</p>
+                        <p class="highlight-green">Slots are distributed across master nodes</p>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Hash Slot Examples</h2>
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Key</th>
+                                <th>Hash Slot</th>
+                                <th>Master Node</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="fragment">
+                                <td>user:123</td>
+                                <td>5649</td>
+                                <td>Master-2</td>
+                            </tr>
+                            <tr class="fragment">
+                                <td>product:456</td>
+                                <td>11589</td>
+                                <td>Master-3</td>
+                            </tr>
+                            <tr class="fragment">
+                                <td>{customer:789}:profile</td>
+                                <td>3421</td>
+                                <td>Master-1</td>
+                            </tr>
+                            <tr class="fragment">
+                                <td>{customer:789}:orders</td>
+                                <td>3421</td>
+                                <td>Master-1</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="fragment highlight-yellow">Hash tags {} ensure related keys stay together!</p>
+                </section>
+            </section>
+
+            <!-- Replication -->
+            <section>
+                <section>
+                    <h2>Master-Replica Replication</h2>
+                    <div class="fragment">
+                        <h3>Asynchronous Replication</h3>
+                        <ul>
+                            <li>Masters accept writes</li>
+                            <li>Replicas receive updates asynchronously</li>
+                            <li>Read scaling with replica reads</li>
+                            <li>Automatic promotion on master failure</li>
+                        </ul>
+                    </div>
+                    <div class="fragment" style="margin-top: 30px;">
+                        <div class="performance-metric">
+                            <div class="metric-value">&lt;1s</div>
+                            <div class="metric-label">Typical Lag</div>
+                        </div>
+                        <div class="performance-metric">
+                            <div class="metric-value">0</div>
+                            <div class="metric-label">Data Loss</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Replication Flow</h2>
+                    <pre><code class="language-bash">
+# 1. Write to Master
+Master-1 receives: SET key value
+
+# 2. Log to AOF
+Master-1 appends to AOF
+
+# 3. Propagate to Replica
+Master-1 → Replica-1: SET key value
+
+# 4. Replica acknowledges
+Replica-1 → Master-1: ACK
+
+# 5. Replication offset updated
+master_repl_offset: 12345
+                    </code></pre>
+                    <p class="fragment highlight-green">Replicas can serve read-only queries!</p>
+                </section>
+            </section>
+
+            <!-- Automatic Failover -->
+            <section>
+                <section>
+                    <h2>Automatic Failover</h2>
+                    <h3 class="highlight-red">When Master Fails...</h3>
+                    <div class="failover-step fragment">
+                        <strong>1. Detection (5-15 seconds)</strong><br>
+                        Nodes mark master as FAIL after timeout
+                    </div>
+                    <div class="failover-step fragment">
+                        <strong>2. Election</strong><br>
+                        Replica requests votes from other masters
+                    </div>
+                    <div class="failover-step fragment">
+                        <strong>3. Promotion</strong><br>
+                        Replica becomes new master
+                    </div>
+                    <div class="failover-step fragment">
+                        <strong>4. Reconfiguration</strong><br>
+                        Cluster updates slot mapping
+                    </div>
+                    <div class="failover-step fragment">
+                        <strong>5. Recovery</strong><br>
+                        Old master becomes replica when returns
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Failover Demo</h2>
+                    <pre><code class="language-bash">
+# Kill Master-1
+$ docker stop redis-node-1
+
+# Watch failover (automatic)
+$ ./scripts/watch-failover.sh
+
+# Output:
+✓ Node 1 (port 9000): CONTAINER DOWN
+✓ Node 1 (port 9000): MASTER - Slots: 0-5460
+✓ Node 2 (port 9001): MASTER - Slots: 5461-10922  
+✓ Node 3 (port 9002): MASTER - Slots: 10923-16383
+✓ Node 4 (port 9003): REPLICA of node-3
+✓ Node 5 (port 9004): REPLICA of node-1
+✓ Node 6 (port 9005): REPLICA of node-2
+✓ Node 6 (port 9005): REPLICA of 172.21.0.6:9004
+
+State: ok
+Current epoch: 7
+                    </code></pre>
+                    <p class="fragment highlight-green">Replica-1 promoted to Master!</p>
+                </section>
+            </section>
+
+            <!-- Network Partitions -->
+            <section>
+                <section>
+                    <h2>Handling Network Partitions</h2>
+                    <div class="fragment">
+                        <h3>Split-Brain Prevention</h3>
+                        <div style="display: flex; justify-content: space-around;">
+                            <div style="border: 2px solid #ff6b6b; padding: 20px; border-radius: 10px;">
+                                <h4>Partition A (Minority)</h4>
+                                <p>Nodes 1, 2, 3 (3 nodes)</p>
+                                <p class="highlight-red">Stops writes</p>
+                                <p style="font-size: 0.8em;">Masters: 2 nodes<br>Replicas: 1 node</p>
+                            </div>
+                            <div style="border: 2px solid #51cf66; padding: 20px; border-radius: 10px;">
+                                <h4>Partition B (Majority)</h4>
+                                <p>Nodes 4, 5, 6 (3 nodes)</p>
+                                <p class="highlight-green">Continues operating</p>
+                                <p style="font-size: 0.8em;">Masters: 1 node<br>Replicas: 2 nodes</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fragment" style="margin-top: 30px;">
+                        <p class="highlight-green">✓ Majority partition continues serving requests</p>
+                        <p class="highlight-red">✗ Minority partition rejects writes (consistency)</p>
+                        <p class="highlight-yellow">⚠ Some hash slots may become unavailable</p>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Partition Simulation Scripts</h2>
+                    <div style="text-align: left;">
+                        <div class="fragment">
+                            <h3 class="highlight-yellow">Docker Network Isolation</h3>
+                            <pre><code class="bash"># Simulate network partition using Docker networks
+./scripts/simulate-partition-docker.sh
+
+# Creates two isolated networks:
+# - partition-group-1: nodes 1-3  
+# - partition-group-2: nodes 4-6
+# Press Ctrl+C to restore connectivity</code></pre>
+                        </div>
+
+                        <div class="fragment">
+                            <h3 class="highlight-yellow">Node Failure Scenarios</h3>
+                            <pre><code class="bash"># Various failure simulation options
+./scripts/simulate-node-failure.sh single-master
+./scripts/simulate-node-failure.sh split-brain  
+./scripts/simulate-node-failure.sh cascade-failure
+
+# Check cluster status
+./scripts/simulate-node-failure.sh status
+
+# Restore all failed nodes
+./scripts/simulate-node-failure.sh restore</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>CAP Theorem in Redis Cluster</h2>
+                    <div class="fragment">
+                        <h3>Redis Cluster Chooses:</h3>
+                        <ul>
+                            <li class="highlight-green"><strong>Availability</strong> - Continues with majority</li>
+                            <li class="highlight-green"><strong>Partition Tolerance</strong> - Handles network splits</li>
+                            <li class="highlight-yellow"><strong>Eventual Consistency</strong> - Not strong consistency</li>
+                        </ul>
+                    </div>
+                    <div class="fragment" style="margin-top: 30px;">
+                        <p>Configuration option:</p>
+                        <pre><code class="language-bash">
+# Require full slot coverage (CP mode)
+cluster-require-full-coverage yes
+
+# Allow partial availability (AP mode) - Default
+cluster-require-full-coverage no
+                        </code></pre>
+                    </div>
+                </section>
+            </section>
+
+            <!-- Client Implementation -->
+            <section>
+                <section>
+                    <h2>Cluster-Aware Clients</h2>
+                    <pre><code class="language-javascript">
+const Redis = require('ioredis');
+
+const cluster = new Redis.Cluster([
+    { port: 9000, host: '127.0.0.1' },
+    { port: 9002, host: '127.0.0.1' },
+    { port: 9004, host: '127.0.0.1' }
+], {
+    enableReadyCheck: true,
+    maxRetriesPerRequest: 3,
+    retryDelayOnFailover: 100,
+    retryDelayOnClusterDown: 300,
+    enableOfflineQueue: true
+});
+
+// Automatic redirect handling
+await cluster.set('key', 'value'); // → MOVED 3999 127.0.0.1:9000
+                    </code></pre>
+                    <p class="fragment highlight-blue">Client handles MOVED and ASK redirections automatically!</p>
+                </section>
+
+                <section>
+                    <h2>Hash Tags for Co-location</h2>
+                    <pre><code class="language-javascript">
+// Insurance application example
+async function createCustomerWithPolicies(customerId) {
+    const pipeline = cluster.pipeline();
+    
+    // All keys use same hash tag → same slot
+    pipeline.hset(`{customer:${customerId}}:profile`, userData);
+    pipeline.sadd(`{customer:${customerId}}:policies`, policyIds);
+    pipeline.hset(`{customer:${customerId}}:claims`, claimData);
+    
+    // Atomic operations on same slot!
+    await pipeline.exec();
+}
+
+// Multi-key operations work with hash tags
+await cluster.mget(
+    '{customer:123}:profile',
+    '{customer:123}:settings'
+); // ✓ Same slot
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Testing Sharding & Hash Tags</h2>
+                    <div style="text-align: left;">
+                        <div class="fragment">
+                            <h3 class="highlight-yellow">Test Data Distribution</h3>
+                            <pre><code class="bash"># Test how keys are distributed across shards
+npm run test-sharding
+
+# Shows:
+# - Key distribution across 3 shards (33% each)
+# - Hash slot calculations (CRC16 % 16384)
+# - Cross-slot operation failures</code></pre>
+                        </div>
+
+                        <div class="fragment">
+                            <h3 class="highlight-yellow">Test Hash Tag Co-location</h3>
+                            <pre><code class="bash"># Test hash tags for data co-location
+npm run test-hash-tags
+
+# Demonstrates:
+# - Related keys landing on same slot
+# - Multi-key operations with hash tags
+# - Performance benefits of co-location
+# - Insurance-specific examples</code></pre>
+                        </div>
+
+                        <div class="fragment">
+                            <h3 class="highlight-yellow">Monitor Replication</h3>
+                            <pre><code class="bash"># Real-time replication monitoring
+npm run monitor-replication
+
+# Shows:
+# - Master-replica relationships
+# - Replication lag detection
+# - Health status (healthy/warning/critical)</code></pre>
+                        </div>
+                    </div>
+                </section>
+            </section>
+
+            <!-- Scaling Operations -->
+            <section>
+                <section>
+                    <h2>Scaling the Cluster</h2>
+                    <h3 class="highlight-blue">Adding Nodes (Scale Out)</h3>
+                    <pre><code class="language-bash">
+# 1. Start new Redis instance
+docker run -d --name redis-node-7 redis:7-alpine
+
+# 2. Add to cluster as master
+redis-cli --cluster add-node 127.0.0.1:9006 127.0.0.1:9000
+
+# 3. Rebalance slots
+redis-cli --cluster rebalance 127.0.0.1:9000
+
+# 4. Add replica for new master
+redis-cli --cluster add-node 127.0.0.1:9007 127.0.0.1:9006 \
+    --cluster-slave --cluster-master-id [node-id]
+                    </code></pre>
+                    <p class="fragment highlight-green">Zero downtime scaling!</p>
+                </section>
+
+                <section>
+                    <h2>Removing Nodes (Scale In)</h2>
+                    <pre><code class="language-bash">
+# 1. Migrate slots away from node
+redis-cli --cluster reshard 127.0.0.1:9000
+    --cluster-from [node-id]
+    --cluster-to [target-node-id]
+    --cluster-slots 5461
+
+# 2. Remove replica first
+redis-cli --cluster del-node 127.0.0.1:9000 [replica-id]
+
+# 3. Remove empty master
+redis-cli --cluster del-node 127.0.0.1:9000 [master-id]
+
+# 4. Verify cluster state
+redis-cli --cluster check 127.0.0.1:9000
+                    </code></pre>
+                </section>
+            </section>
+
+            <!-- Performance Characteristics -->
+            <section>
+                <section>
+                    <h2>Performance Metrics</h2>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="performance-metric">
+                            <div class="metric-value">100K+</div>
+                            <div class="metric-label">Ops/Second</div>
+                        </div>
+                        <div class="performance-metric">
+                            <div class="metric-value">&lt;1ms</div>
+                            <div class="metric-label">Avg Latency</div>
+                        </div>
+                        <div class="performance-metric">
+                            <div class="metric-value">15s</div>
+                            <div class="metric-label">Failover Time</div>
+                        </div>
+                        <div class="performance-metric">
+                            <div class="metric-value">99.99%</div>
+                            <div class="metric-label">Availability</div>
+                        </div>
+                    </div>
+                    <p class="fragment highlight-yellow" style="margin-top: 30px;">Linear scalability with node count!</p>
+                </section>
+
+                <section>
+                    <h2>Benchmark Results</h2>
+                    <pre><code class="language-bash">
+$ redis-benchmark -h 127.0.0.1 -p 9000 -c 50 -n 100000
+
+====== SET ======
+  100000 requests completed in 1.25 seconds
+  50 parallel clients
+  3 bytes payload
+  
+Throughput: 80,000 requests/sec
+Latency:    0.625 ms average
+
+====== GET ======
+  100000 requests completed in 1.10 seconds
+  
+Throughput: 90,909 requests/sec
+Latency:    0.550 ms average
+                    </code></pre>
+                    <p class="fragment highlight-green">3x throughput vs single instance!</p>
+                </section>
+            </section>
+
+            <!-- Monitoring & Observability -->
+            <section>
+                <section>
+                    <h2>Monitoring Dashboard</h2>
+                    <pre><code class="language-bash">
+# Start monitoring dashboard
+$ npm run monitor
+
+# Access at http://localhost:3000
+                    </code></pre>
+                    <div class="fragment">
+                        <h3>Real-time Metrics</h3>
+                        <ul>
+                            <li>Node status & roles</li>
+                            <li>Slot distribution</li>
+                            <li>Replication lag</li>
+                            <li>Operations per second</li>
+                            <li>Memory usage</li>
+                            <li>Client connections</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Critical Alerts</h2>
+                    <div class="best-practice">
+                        <h3>🚨 Alert on:</h3>
+                        <ul>
+                            <li>Node failures</li>
+                            <li>Replication lag > 1 second</li>
+                            <li>Memory usage > 80%</li>
+                            <li>Cluster state != ok</li>
+                            <li>Slot migration in progress</li>
+                            <li>Network partition detected</li>
+                        </ul>
+                    </div>
+                </section>
+            </section>
+
+            <!-- Best Practices -->
+            <section>
+                <section>
+                    <h2>Production Best Practices</h2>
+                    <div class="best-practice fragment">
+                        <h3>🔧 Configuration</h3>
+                        <ul>
+                            <li>cluster-node-timeout: 5000-15000ms</li>
+                            <li>cluster-replica-validity-factor: 10</li>
+                            <li>cluster-migration-barrier: 1</li>
+                            <li>cluster-require-full-coverage: no</li>
+                        </ul>
+                    </div>
+                    <div class="best-practice fragment">
+                        <h3>🛡️ Security</h3>
+                        <ul>
+                            <li>Enable TLS between nodes</li>
+                            <li>Use ACLs for access control</li>
+                            <li>Isolate cluster network</li>
+                            <li>Regular security audits</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Operational Guidelines</h2>
+                    <div class="best-practice fragment">
+                        <h3>📊 Capacity Planning</h3>
+                        <ul>
+                            <li>Start with 6 nodes minimum</li>
+                            <li>Plan for 30% headroom</li>
+                            <li>Monitor slot distribution</li>
+                            <li>Balance based on key patterns</li>
+                        </ul>
+                    </div>
+                    <div class="best-practice fragment">
+                        <h3>🔄 Maintenance</h3>
+                        <ul>
+                            <li>Rolling upgrades</li>
+                            <li>Regular backups</li>
+                            <li>Chaos testing</li>
+                            <li>Disaster recovery drills</li>
+                        </ul>
+                    </div>
+                </section>
+            </section>
+
+            <!-- Common Pitfalls -->
+            <section>
+                <h2>Common Pitfalls</h2>
+                <div class="fragment">
+                    <h3 class="highlight-red">❌ Avoid These Mistakes</h3>
+                    <ul>
+                        <li>Cross-slot operations without hash tags</li>
+                        <li>Assuming strong consistency</li>
+                        <li>Ignoring replication lag</li>
+                        <li>Uneven slot distribution</li>
+                        <li>Missing monitoring/alerting</li>
+                        <li>No chaos testing</li>
+                    </ul>
+                </div>
+                <div class="fragment" style="margin-top: 30px;">
+                    <h3 class="highlight-green">✓ Do This Instead</h3>
+                    <ul>
+                        <li>Use hash tags for related data</li>
+                        <li>Design for eventual consistency</li>
+                        <li>Monitor and alert on lag</li>
+                        <li>Regular rebalancing</li>
+                        <li>Comprehensive monitoring</li>
+                        <li>Regular failure testing</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Use Cases -->
+            <section>
+                <h2>When to Use Redis Cluster</h2>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Good Fit ✓</th>
+                            <th>Poor Fit ✗</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="fragment">
+                            <td>Large datasets (>100GB)</td>
+                            <td>Small datasets (<10GB)</td>
+                        </tr>
+                        <tr class="fragment">
+                            <td>High throughput needs</td>
+                            <td>Complex transactions</td>
+                        </tr>
+                        <tr class="fragment">
+                            <td>Horizontal scaling required</td>
+                            <td>Strong consistency required</td>
+                        </tr>
+                        <tr class="fragment">
+                            <td>Read-heavy workloads</td>
+                            <td>Frequent cross-key operations</td>
+                        </tr>
+                        <tr class="fragment">
+                            <td>Geographic distribution</td>
+                            <td>Simple caching needs</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Lab Exercises -->
+            <section>
+                <section>
+                    <h2>Lab Exercises</h2>
+                    <h3 class="highlight-blue">Hands-on Practice</h3>
+                    <ol>
+                        <li class="fragment">Deploy 6-node cluster</li>
+                        <li class="fragment">Test data sharding</li>
+                        <li class="fragment">Simulate node failures</li>
+                        <li class="fragment">Create network partition</li>
+                        <li class="fragment">Load insurance data</li>
+                        <li class="fragment">Monitor with dashboard</li>
+                        <li class="fragment">Run chaos tests</li>
+                        <li class="fragment">Scale cluster up/down</li>
+                    </ol>
+                </section>
+
+                <section>
+                    <h2>Challenge Tasks</h2>
+                    <div class="best-practice">
+                        <h3>🏆 Advanced Challenges</h3>
+                        <ul>
+                            <li>Achieve 99.99% availability during chaos test</li>
+                            <li>Handle 100K ops/second</li>
+                            <li>Zero data loss during failures</li>
+                            <li>Implement geo-distributed cluster</li>
+                            <li>Create custom monitoring alerts</li>
+                            <li>Automate cluster scaling</li>
+                        </ul>
+                    </div>
+                </section>
+            </section>
+
+            <!-- Key Takeaways -->
+            <section>
+                <h2>Key Takeaways</h2>
+                <div class="fragment">
+                    <div class="icon-large">🎯</div>
+                    <ul>
+                        <li class="highlight-green">Redis Cluster provides horizontal scalability</li>
+                        <li class="highlight-blue">16384 hash slots enable data distribution</li>
+                        <li class="highlight-yellow">Automatic failover ensures high availability</li>
+                        <li class="highlight-red">CAP: Chooses AP over C</li>
+                        <li>Hash tags keep related data together</li>
+                        <li>Monitor everything in production</li>
+                        <li>Test failures before they happen</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Resources -->
+            <section>
+                <h2>Resources</h2>
+                <ul>
+                    <li><a href="https://redis.io/docs/reference/cluster-spec/">Redis Cluster Specification</a></li>
+                    <li><a href="https://redis.io/docs/manual/scaling/">Scaling with Redis Cluster</a></li>
+                    <li><a href="https://github.com/redis/redis">Redis Source Code</a></li>
+                    <li>Lab Files: <code>lab15-redis-cluster-ha/</code></li>
+                    <li>Documentation: <code>docs/cluster-guide.md</code></li>
+                </ul>
+                <div style="margin-top: 50px;">
+                    <p class="highlight-green">Ready to build distributed systems?</p>
+                    <p class="highlight-yellow">Start with: <code>docker-compose up -d</code></p>
+                </div>
+            </section>
+
+            <!-- Thank You -->
+            <section data-background="linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+                <h1>Thank You!</h1>
+                <h3>Questions?</h3>
+                <p style="margin-top: 50px;">
+                    <span class="highlight-yellow">Lab 15: Redis Cluster with High Availability</span>
+                </p>
+                <p>
+                    <small>Build • Scale • Monitor • Survive</small>
+                </p>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/reveal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/notes/notes.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/markdown/markdown.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/highlight/highlight.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/zoom/zoom.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/math/math.js"></script>
+    
+    <script>
+        Reveal.initialize({
+            hash: true,
+            controls: true,
+            progress: true,
+            center: true,
+            transition: 'slide',
+            backgroundTransition: 'fade',
+            
+            plugins: [ RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom, RevealMath ],
+            
+            width: 1200,
+            height: 900,
+            margin: 0.1,
+            minScale: 0.2,
+            maxScale: 2.0
+        });
+        
+        // Custom event listeners
+        Reveal.on('slidechanged', event => {
+            // Add animation to performance metrics
+            const metrics = event.currentSlide.querySelectorAll('.performance-metric');
+            metrics.forEach((metric, index) => {
+                setTimeout(() => {
+                    metric.style.animation = 'pulse 0.5s ease-in-out';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>
