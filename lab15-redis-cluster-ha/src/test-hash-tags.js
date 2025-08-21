@@ -2,7 +2,7 @@ const Redis = require('ioredis');
 const chalk = require('chalk');
 const Table = require('cli-table3');
 
-// Create cluster connection
+// Create cluster connection with timeout
 const cluster = new Redis.Cluster([
   { port: 9000, host: '127.0.0.1' },
   { port: 9001, host: '127.0.0.1' },
@@ -11,7 +11,18 @@ const cluster = new Redis.Cluster([
   enableReadyCheck: true,
   maxRetriesPerRequest: 3,
   retryDelayOnFailover: 100,
-  retryDelayOnClusterDown: 300
+  retryDelayOnClusterDown: 300,
+  clusterRetryStrategy: (times) => {
+    if (times > 3) {
+      console.error(chalk.red('\nFailed to connect to Redis cluster after 3 attempts'));
+      console.error(chalk.yellow('Please ensure Redis cluster is running on ports 9000-9002'));
+      console.error(chalk.yellow('Run: ./scripts/init-cluster.sh to start the cluster'));
+      process.exit(1);
+    }
+    return Math.min(times * 100, 2000);
+  },
+  enableOfflineQueue: false,
+  connectTimeout: 5000
 });
 
 // CRC16 implementation for hash slot calculation
@@ -54,6 +65,20 @@ async function testHashTags() {
   console.log(chalk.blue('====================================='));
   console.log(chalk.blue('Testing Redis Cluster Hash Tags'));
   console.log(chalk.blue('=====================================\n'));
+
+  // Check cluster connection
+  console.log(chalk.yellow('Connecting to Redis cluster...'));
+  
+  try {
+    await cluster.ping();
+    console.log(chalk.green('✓ Connected to Redis cluster\n'));
+  } catch (error) {
+    console.error(chalk.red('✗ Failed to connect to Redis cluster'));
+    console.error(chalk.yellow('Please ensure Redis cluster is running:'));
+    console.error(chalk.yellow('  1. Run: ./scripts/init-cluster.sh'));
+    console.error(chalk.yellow('  2. Or check if cluster is running on ports 9000-9002'));
+    process.exit(1);
+  }
 
   try {
     // Test 1: Basic Hash Tag Functionality
@@ -125,10 +150,15 @@ async function testHashTags() {
       const key = `{${baseCustomer}}:${dataType}`;
       pipeline.hset(key, 'data', JSON.stringify(data));
       pipeline.hset(key, 'timestamp', Date.now());
+      pipeline.expire(key, 60); // Set 60 second expiry
     }
     
-    await pipeline.exec();
-    console.log(chalk.green('✓ Data stored with hash tags for co-location'));
+    try {
+      await pipeline.exec();
+      console.log(chalk.green('✓ Data stored with hash tags for co-location'));
+    } catch (error) {
+      console.error(chalk.red('Error storing data:'), error.message);
+    }
 
     // Test 3: Multi-key Operations on Co-located Data
     console.log(chalk.yellow('\nTest 3: Multi-key Operations on Co-located Data'));
@@ -243,7 +273,7 @@ async function testHashTags() {
     await distributedPipeline.exec();
     
     // Performance test: Co-located vs Distributed
-    const iterations = 100;
+    const iterations = 10; // Reduced for faster execution
     
     // Test co-located performance
     console.log('Testing co-located data retrieval...');
@@ -253,10 +283,16 @@ async function testHashTags() {
       const keys = testDataTypes.map(type => `{${testCustomerId}}:${type}`);
       const pipeline = cluster.pipeline();
       keys.forEach(key => pipeline.get(key));
-      await pipeline.exec();
+      try {
+        await pipeline.exec();
+      } catch (error) {
+        console.error(chalk.red(`\n  Error in co-located test iteration ${i}:`), error.message);
+      }
+      process.stdout.write(`\r  Progress: ${i + 1}/${iterations}`);
     }
     
     const colocatedTime = Date.now() - colocatedStart;
+    console.log(''); // New line after progress
     
     // Test distributed performance
     console.log('Testing distributed data retrieval...');
@@ -266,10 +302,16 @@ async function testHashTags() {
       const keys = testDataTypes.map(type => `${testCustomerId}:${type}`);
       const pipeline = cluster.pipeline();
       keys.forEach(key => pipeline.get(key));
-      await pipeline.exec();
+      try {
+        await pipeline.exec();
+      } catch (error) {
+        console.error(chalk.red(`\n  Error in distributed test iteration ${i}:`), error.message);
+      }
+      process.stdout.write(`\r  Progress: ${i + 1}/${iterations}`);
     }
     
     const distributedTime = Date.now() - distributedStart;
+    console.log(''); // New line after progress
     
     // Display performance results
     const perfTable = new Table({

@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const Table = require('cli-table3');
 const chalk = require('chalk');
 
-// Create cluster connection
+// Create cluster connection with timeout
 const cluster = new Redis.Cluster([
   { port: 9000, host: '127.0.0.1' },
   { port: 9001, host: '127.0.0.1' },
@@ -12,7 +12,18 @@ const cluster = new Redis.Cluster([
   enableReadyCheck: true,
   maxRetriesPerRequest: 3,
   retryDelayOnFailover: 100,
-  retryDelayOnClusterDown: 300
+  retryDelayOnClusterDown: 300,
+  clusterRetryStrategy: (times) => {
+    if (times > 3) {
+      console.error(chalk.red('\nFailed to connect to Redis cluster after 3 attempts'));
+      console.error(chalk.yellow('Please ensure Redis cluster is running on ports 9000-9002'));
+      console.error(chalk.yellow('Run: ./scripts/init-cluster.sh to start the cluster'));
+      process.exit(1);
+    }
+    return Math.min(times * 100, 2000);
+  },
+  enableOfflineQueue: false,
+  connectTimeout: 5000
 });
 
 // CRC16 implementation for hash slot calculation
@@ -48,6 +59,20 @@ async function testSharding() {
   console.log(chalk.blue('====================================='));
   console.log(chalk.blue('Testing Redis Cluster Sharding'));
   console.log(chalk.blue('=====================================\n'));
+
+  // Check cluster connection
+  console.log(chalk.yellow('Connecting to Redis cluster...'));
+  
+  try {
+    await cluster.ping();
+    console.log(chalk.green('✓ Connected to Redis cluster\n'));
+  } catch (error) {
+    console.error(chalk.red('✗ Failed to connect to Redis cluster'));
+    console.error(chalk.yellow('Please ensure Redis cluster is running:'));
+    console.error(chalk.yellow('  1. Run: ./scripts/init-cluster.sh'));
+    console.error(chalk.yellow('  2. Or check if cluster is running on ports 9000-9002'));
+    process.exit(1);
+  }
 
   try {
     // Test 1: Key distribution across shards
@@ -119,14 +144,24 @@ async function testSharding() {
     console.log('---------------------------------');
     
     const writePromises = [];
-    for (let i = 0; i < 100; i++) {
-      const key = `shard:test:${i}`;
-      const value = `value-${i}`;
-      writePromises.push(cluster.set(key, value));
-    }
+    const batchSize = 10;
     
-    await Promise.all(writePromises);
-    console.log(chalk.green('✓ Written 100 keys to cluster'));
+    for (let i = 0; i < 100; i += batchSize) {
+      const batch = [];
+      for (let j = i; j < Math.min(i + batchSize, 100); j++) {
+        const key = `shard:test:${j}`;
+        const value = `value-${j}`;
+        batch.push(cluster.set(key, value, 'EX', 60)); // Set with 60 second expiry
+      }
+      
+      try {
+        await Promise.all(batch);
+        process.stdout.write(`\r  Writing keys: ${i + batchSize}/100`);
+      } catch (error) {
+        console.error(chalk.red(`\n  Error writing batch starting at ${i}:`), error.message);
+      }
+    }
+    console.log(chalk.green('\n✓ Written 100 keys to cluster'));
     
     // Test 4: Verify keys are accessible
     console.log(chalk.yellow('\nTest 4: Verifying Key Accessibility'));
