@@ -4,7 +4,17 @@ echo "========================================"
 echo "Initializing Redis Cluster"
 echo "========================================"
 
+# Reset all nodes first if they have existing data or cluster config
+echo "Resetting any existing cluster configuration..."
+for i in 1 2 3 4 5 6; do
+    port=$((8999 + i))
+    docker exec redis-node-$i redis-cli -p $port FLUSHALL > /dev/null 2>&1
+    docker exec redis-node-$i redis-cli -p $port CLUSTER RESET > /dev/null 2>&1
+done
+echo "✓ Cluster configuration reset"
+
 # Wait for all Redis nodes to be ready
+echo ""
 echo "Waiting for Redis nodes to start..."
 for port in 9000 9001 9002 9003 9004 9005; do
     while ! docker exec redis-node-$((port-8999)) redis-cli -p $port ping > /dev/null 2>&1; do
