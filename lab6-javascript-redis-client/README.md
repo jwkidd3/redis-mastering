@@ -1,192 +1,309 @@
 # Lab 6: JavaScript Redis Client Setup
 
-**Duration:** 45 minutes  
-**Focus:** Node.js Redis integration and basic data operations  
-**Platform:** Node.js + Redis client + Visual Studio Code  
-**Learning Objective:** Master JavaScript Redis client development for customer and policy management
-
-## 🏗️ Project Structure
-
-```
-lab6-javascript-redis-client/
-├── lab6.md                           # Complete lab instructions (START HERE)
-├── src/                              # Source code directory
-│   ├── config/redis.js              # Redis connection configuration
-│   ├── clients/redisClient.js        # Redis client wrapper
-│   ├── models/                       # Data models
-│   │   ├── customer.js               # Customer operations
-│   │   └── policy.js                 # Policy operations
-│   └── app.js                        # Main application
-├── examples/                         # Example scripts
-│   ├── basic-operations.js           # Basic Redis operations
-│   └── performance-test.js           # Performance testing
-├── tests/                            # Test files
-│   └── connection-test.js            # Connection testing
-├── docs/                             # Documentation
-│   ├── javascript-patterns.md        # JS Redis patterns
-│   └── troubleshooting.md           # Troubleshooting guide
-├── scripts/                          # Setup scripts
-│   ├── setup-lab.sh                 # Environment setup
-│   └── quick-start.sh                # Quick start script
-├── package.json.template             # Node.js dependencies template
-├── .env.template                     # Environment variables template
-└── README.md                         # This file
-```
-
-## 🚀 Quick Start
-
-1. **Check prerequisites:**
-   ```bash
-   ./scripts/setup-lab.sh
-   ```
-
-2. **Initialize project:**
-   ```bash
-   cp package.json.template package.json
-   npm install
-   ```
-
-3. **Configure environment:**
-   ```bash
-   cp .env.template .env
-   # Edit .env with Redis server details from instructor
-   ```
-
-4. **Test connection:**
-   ```bash
-   npm run test
-   ```
-
-5. **Follow lab instructions:**
-   Open `lab6.md` for complete guidance
-
-## 📋 Prerequisites
-
-- **Node.js 16+** installed
-- **npm** package manager
-- **Redis server details** from instructor
-- **Visual Studio Code** (recommended)
-- **Basic JavaScript knowledge**
+**Duration:** 45 minutes
+**Focus:** Node.js Redis integration and async/await patterns
+**Prerequisites:** Lab 5 completed, Node.js 16+ installed
 
 ## 🎯 Learning Objectives
 
-After completing this lab, you will:
-- **Set up Node.js Redis client** with remote server connection
-- **Create connection management** utilities for production applications
-- **Implement CRUD operations** for customer and policy data in JavaScript
-- **Handle errors and testing** for reliable Redis applications
-- **Use environment configuration** for development and production
-- **Master async/await patterns** with Redis operations
+- Set up Node.js Redis client with remote server
+- Use async/await patterns with Redis
+- Implement CRUD operations in JavaScript
+- Handle errors and connection management
+- Store and retrieve JSON data
 
-## 🔧 Key Technologies
+## 🚀 Quick Start
 
-### Node.js Packages
-```json
-{
-  "redis": "^4.6.0",         // Official Redis client
-  "dotenv": "^16.3.0",       // Environment variables
-  "nodemon": "^3.0.0"        // Development auto-restart
-}
+### Step 1: Install Dependencies
+
+```bash
+npm install redis dotenv
 ```
 
-### Essential Patterns
+### Step 2: Create Connection
+
+Create `redis-client.js`:
+
 ```javascript
-// Connection with error handling
+const redis = require('redis');
+require('dotenv').config();
+
 const client = redis.createClient({
-    socket: { host: 'hostname', port: 6379 },
-    password: 'password'
+  socket: {
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT
+  }
 });
 
-// Async operations with try-catch
-try {
-    await client.set('key', 'value');
-    const result = await client.get('key');
-} catch (error) {
-    console.error('Redis error:', error);
+client.on('error', err => console.error('Redis Error:', err));
+
+async function connect() {
+  await client.connect();
+  console.log('Connected to Redis');
 }
 
-// JSON data storage
-await client.set('user', JSON.stringify(userData));
-const user = JSON.parse(await client.get('user'));
+connect();
+
+module.exports = client;
 ```
 
-## 📊 What You'll Build
+### Step 3: Test Connection
 
-### Customer Management System
-- **Customer CRUD operations** with JSON storage
-- **Policy associations** with relationship tracking
-- **Data validation** and error handling
-- **Performance testing** with batch operations
+Create `test-connection.js`:
 
-### Redis Client Wrapper
-- **Connection management** with auto-reconnect
-- **Health checking** and monitoring
-- **Error handling** patterns
-- **Environment configuration**
+```javascript
+const client = require('./redis-client');
 
-### Example Applications
-- **Basic operations** script for learning
-- **Performance testing** for optimization
-- **Interactive examples** for experimentation
+async function test() {
+  try {
+    await client.set('test:key', 'Hello Redis!');
+    const value = await client.get('test:key');
+    console.log('Success:', value);
+  } catch (error) {
+    console.error('Error:', error);
+  } finally {
+    await client.quit();
+  }
+}
 
-## 🧪 Available Scripts
+test();
+```
 
+Run: `node test-connection.js`
+
+## Part 1: Basic Operations
+
+### String Operations
+
+```javascript
+const client = require('./redis-client');
+
+async function basicOperations() {
+  // Set values
+  await client.set('customer:1001', 'John Smith');
+  await client.set('policy:AUTO-001', 'Active');
+
+  // Get values
+  const customer = await client.get('customer:1001');
+  const policy = await client.get('policy:AUTO-001');
+
+  console.log(customer, policy);
+
+  await client.quit();
+}
+
+basicOperations();
+```
+
+### Numeric Operations
+
+```javascript
+async function counters() {
+  // Initialize counter
+  await client.set('visitors:count', '0');
+
+  // Increment
+  await client.incr('visitors:count');
+  await client.incr('visitors:count');
+
+  // Increment by amount
+  await client.incrBy('visitors:count', 10);
+
+  // Get value
+  const count = await client.get('visitors:count');
+  console.log('Total visitors:', count);
+
+  await client.quit();
+}
+```
+
+## Part 2: JSON Data Storage
+
+### Store Complex Objects
+
+```javascript
+async function jsonOperations() {
+  // Customer object
+  const customer = {
+    id: 'C001',
+    name: 'John Smith',
+    email: 'john@example.com',
+    policies: ['AUTO-001', 'HOME-001']
+  };
+
+  // Store as JSON
+  await client.set('customer:C001', JSON.stringify(customer));
+
+  // Retrieve and parse
+  const data = await client.get('customer:C001');
+  const retrieved = JSON.parse(data);
+
+  console.log(retrieved);
+
+  await client.quit();
+}
+```
+
+## Part 3: Error Handling
+
+### Production-Ready Patterns
+
+```javascript
+async function safeOperations() {
+  try {
+    await client.connect();
+
+    // Operations
+    await client.set('key', 'value');
+    const result = await client.get('key');
+
+    console.log('Success:', result);
+
+  } catch (error) {
+    console.error('Redis Error:', error.message);
+
+    // Handle specific errors
+    if (error.code === 'ECONNREFUSED') {
+      console.error('Cannot connect to Redis server');
+    }
+
+  } finally {
+    await client.quit();
+  }
+}
+```
+
+## Part 4: Batch Operations
+
+### Multiple Operations
+
+```javascript
+async function batchOperations() {
+  // Set multiple keys
+  await Promise.all([
+    client.set('customer:1', 'Alice'),
+    client.set('customer:2', 'Bob'),
+    client.set('customer:3', 'Charlie')
+  ]);
+
+  // Get multiple keys
+  const customers = await Promise.all([
+    client.get('customer:1'),
+    client.get('customer:2'),
+    client.get('customer:3')
+  ]);
+
+  console.log(customers);
+
+  await client.quit();
+}
+```
+
+## 🎓 Exercises
+
+### Exercise 1: Customer Manager
+
+Create a customer management system:
+
+```javascript
+class CustomerManager {
+  constructor(client) {
+    this.client = client;
+  }
+
+  async createCustomer(id, data) {
+    // Store customer as JSON
+    await this.client.set(`customer:${id}`, JSON.stringify(data));
+  }
+
+  async getCustomer(id) {
+    // Retrieve and parse customer
+    const data = await this.client.get(`customer:${id}`);
+    return data ? JSON.parse(data) : null;
+  }
+
+  async deleteCustomer(id) {
+    // Delete customer
+    await this.client.del(`customer:${id}`);
+  }
+}
+```
+
+### Exercise 2: Counter Service
+
+Build a visitor counter:
+1. Initialize counter
+2. Increment on each visit
+3. Get current count
+4. Reset counter
+
+### Exercise 3: Policy Storage
+
+Store and retrieve policies:
+1. Create 10 policies with JSON data
+2. Retrieve all policies
+3. Update policy status
+4. Delete expired policies
+
+## 📋 Key Patterns
+
+```javascript
+// Connection
+const client = redis.createClient({...});
+await client.connect();
+
+// Basic operations
+await client.set('key', 'value');
+const value = await client.get('key');
+
+// JSON storage
+await client.set('key', JSON.stringify(obj));
+const obj = JSON.parse(await client.get('key'));
+
+// Error handling
+try {
+  await client.set('key', 'value');
+} catch (error) {
+  console.error(error);
+} finally {
+  await client.quit();
+}
+```
+
+## 💡 Best Practices
+
+1. **Always use try-catch:** Wrap Redis operations in error handling
+2. **Close connections:** Use `finally` block to quit client
+3. **Environment variables:** Never hardcode connection details
+4. **JSON storage:** Use JSON.stringify/parse for objects
+5. **Batch operations:** Use Promise.all for multiple operations
+
+## ✅ Lab Completion Checklist
+
+- [ ] Connected to Redis from Node.js
+- [ ] Performed basic SET/GET operations
+- [ ] Stored and retrieved JSON objects
+- [ ] Implemented error handling
+- [ ] Used async/await patterns correctly
+- [ ] Completed all exercises
+
+**Estimated time:** 45 minutes
+
+## 📚 Additional Resources
+
+- **Redis Node.js Client:** `https://github.com/redis/node-redis`
+- **Async/Await Guide:** `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function`
+
+## 🔧 Troubleshooting
+
+**Connection Error:**
+```javascript
+// Check .env file
+REDIS_HOST=your-redis-host
+REDIS_PORT=6379
+```
+
+**Module Not Found:**
 ```bash
-npm start         # Run main application
-npm run dev       # Development with auto-restart
-npm test          # Test Redis connection
-npm run examples  # Run example operations
-npm run performance # Performance testing
+npm install redis dotenv
 ```
-
-## 🆘 Troubleshooting
-
-### Common Issues
-
-1. **Connection refused:** Check hostname and port in .env
-2. **Module not found:** Run `npm install`
-3. **Auth required:** Add password to .env file
-4. **Syntax errors:** Ensure Node.js 16+ and proper async/await usage
-
-### Diagnostic Tools
-
-```bash
-# Test environment
-./scripts/setup-lab.sh
-
-# Quick connection test
-node tests/connection-test.js
-
-# Manual Redis CLI test
-redis-cli -h [hostname] -p [port] ping
-```
-
-See `docs/troubleshooting.md` for comprehensive solutions.
-
-## 📖 Reference Materials
-
-- **`docs/javascript-patterns.md`** - Redis JavaScript patterns and best practices
-- **`docs/troubleshooting.md`** - Comprehensive problem-solving guide
-- **`examples/`** - Practical code examples and performance tests
-- **Official Redis Node.js docs** - https://github.com/redis/node-redis
-
-## 🏁 Success Criteria
-
-By the end of this lab, you should:
-- [ ] Successfully connect to Redis server via Node.js
-- [ ] Create and retrieve customer and policy records
-- [ ] Implement error handling for all operations
-- [ ] Use environment variables for configuration
-- [ ] Run performance tests with multiple operations
-- [ ] Integrate with Redis Insight for data visualization
-- [ ] Understand production-ready Redis client patterns
-
-## ⏭️ Next Steps
-
-**Lab 7 Preview:** Advanced data structures using Redis Hashes for complex customer profiles and nested policy management.
-
-This lab establishes the foundation for JavaScript-based Redis development that will be expanded in subsequent labs.
-
----
-
-**🎯 Ready to start? Open `lab6.md` and begin your JavaScript Redis journey!**

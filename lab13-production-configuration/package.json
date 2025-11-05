@@ -1,0 +1,15 @@
+{
+  "name": "lab13-production-configuration",
+  "version": "1.0.0",
+  "description": "Lab 13: Redis Production Configuration",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Lab 13: Production Configuration - See README.md for instructions\""
+  },
+  "keywords": ["redis", "production", "configuration"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "redis": "^4.6.7"
+  }
+}

@@ -1,128 +1,202 @@
 # Lab 1: Redis Environment & CLI Basics
 
-**Duration:** 45 minutes  
-**Focus:** Remote Redis connection and basic CLI operations  
-**Platform:** Redis CLI + Redis Insight (remote server access)
-
-## 🏗️ Project Structure
-
-```
-lab1-redis-cli-basics/
-├── lab1.md                           # Complete lab instructions (START HERE)
-├── reference/
-│   └── basic-commands.md            # Redis commands reference
-├── examples/
-│   ├── getting-started.sh           # Practical examples script
-│   └── connection-examples.md       # Connection scenarios
-├── docs/
-│   └── troubleshooting.md          # Comprehensive troubleshooting
-└── README.md                        # This file
-```
-
-## 🚀 Quick Start
-
-1. **Get server details from instructor:**
-   - Hostname (e.g., `redis-server.training.com`)
-   - Port (usually `6379`)
-   - Password (if required)
-
-2. **Test connection:**
-   ```bash
-   redis-cli -h [hostname] -p [port] PING
-   ```
-
-3. **Follow lab instructions:**
-   Open `lab1.md` for complete guidance
-
-4. **Configure Redis Insight:**
-   Add database connection with provided details
-
-## 📋 Prerequisites
-
-- **Redis CLI installed** on your machine
-- **Redis Insight installed** and ready
-- **Network access** to training Redis server
-- **Basic command-line knowledge**
-- **Connection details** from instructor
+**Duration:** 45 minutes
+**Focus:** Redis CLI and Redis Insight for basic operations
+**Prerequisites:** Redis CLI and Redis Insight installed
 
 ## 🎯 Learning Objectives
 
-After completing this lab, you will:
-- **Connect to remote Redis** using host parameters
-- **Execute basic commands** with proper syntax
-- **Navigate Redis Insight** for data visualization
-- **Understand Redis fundamentals** through hands-on practice
-- **Use both CLI and GUI tools** effectively
+- Connect to remote Redis server using CLI
+- Execute basic Redis commands
+- Navigate Redis Insight GUI
+- Understand fundamental Redis data operations
+- Manage keys with TTL
 
-## 🔧 Key Commands Learned
+## 🚀 Quick Start
 
-### Connection
+### Step 1: Get Server Details
+
+Your instructor will provide:
+- **Hostname:** (e.g., `redis-server.training.com`)
+- **Port:** (usually `6379`)
+- **Password:** (if required)
+
+### Step 2: Test Connection
+
 ```bash
-redis-cli -h hostname -p port PING              # Test connection
-redis-cli -h hostname -p port                   # Interactive session
-redis-cli -h hostname -p port -a password       # With authentication
+# Test connection
+redis-cli -h [hostname] -p [port] PING
+# Expected: PONG
+
+# Set alias for convenience (optional)
+alias rcli='redis-cli -h [hostname] -p [port]'
 ```
 
-### Basic Operations
+### Step 3: Configure Redis Insight
+
+1. Open Redis Insight: `http://localhost:8001`
+2. Click **"Add Database"**
+3. Enter connection details from instructor
+4. Test connection
+
+## Part 1: Basic String Operations
+
+### Store and Retrieve Data
+
 ```bash
-SET key value                    # Store data
-GET key                         # Retrieve data
-EXISTS key                      # Check existence
-INCR counter                    # Increment number
-KEYS pattern                    # Find keys
-INFO server                     # Server information
+# Set values
+rcli SET customer:1001 "John Smith"
+rcli SET policy:AUTO-001 "Active"
+rcli SET premium:AUTO-001 1200
+
+# Get values
+rcli GET customer:1001
+rcli GET policy:AUTO-001
 ```
 
-## 📊 What You'll Practice
+### Numeric Operations
 
-- **Remote connections** with host parameters
-- **String operations** for data storage
-- **Numeric operations** for counters
-- **Key management** with TTL and expiration
-- **Information commands** for server stats
-- **GUI navigation** in Redis Insight
+```bash
+# Counters
+rcli SET visitors:count 0
+rcli INCR visitors:count
+rcli INCR visitors:count
+rcli GET visitors:count
 
-## 🆘 Troubleshooting
+# Increment by amount
+rcli INCRBY visitors:count 10
+rcli DECRBY visitors:count 2
+```
 
-Common issues and solutions:
+## Part 2: Key Management
 
-1. **Connection failed:** Check hostname, port, and network
-2. **Authentication required:** Use `-a password` parameter
-3. **Command not found:** Verify Redis CLI installation
-4. **Timeout:** Check network connectivity and server status
+### Check Keys
 
-See `docs/troubleshooting.md` for detailed solutions.
+```bash
+# Check if key exists
+rcli EXISTS customer:1001
+rcli EXISTS customer:9999
 
-## 📖 Reference Materials
+# Find keys
+rcli KEYS customer:*
+rcli KEYS policy:*
 
-- **`reference/basic-commands.md`** - Complete command reference
-- **`examples/connection-examples.md`** - Connection scenarios
-- **`examples/getting-started.sh`** - Practical examples script
-- **`docs/troubleshooting.md`** - Problem-solving guide
+# Get key type
+rcli TYPE customer:1001
+```
 
-## 🏁 Success Criteria
+### TTL Management
 
-By the end of this lab, you should:
-- [ ] Successfully connect to Redis server via CLI
-- [ ] Execute basic string and numeric operations
-- [ ] Configure and use Redis Insight GUI
-- [ ] Understand host parameter syntax
-- [ ] Be comfortable with fundamental Redis commands
+```bash
+# Set key with expiration (session example)
+rcli SETEX session:user123 3600 "session-data"
 
-## ⏭️ Next Steps
+# Add TTL to existing key
+rcli EXPIRE customer:1001 86400
 
-**Lab 2 Preview:** Advanced RESP protocol monitoring and performance analysis
+# Check remaining TTL
+rcli TTL session:user123
+rcli TTL customer:1001
 
-This gentle introduction builds foundation skills for more advanced Redis operations in subsequent labs.
+# Remove expiration
+rcli PERSIST customer:1001
+```
 
-## 💡 Quick Tips
+## Part 3: Redis Insight
 
-- **Always use your server hostname** instead of localhost
-- **Keep interactive sessions open** for easier command execution
-- **Use Redis Insight browser** to visualize your data
-- **Check TTL regularly** to understand key expiration
-- **Ask instructor** if connection issues persist
+### Navigate Redis Insight
 
-## 🌟 Key Takeaway
+1. Open **Browser** tab
+2. View all keys created in exercises
+3. Click on a key to see its value and TTL
+4. Try editing a value through GUI
+5. Delete a test key
 
-Redis CLI with host parameters (`-h` and `-p`) allows you to connect to any Redis server from any location - this is fundamental for real-world Redis usage!
+### Use CLI in Redis Insight
+
+1. Go to **CLI** tab in Redis Insight
+2. Execute same commands as terminal
+3. Compare experience with command-line CLI
+
+## 🎓 Exercises
+
+### Exercise 1: Customer Management
+
+1. Create 5 customer records using SET
+2. Retrieve all customers using KEYS pattern
+3. Check if customer:1005 exists
+4. Delete customer:1005
+
+### Exercise 2: Session Management
+
+1. Create session for 3 users (30-minute TTL)
+2. Check TTL for each session
+3. Extend one session by 1 hour
+4. Remove expiration from one session
+
+### Exercise 3: Counter Operations
+
+1. Create page view counter
+2. Increment it 100 times
+3. Increment by 50
+4. Get final value
+
+## 📋 Key Commands Reference
+
+```bash
+# Connection
+redis-cli -h hostname -p port PING
+
+# String operations
+SET key value
+GET key
+INCR key
+INCRBY key increment
+SETEX key seconds value
+
+# Key operations
+EXISTS key
+KEYS pattern
+TYPE key
+DEL key
+EXPIRE key seconds
+TTL key
+PERSIST key
+
+# Server info
+INFO server
+DBSIZE
+```
+
+## ✅ Lab Completion Checklist
+
+- [ ] Connected to remote Redis server
+- [ ] Executed SET/GET commands
+- [ ] Used INCR for counters
+- [ ] Managed keys with TTL
+- [ ] Used Redis Insight browser and CLI
+- [ ] Completed all exercises
+
+**Estimated time:** 45 minutes
+
+## 📚 Additional Resources
+
+- **Redis Commands:** `https://redis.io/commands/`
+- **Redis Insight:** `https://redis.io/docs/stack/insight/`
+
+## 🔧 Troubleshooting
+
+**Connection failed:**
+```bash
+# Check connection details
+redis-cli -h hostname -p port PING
+
+# Test network connectivity
+ping hostname
+```
+
+**Authentication error:**
+```bash
+# Use password if required
+redis-cli -h hostname -p port -a password PING
+```

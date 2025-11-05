@@ -174,6 +174,13 @@ async function runTests() {
 
     console.log('\x1b[32m✓\x1b[0m Redis connection successful\n');
 
+    // Clean database before running tests to ensure consistent state
+    console.log('Cleaning test database...');
+    await testUtils.initRedisClient();
+    await testUtils.flushAllDatabases();
+    await testUtils.closeRedisClient();
+    console.log('\x1b[32m✓\x1b[0m Test database cleaned\n');
+
     const allResults = {
         totalPassed: 0,
         totalFailed: 0,

@@ -1,0 +1,40 @@
+{
+  "name": "lab9-sets-analytics",
+  "version": "1.0.0",
+  "description": "Redis Sets and Sorted Sets lab for insurance analytics and customer segmentation",
+  "main": "src/set-analytics.js",
+  "scripts": {
+    "start": "node src/set-analytics.js",
+    "segments": "node src/customer-segments.js",
+    "leaderboard": "node src/agent-leaderboard.js",
+    "risk": "node src/risk-scoring.js",
+    "dashboard": "node src/analytics-dashboard.js",
+    "setup": "node scripts/setup-lab9.js",
+    "load-data": "node scripts/load-analytics-data.js",
+    "test": "node tests/analytics.test.js",
+    "validate": "node validation/validate-setup.js"
+  },
+  "dependencies": {
+    "redis": "^4.6.0",
+    "dotenv": "^16.3.0",
+    "uuid": "^9.0.0",
+    "cli-table3": "^0.6.3",
+    "chalk": "^4.1.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  },
+  "keywords": [
+    "redis",
+    "sets",
+    "sorted-sets",
+    "analytics",
+    "insurance",
+    "customer-segmentation"
+  ],
+  "author": "Redis Training Lab",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -17,7 +17,7 @@ const testUtils = new TestUtils();
 async function testLab1() {
     testUtils.logLabHeader(1, 'Redis Environment & CLI Basics');
 
-    const labDir = path.join(process.cwd(), 'lab1-redis-environment-cli-basics');
+    const labDir = path.join(process.cwd(), 'lab1-redis-cli-basics');
     let passed = 0;
     let failed = 0;
 
@@ -33,7 +33,7 @@ async function testLab1() {
         }
 
         // Test 2: Check if setup script exists
-        const setupScriptExists = await testUtils.fileExists(path.join(labDir, 'setup-lab.sh'));
+        const setupScriptExists = await testUtils.fileExists(path.join(labDir, 'scripts/setup-lab.sh'));
         if (setupScriptExists) {
             testUtils.logTest('Lab 1', 'Setup script exists', true);
             passed++;
@@ -44,7 +44,7 @@ async function testLab1() {
 
         // Test 3: Execute setup script
         if (setupScriptExists) {
-            const result = await testUtils.executeScript('setup-lab.sh', labDir);
+            const result = await testUtils.executeScript('scripts/setup-lab.sh', labDir);
             if (result.success) {
                 testUtils.logTest('Lab 1', 'Execute setup script', true);
                 passed++;
@@ -69,12 +69,12 @@ async function testLab1() {
         }
 
         // Test 5: Check if test script exists and runs
-        const testScriptExists = await testUtils.fileExists(path.join(labDir, 'test-lab.sh'));
+        const testScriptExists = await testUtils.fileExists(path.join(labDir, 'scripts/test-lab.sh'));
         if (testScriptExists) {
             testUtils.logTest('Lab 1', 'Test script exists', true);
             passed++;
 
-            const result = await testUtils.executeScript('test-lab.sh', labDir);
+            const result = await testUtils.executeScript('scripts/test-lab.sh', labDir);
             if (result.success || result.stdout.includes('✓')) {
                 testUtils.logTest('Lab 1', 'Execute test script', true);
                 passed++;
@@ -181,7 +181,7 @@ async function testLab2() {
 async function testLab3() {
     testUtils.logLabHeader(3, 'String Operations');
 
-    const labDir = path.join(process.cwd(), 'lab3-string-operations');
+    const labDir = path.join(process.cwd(), 'lab3-data-operations-strings');
     let passed = 0;
     let failed = 0;
 
@@ -189,13 +189,13 @@ async function testLab3() {
         await testUtils.initRedisClient();
 
         // Test 1: Check if sample data loading script exists
-        const loadDataExists = await testUtils.fileExists(path.join(labDir, 'load-sample-data.sh'));
+        const loadDataExists = await testUtils.fileExists(path.join(labDir, 'scripts/load-sample-data.sh'));
         if (loadDataExists) {
             testUtils.logTest('Lab 3', 'Sample data script exists', true);
             passed++;
 
             // Execute the data loading script
-            const result = await testUtils.executeScript('load-sample-data.sh', labDir);
+            const result = await testUtils.executeScript('scripts/load-sample-data.sh', labDir);
             if (result.success) {
                 testUtils.logTest('Lab 3', 'Load sample data', true);
                 passed++;
@@ -402,7 +402,7 @@ async function testLab4() {
 async function testLab5() {
     testUtils.logLabHeader(5, 'Advanced CLI Operations');
 
-    const labDir = path.join(process.cwd(), 'lab5-advanced-cli-operations');
+    const labDir = path.join(process.cwd(), 'lab5-advanced-cli-monitoring');
     let passed = 0;
     let failed = 0;
 
@@ -411,9 +411,9 @@ async function testLab5() {
 
         // Test 1: Check if monitoring scripts exist
         const scriptFiles = [
-            'monitor-performance.sh',
-            'analyze-memory.sh',
-            'slow-log-analysis.sh'
+            'scripts/monitor-performance.sh',
+            'scripts/analyze-memory.sh',
+            'scripts/slow-log-analysis.sh'
         ];
 
         for (const scriptFile of scriptFiles) {

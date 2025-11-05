@@ -1,157 +1,221 @@
 # Lab 3: Data Operations with Strings
 
-**Duration:** 45 minutes  
-**Focus:** Advanced string operations for policy management and premium calculations  
-**Industry:** Data processing and customer management workflows
+**Duration:** 45 minutes
+**Focus:** Advanced string operations for data management
+**Prerequisites:** Lab 2 completed
 
-## 📁 Project Structure
+## 🎯 Learning Objectives
 
-```
-lab3-data-operations-strings/
-├── lab3.md                                # Complete lab instructions (START HERE)
-├── scripts/
-│   └── load-sample-data.sh               # Comprehensive data loader
-├── docs/
-│   ├── string-operations-reference.md    # Redis string operations reference
-│   └── troubleshooting.md                # String operations troubleshooting
-├── examples/
-│   └── practical-examples.md             # Practical string examples
-├── performance-tests/
-│   └── string-operations-performance.sh  # Performance testing scripts
-├── sample-data/                          # Sample data directory
-└── README.md                             # This file
-```
+- Master policy number generation with atomic counters
+- Perform atomic premium calculations
+- Manage customer data with string operations
+- Build document assembly workflows
+- Optimize batch operations
+- Prevent race conditions in financial calculations
 
 ## 🚀 Quick Start
 
-1. **Read Instructions:** Open `lab3.md` for complete lab guidance
-2. **Start Redis:** `docker run -d --name redis-lab3 -p 6379:6379 redis:7-alpine`
-3. **Load Sample Data:** `./scripts/load-sample-data.sh`
-4. **Test Connection:** `redis-cli ping`
-5. **Follow Lab Exercises:** Execute string operations for data management
-
-## 🎯 Lab Objectives
-
-✅ Master policy number generation and validation using Redis strings  
-✅ Perform atomic premium calculations with string numeric operations  
-✅ Manage customer data efficiently with string concatenation and manipulation  
-✅ Build document processing workflows with string operations  
-✅ Optimize batch operations for policy updates and customer management  
-✅ Implement race condition prevention for financial calculations
-
-## 🏢 Data Focus
-
-This lab uses comprehensive industry data optimized for string operations:
-
-- **Policy Management:** Auto, Home, Life policy creation and updates
-- **Customer Profiles:** Comprehensive customer information management
-- **Premium Calculations:** Atomic financial operations and adjustments
-- **Document Assembly:** Policy documents and email template processing
-- **Activity Logging:** Customer interaction tracking and audit trails
-- **Financial Reporting:** Daily revenue tracking and business metrics
-
-## 🔧 Key String Operations Covered
+### Step 1: Start Redis
 
 ```bash
-# Policy Number Generation
-INCR policy:counter:auto                    # Atomic counter
-SET policy:AUTO-100001 "policy_data"        # Structured storage
-
-# Premium Calculations  
-INCRBY premium:AUTO-100001 150              # Risk adjustments
-DECRBY premium:AUTO-100001 50               # Discounts
-
-# Customer Data Management
-APPEND customer:CUST001 " | Risk Score: 750" # Profile updates
-MGET customer:CUST001 customer:CUST002      # Batch retrieval
-
-# Document Assembly
-APPEND document:AUTO-100001 "COVERAGE: Full Coverage Auto Policy\n"
-
-# Financial Operations
-INCRBY revenue:daily:2024-08-18 1200        # Revenue tracking
+docker run -d --name redis-lab3 -p 6379:6379 redis:7-alpine
 ```
 
-## 📊 Sample Data Highlights
-
-The lab includes realistic data:
-
-- **6 Comprehensive Policies:** AUTO-100001, AUTO-100002, HOME-200001, HOME-200002, LIFE-300001, LIFE-300002
-- **6 Customer Profiles:** CUST001-CUST006 with complete contact and risk information
-- **Premium Data:** Individual premiums with atomic calculation support
-- **Document Fragments:** Policy coverage, exclusions, and terms sections
-- **Activity Logs:** Customer interaction tracking with timestamps
-- **Financial Metrics:** Revenue tracking and business intelligence data
-
-## ⚡ Performance Testing
-
-Run performance tests to compare different string operation patterns:
+### Step 2: Load Sample Data
 
 ```bash
-# Execute performance test suite
-./performance-tests/string-operations-performance.sh
-
-# Individual vs batch operations comparison
-# Policy number generation performance
-# Premium calculation efficiency
-# Memory usage analysis
+./scripts/load-sample-data.sh
 ```
 
-## 🆘 Troubleshooting
+### Step 3: Test Connection
 
-**Atomic Operations:**
 ```bash
-# Test atomic operations
-redis-cli INCR test:counter
-redis-cli MULTI
-redis-cli INCR premium:test
-redis-cli EXEC
+redis-cli ping
+# Expected: PONG
 ```
 
-**String Length Issues:**
+## Part 1: Policy Number Generation
+
+### Atomic Counters
+
 ```bash
-# Check string sizes
-redis-cli STRLEN policy:AUTO-100001
-redis-cli MEMORY USAGE customer:CUST001
+# Create policy number generators
+redis-cli INCR policy:counter:auto
+redis-cli INCR policy:counter:home
+redis-cli INCR policy:counter:life
+
+# Generate formatted policy numbers
+redis-cli INCR policy:counter:auto
+# Use result: AUTO-000001
 ```
 
-**Numeric Operations:**
+### Store Policy Data
+
 ```bash
-# Verify numeric values
-redis-cli GET premium:AUTO-100001
-redis-cli INCR premium:AUTO-100001
+# Create policies
+redis-cli SET policy:AUTO-000001 "John Smith - Full Coverage"
+redis-cli SET policy:HOME-000001 "Jane Doe - Homeowners"
+redis-cli SET policy:LIFE-000001 "Bob Johnson - Term Life"
+
+# Retrieve policies
+redis-cli GET policy:AUTO-000001
 ```
 
-**Detailed troubleshooting:** See `docs/troubleshooting.md`
+## Part 2: Premium Calculations
 
-## 📚 Learning Resources
+### Atomic Financial Operations
 
-- **String Operations Reference:** `docs/string-operations-reference.md`
-- **Practical Examples:** `examples/practical-examples.md`
-- **Performance Testing:** `performance-tests/string-operations-performance.sh`
-- **Troubleshooting Guide:** `docs/troubleshooting.md`
+```bash
+# Initialize premiums
+redis-cli SET premium:AUTO-000001 1000
+redis-cli SET premium:HOME-000001 800
 
-## 🎓 Learning Path
+# Risk adjustments (atomic)
+redis-cli INCRBY premium:AUTO-000001 150
+redis-cli INCRBY premium:HOME-000001 50
 
-This lab is part of the Redis mastery series:
+# Apply discounts
+redis-cli DECRBY premium:AUTO-000001 100
 
-1. **Lab 1:** Environment & CLI Basics
-2. **Lab 2:** RESP Protocol Analysis
-3. **Lab 3:** Data Operations with Strings ← *You are here*
-4. **Lab 4:** Key Management & TTL Strategies
-5. **Lab 5:** Advanced CLI Operations & Monitoring
+# Get final premium
+redis-cli GET premium:AUTO-000001
+```
 
-## 🏆 Key Achievements
+## Part 3: Customer Data Management
 
-By completing this lab, you will have mastered:
+### String Manipulation
 
-- **Atomic Operations:** Race-condition-safe premium calculations
-- **Policy Management:** Structured policy number generation and storage
-- **Customer Data:** Efficient profile management with string manipulation
-- **Document Processing:** Dynamic document assembly workflows
-- **Financial Operations:** Daily revenue tracking and business metrics
-- **Performance Optimization:** Batch operations vs individual commands
+```bash
+# Create customer profiles
+redis-cli SET customer:C001 "John Smith"
+redis-cli SET customer:C002 "Jane Doe"
 
----
+# Append additional data
+redis-cli APPEND customer:C001 " | Risk Score: 750"
+redis-cli APPEND customer:C001 " | Age: 35"
 
-**Ready to start?** Open `lab3.md` and begin mastering Redis string operations for data management applications! 🚀
+# Check string length
+redis-cli STRLEN customer:C001
+
+# Get full profile
+redis-cli GET customer:C001
+```
+
+### Batch Operations
+
+```bash
+# Set multiple customers at once
+redis-cli MSET customer:C003 "Bob" customer:C004 "Alice" customer:C005 "Charlie"
+
+# Get multiple customers at once
+redis-cli MGET customer:C003 customer:C004 customer:C005
+```
+
+## Part 4: Document Assembly
+
+### Build Policy Documents
+
+```bash
+# Create document sections
+redis-cli SET doc:AUTO-001:header "AUTO POLICY DOCUMENT"
+redis-cli SET doc:AUTO-001:coverage "Full Coverage"
+redis-cli SET doc:AUTO-001:terms "12 months"
+
+# Append to document
+redis-cli APPEND doc:AUTO-001:full "POLICY: AUTO-000001\n"
+redis-cli APPEND doc:AUTO-001:full "COVERAGE: Full Coverage\n"
+redis-cli APPEND doc:AUTO-001:full "PREMIUM: $1200\n"
+
+# Get assembled document
+redis-cli GET doc:AUTO-001:full
+```
+
+## Part 5: Financial Tracking
+
+### Daily Revenue Tracking
+
+```bash
+# Track daily revenue (atomic)
+redis-cli INCRBY revenue:daily:2024-11-04 1200
+redis-cli INCRBY revenue:daily:2024-11-04 800
+redis-cli INCRBY revenue:daily:2024-11-04 2500
+
+# Get daily total
+redis-cli GET revenue:daily:2024-11-04
+
+# Track by policy type
+redis-cli INCRBY revenue:auto:2024-11-04 1200
+redis-cli INCRBY revenue:home:2024-11-04 800
+```
+
+## 🎓 Exercises
+
+### Exercise 1: Policy System
+
+1. Generate 20 policy numbers (auto, home, life)
+2. Store policy data for each
+3. Retrieve policies using MGET
+4. Count total policies by type
+
+### Exercise 2: Premium Calculator
+
+1. Create 10 policies with initial premiums
+2. Apply risk adjustments (+10% to +30%)
+3. Apply discounts (-5% to -15%)
+4. Calculate total premiums
+
+### Exercise 3: Customer Profiles
+
+1. Create 15 customer profiles
+2. Append risk scores to each
+3. Append ages to each
+4. Find longest profile using STRLEN
+
+### Exercise 4: Revenue Tracking
+
+1. Simulate 100 policy sales across 5 days
+2. Track daily revenue
+3. Track revenue by policy type
+4. Calculate 5-day total
+
+## 📋 Key Commands
+
+```bash
+# Counters
+INCR key                 # Atomic increment
+INCRBY key amount       # Increment by amount
+DECRBY key amount       # Decrement by amount
+
+# String operations
+SET key value           # Set string
+GET key                # Get string
+APPEND key value        # Append to string
+STRLEN key             # String length
+
+# Batch operations
+MSET key1 val1 key2 val2   # Set multiple
+MGET key1 key2 key3        # Get multiple
+```
+
+## 💡 Best Practices
+
+1. **Use INCR/INCRBY:** For atomic counters and financial operations
+2. **Use MSET/MGET:** For batch operations (much faster)
+3. **Atomic operations:** Prevent race conditions
+4. **Meaningful keys:** Use hierarchical naming (entity:type:id)
+
+## ✅ Lab Completion Checklist
+
+- [ ] Generated policy numbers with atomic counters
+- [ ] Performed atomic premium calculations
+- [ ] Managed customer data with APPEND
+- [ ] Assembled documents with multiple operations
+- [ ] Tracked revenue with atomic operations
+- [ ] Used batch operations (MSET/MGET)
+
+**Estimated time:** 45 minutes
+
+## 📚 Additional Resources
+
+- **String Commands:** `https://redis.io/commands/?group=string`
+- **Atomic Operations:** `https://redis.io/docs/manual/transactions/`

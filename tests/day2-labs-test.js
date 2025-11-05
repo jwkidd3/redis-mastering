@@ -18,7 +18,7 @@ const testUtils = new TestUtils();
 async function testLab6() {
     testUtils.logLabHeader(6, 'JavaScript Redis Client Setup');
 
-    const labDir = path.join(process.cwd(), 'lab6-javascript-redis-client-setup');
+    const labDir = path.join(process.cwd(), 'lab6-javascript-redis-client');
     let passed = 0;
     let failed = 0;
 
@@ -98,7 +98,7 @@ async function testLab6() {
 async function testLab7() {
     testUtils.logLabHeader(7, 'Customer Profiles & Hashes');
 
-    const labDir = path.join(process.cwd(), 'lab7-customer-profiles-hashes');
+    const labDir = path.join(process.cwd(), 'lab7-customer-policy-hashes');
     let passed = 0;
     let failed = 0;
 
@@ -250,7 +250,7 @@ async function testLab7() {
 async function testLab8() {
     testUtils.logLabHeader(8, 'Claims Event Sourcing (Streams)');
 
-    const labDir = path.join(process.cwd(), 'lab8-claims-event-sourcing-streams');
+    const labDir = path.join(process.cwd(), 'lab8-claims-event-sourcing');
     let passed = 0;
     let failed = 0;
 
@@ -399,7 +399,7 @@ async function testLab8() {
 async function testLab9() {
     testUtils.logLabHeader(9, 'Insurance Analytics (Sets & Sorted Sets)');
 
-    const labDir = path.join(process.cwd(), 'lab9-insurance-analytics-sets-sorted-sets');
+    const labDir = path.join(process.cwd(), 'lab9-sets-analytics');
     let passed = 0;
     let failed = 0;
 
