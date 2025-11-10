@@ -1,7 +1,7 @@
 #!/bin/bash
 # Redis CLI Installation Script
 # Works on Mac and Linux
-# For Windows, use install-redis-cli-windows.ps1
+# For Windows, use install-redis-cli.bat
 
 set -e
 
@@ -46,11 +46,11 @@ detect_os() {
         OS="linux"
         print_info "Detected: Linux"
     elif [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]] || [[ -n "$WSL_DISTRO_NAME" ]]; then
-        print_error "Windows detected. Please use the PowerShell script instead."
+        print_error "Windows detected. Please use the batch script instead."
         echo ""
         echo -e "${CYAN}For Windows installation, run:${NC}"
         echo "  cd scripts"
-        echo "  .\\install-redis-cli-windows.ps1"
+        echo "  install-redis-cli.bat"
         echo ""
         exit 1
     else

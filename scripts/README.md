@@ -57,76 +57,57 @@ Connect to Redis:
 redis-cli -h localhost -p 6379 PING
 ```
 
-**Note:** Windows users should use the PowerShell script below.
-
----
-
-## Windows PowerShell Scripts
-
-### 📥 install-redis-cli-windows.ps1
-
-**Purpose:** Install redis-cli on Windows systems
-
-**Features:**
-- ✅ Multiple installation methods (Chocolatey, Direct Download, WSL, Manual)
-- ✅ Automatic PATH configuration
-- ✅ Version detection and testing
-- ✅ Non-admin installation option (direct download)
-- ✅ Comprehensive error handling
-
-**Usage:**
-
-```powershell
-# Default installation (via Chocolatey)
-.\install-redis-cli-windows.ps1
-
-# Install via direct download (no admin needed)
-.\install-redis-cli-windows.ps1 -Method direct
-
-# Install via WSL
-.\install-redis-cli-windows.ps1 -Method wsl
-
-# Show manual installation instructions
-.\install-redis-cli-windows.ps1 -Method manual
-```
-
-**Installation Methods:**
-
-| Method | Admin Required | Description |
-|--------|---------------|-------------|
-| **chocolatey** | ✅ Yes | Uses Chocolatey package manager (recommended) |
-| **direct** | ❌ No | Downloads and installs to user directory |
-| **wsl** | ✅ Yes (first time) | Installs in Windows Subsystem for Linux |
-| **manual** | - | Shows step-by-step instructions |
-
-**What it does:**
-1. Checks if redis-cli is already installed
-2. Downloads and installs Redis for Windows
-3. Adds redis-cli to system PATH
-4. Verifies installation with version check
-5. Provides connection examples
-
-**Requirements:**
-- Windows 10/11
-- PowerShell 5.1 or later
-- Internet connection
-- Administrator privileges (for Chocolatey and WSL methods)
-
-**After Installation:**
-
-Test the installation:
-```powershell
-redis-cli --version
-```
-
-Connect to Redis:
-```powershell
-redis-cli -h localhost -p 6379 PING
-```
+**Note:** Windows users should use the batch script below.
 
 ---
 
 ## Windows Batch Scripts
+
+### 📥 install-redis-cli.bat
+
+**Purpose:** Guide for installing redis-cli on Windows systems
+
+**Features:**
+- ✅ Checks if redis-cli is already installed
+- ✅ Displays multiple installation options
+- ✅ Clear step-by-step instructions
+- ✅ Compatible with all Windows versions
+
+**Usage:**
+
+```cmd
+cd scripts
+install-redis-cli.bat
+```
+
+**Installation Options Provided:**
+
+| Method | Admin Required | Description |
+|--------|---------------|-------------|
+| **Chocolatey** | ✅ Yes | Package manager installation (recommended) |
+| **Direct Download** | ❌ No | Manual download and PATH setup |
+| **WSL** | ✅ Yes (first time) | Windows Subsystem for Linux |
+| **Docker** | ❌ No | Use redis-cli from Docker container |
+
+**What it does:**
+1. Checks if redis-cli is already installed
+2. Displays version if already installed
+3. Shows detailed instructions for each installation method
+4. Provides verification steps after installation
+
+**After Installation:**
+
+Test the installation:
+```cmd
+redis-cli --version
+```
+
+Connect to Redis:
+```cmd
+redis-cli -h localhost -p 6379 PING
+```
+
+---
 
 ### 🚀 start-redis.bat
 
@@ -224,9 +205,9 @@ update_course.bat
 
 **Windows:**
 1. **Install redis-cli:**
-   ```powershell
+   ```cmd
    cd scripts
-   .\install-redis-cli-windows.ps1
+   install-redis-cli.bat
    ```
 
 2. **Start Redis server:**
@@ -236,7 +217,7 @@ update_course.bat
    ```
 
 3. **Test connection:**
-   ```powershell
+   ```cmd
    redis-cli -h localhost -p 6379 PING
    ```
 

@@ -305,19 +305,13 @@ chmod +x install-redis-cli.sh
 ./install-redis-cli.sh
 ```
 
-**Windows (PowerShell - Recommended):**
-```powershell
+**Windows (Batch Script - Recommended):**
+```cmd
 # Navigate to scripts directory
 cd scripts
 
-# Run PowerShell installation script
-.\install-redis-cli-windows.ps1
-
-# Or choose specific method:
-.\install-redis-cli-windows.ps1 -Method chocolatey  # Requires admin (recommended)
-.\install-redis-cli-windows.ps1 -Method direct      # No admin needed
-.\install-redis-cli-windows.ps1 -Method wsl         # Uses WSL/Linux
-.\install-redis-cli-windows.ps1 -Method manual      # Show instructions
+# Run installation helper script (shows all installation options)
+install-redis-cli.bat
 ```
 
 **Quick Manual Install:**
