@@ -75,14 +75,13 @@ npm install
 
 ### 5. Start Your First Lab
 
-**Using Redis Insight Workbench (Recommended):**
 1. Open Redis Insight
 2. Click your database connection
 3. Go to **"Workbench"** tab
-4. Follow: `lab1-redis-cli-basics/REDIS-INSIGHT.md`
-5. Run commands directly in Workbench!
+4. Open `lab1-redis-cli-basics/README.md`
+5. Follow the instructions and run all commands in Workbench
 
-💡 **All labs can be run in Redis Insight Workbench!** See `REDIS-INSIGHT-GUIDE.md`
+💡 **All labs are designed to be run in Redis Insight Workbench**
 
 ---
 
@@ -331,7 +330,7 @@ bash install-redis-cli.sh
 - **Profiler:** Real-time command monitoring (better than MONITOR)
 - **Memory Analyzer:** Visual memory usage analysis
 
-📖 **See `REDIS-INSIGHT-GUIDE.md` for complete course-wide Redis Insight usage guide**
+💡 **All lab instructions are in each lab's README.md**
 
 #### 5. Optional but Recommended
 - **VS Code** - Code editor: https://code.visualstudio.com/
