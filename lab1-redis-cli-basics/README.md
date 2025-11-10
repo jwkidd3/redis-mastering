@@ -1,122 +1,133 @@
 # Lab 1: Redis Environment & CLI Basics
 
 **Duration:** 45 minutes
-**Focus:** Redis CLI and Redis Insight for basic operations
-**Prerequisites:** Redis CLI and Redis Insight installed
+**Focus:** Redis Insight Workbench for basic operations
+**Prerequisites:** Redis Insight installed, Redis server running
 
 ## 🎯 Learning Objectives
 
-- Connect to remote Redis server using CLI
-- Execute basic Redis commands
-- Navigate Redis Insight GUI
+- Connect to Redis server using Redis Insight
+- Execute basic Redis commands in Workbench
+- Navigate Redis Insight Browser and Workbench
 - Understand fundamental Redis data operations
 - Manage keys with TTL
 
 ## 🚀 Quick Start
 
-### Step 1: Get Server Details
+### Step 1: Start Redis Server
 
-Your instructor will provide:
-- **Hostname:** (e.g., `redis-server.training.com`)
-- **Port:** (usually `6379`)
-- **Password:** (if required)
-
-### Step 2: Test Connection
-
-```bash
-# Test connection
-redis-cli -h [hostname] -p [port] PING
-# Expected: PONG
-
-# Set alias for convenience (optional)
-alias rcli='redis-cli -h [hostname] -p [port]'
+**Windows:**
+```cmd
+cd scripts
+start-redis.bat
 ```
 
-### Step 3: Configure Redis Insight
+**Mac/Linux:**
+```bash
+docker run -d -p 6379:6379 --name redis redis/redis-stack:latest
+```
 
-1. Open Redis Insight: `http://localhost:8001`
+### Step 2: Connect Redis Insight
+
+1. Open Redis Insight (desktop app or `http://localhost:8001`)
 2. Click **"Add Database"**
-3. Enter connection details from instructor
-4. Test connection
+3. Enter connection details:
+   - **Host:** `localhost`
+   - **Port:** `6379`
+   - **Name:** `Redis Course`
+4. Click **"Test Connection"** → **"Add Database"**
+
+### Step 3: Open Workbench
+
+1. Click your database connection
+2. Go to **"Workbench"** tab in the left sidebar
+3. You're ready to run Redis commands!
 
 ## Part 1: Basic String Operations
 
+**In Redis Insight Workbench, run these commands:**
+
 ### Store and Retrieve Data
 
-```bash
-# Set values
-rcli SET customer:1001 "John Smith"
-rcli SET policy:AUTO-001 "Active"
-rcli SET premium:AUTO-001 1200
+```redis
+// Set values
+SET customer:1001 "John Smith"
+SET policy:AUTO-001 "Active"
+SET premium:AUTO-001 1200
 
-# Get values
-rcli GET customer:1001
-rcli GET policy:AUTO-001
+// Get values
+GET customer:1001
+GET policy:AUTO-001
 ```
 
 ### Numeric Operations
 
-```bash
-# Counters
-rcli SET visitors:count 0
-rcli INCR visitors:count
-rcli INCR visitors:count
-rcli GET visitors:count
+```redis
+// Create counter
+SET visitors:count 0
+INCR visitors:count
+INCR visitors:count
+GET visitors:count
 
-# Increment by amount
-rcli INCRBY visitors:count 10
-rcli DECRBY visitors:count 2
+// Increment by amount
+INCRBY visitors:count 10
+DECRBY visitors:count 2
 ```
 
 ## Part 2: Key Management
 
 ### Check Keys
 
-```bash
-# Check if key exists
-rcli EXISTS customer:1001
-rcli EXISTS customer:9999
+```redis
+// Check if key exists
+EXISTS customer:1001
+EXISTS customer:9999
 
-# Find keys
-rcli KEYS customer:*
-rcli KEYS policy:*
+// Find keys by pattern
+KEYS customer:*
+KEYS policy:*
 
-# Get key type
-rcli TYPE customer:1001
+// Get key type
+TYPE customer:1001
 ```
 
 ### TTL Management
 
-```bash
-# Set key with expiration (session example)
-rcli SETEX session:user123 3600 "session-data"
+```redis
+// Set key with expiration (3600 seconds = 1 hour)
+SETEX session:user123 3600 "session-data"
 
-# Add TTL to existing key
-rcli EXPIRE customer:1001 86400
+// Add TTL to existing key (86400 seconds = 1 day)
+EXPIRE customer:1001 86400
 
-# Check remaining TTL
-rcli TTL session:user123
-rcli TTL customer:1001
+// Check remaining TTL
+TTL session:user123
+TTL customer:1001
 
-# Remove expiration
-rcli PERSIST customer:1001
+// Remove expiration
+PERSIST customer:1001
 ```
 
-## Part 3: Redis Insight
+## Part 3: Redis Insight Browser
 
-### Navigate Redis Insight
+### Explore the Browser Tab
 
-1. Open **Browser** tab
-2. View all keys created in exercises
-3. Click on a key to see its value and TTL
-4. Try editing a value through GUI
-5. Delete a test key
+Now switch from Workbench to Browser to see your data visually:
 
-### Use CLI in Redis Insight
+1. Click **"Browser"** tab in the left sidebar
+2. View all keys you created (customer:*, session:*, etc.)
+3. Click on a key to see:
+   - Its value
+   - TTL countdown (for keys with expiration)
+   - Key type (string, hash, list, etc.)
+4. Try editing a value through the GUI
+5. Delete a test key using the trash icon
 
-1. Go to **CLI** tab in Redis Insight
-2. Execute same commands as terminal
-3. Compare experience with command-line CLI
+### Practice Both Interfaces
+
+- **Workbench:** Best for running commands and learning Redis
+- **Browser:** Best for visualizing data and quick edits
+- Use both throughout the course!
 
 ## 🎓 Exercises
 
@@ -143,18 +154,20 @@ rcli PERSIST customer:1001
 
 ## 📋 Key Commands Reference
 
-```bash
-# Connection
-redis-cli -h hostname -p port PING
+**Run these in Redis Insight Workbench:**
 
-# String operations
+```redis
+// Connection test
+PING
+
+// String operations
 SET key value
 GET key
 INCR key
 INCRBY key increment
 SETEX key seconds value
 
-# Key operations
+// Key operations
 EXISTS key
 KEYS pattern
 TYPE key
@@ -163,18 +176,18 @@ EXPIRE key seconds
 TTL key
 PERSIST key
 
-# Server info
+// Server info
 INFO server
 DBSIZE
 ```
 
 ## ✅ Lab Completion Checklist
 
-- [ ] Connected to remote Redis server
-- [ ] Executed SET/GET commands
+- [ ] Connected Redis Insight to Redis server
+- [ ] Executed SET/GET commands in Workbench
 - [ ] Used INCR for counters
-- [ ] Managed keys with TTL
-- [ ] Used Redis Insight browser and CLI
+- [ ] Managed keys with TTL (SETEX, EXPIRE)
+- [ ] Explored data in Browser tab
 - [ ] Completed all exercises
 
 **Estimated time:** 45 minutes

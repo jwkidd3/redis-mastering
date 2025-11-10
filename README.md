@@ -354,8 +354,8 @@ npm --version
 docker --version
 docker run hello-world
 
-# Test Redis connection
-redis-cli ping
+# Test Redis connection in Redis Insight Workbench
+# Open Redis Insight → Workbench → Run: PING
 
 # Check VS Code (optional)
 code --version
@@ -453,15 +453,13 @@ docker run -d -p 6380:6379 --name redis-alt redis/redis-stack:latest
 $env:REDIS_PORT = "6380"
 ```
 
-**Redis CLI Not Found:**
+**Redis CLI Not Found (Optional):**
+
+Redis Insight includes a built-in CLI in Workbench. If you still want terminal redis-cli:
+
 ```cmd
-# Install redis-cli
 cd scripts
 install-redis-cli.bat
-
-# Or use Redis Insight Workbench (recommended)
-# Or use Docker:
-docker exec redis redis-cli <command>
 ```
 
 ---
@@ -495,32 +493,33 @@ bash scripts/mac/setup-lab.sh      # Mac/Linux
 
 ### Day 1: CLI Labs (No JavaScript)
 
+**All Day 1 labs use Redis Insight Workbench:**
+
+1. Start Redis server (see Quick Start)
+2. Open Redis Insight → Connect to database
+3. Go to Workbench tab
+4. Open each lab's README.md and follow instructions
+
 ```bash
 # Lab 1: Redis Basics
 cd lab1-redis-cli-basics
-bash scripts/mac/setup-lab.sh      # Mac/Linux
-.\scripts\win\setup-lab.ps1         # Windows
-redis-cli
+# Follow README.md in Redis Insight Workbench
 
 # Lab 2: RESP Protocol
 cd lab2-resp-protocol
-redis-cli --raw
+# Follow README.md - use Profiler instead of MONITOR
 
 # Lab 3: String Operations
 cd lab3-data-operations-strings
-bash scripts/mac/load-sample-data.sh      # Mac/Linux
-.\scripts\win\load-sample-data.ps1        # Windows
+# Follow README.md - all commands in Workbench
 
 # Lab 4: Key Management
 cd lab4-key-management-ttl
-bash scripts/mac/load-key-management-data.sh   # Mac/Linux
-.\scripts\win\load-key-management-data.ps1     # Windows
-redis-cli KEYS "policy:*"
+# Follow README.md - practice SCAN and TTL commands
 
 # Lab 5: Advanced CLI
 cd lab5-advanced-cli-monitoring
-bash scripts/mac/monitor-performance.sh   # Mac/Linux
-.\scripts\win\monitor-performance.ps1     # Windows
+# Follow README.md - use Profiler and Memory Analyzer
 ```
 
 ### Day 2: JavaScript Labs
@@ -720,13 +719,12 @@ docker start redis
 ```
 
 **Test Connection:**
-```bash
-# Test connection
-redis-cli ping
 
-# Or use Redis Insight Workbench
-# Run: PING
+Open Redis Insight → Workbench → Run:
+```redis
+PING
 ```
+Expected response: `PONG`
 
 ### Node.js Dependencies
 
