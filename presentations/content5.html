@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hash & List Data Structures for Insurance Data</title>
+    <title>Hash, List, Set & Sorted Set Data Structures for Insurance Data</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/monokai.css">
@@ -164,12 +164,12 @@
         <div class="slides">
             <!-- Title Slide -->
             <section>
-                <h1>Hash & List Data Structures for Insurance Data</h1>
+                <h1>Hash, List, Set & Sorted Set Data Structures</h1>
                 <p style="text-align: center; font-size: 1.2em; color: #666; margin-top: 40px;">
-                    Structured Data Management for Customer Profiles & Policy Systems
+                    Complete Data Structure Toolkit for Insurance Analytics & Policy Management
                 </p>
                 <p style="text-align: center; font-size: 1em; color: #888; margin-top: 60px;">
-                    Day 2 - Session 2 | Duration: 45 minutes
+                    Day 2 - Session 2 | Duration: 60 minutes
                 </p>
             </section>
 
@@ -178,11 +178,12 @@
                 <h2>Learning Objectives</h2>
                 <ul>
                     <li>Master Redis Hashes for customer profile management</li>
-                    <li>Implement policy data storage with nested structures</li>
                     <li>Understand Lists for workflow queues and processing</li>
+                    <li>Use Sets for unique collections and relationship analytics</li>
+                    <li>Leverage Sorted Sets for rankings, leaderboards, and time-series data</li>
+                    <li>Implement set operations (union, intersection, difference) for analytics</li>
                     <li>Design efficient data models for insurance systems</li>
-                    <li>Compare JSON strings vs Redis Hash storage strategies</li>
-                    <li>Prepare for JavaScript integration with structured data</li>
+                    <li>Prepare for Lab 9 analytics scenarios with real-world examples</li>
                 </ul>
             </section>
 
@@ -637,14 +638,525 @@ LLEN claims:processing
                 </div>
             </section>
 
+            <!-- Redis Sets Introduction -->
+            <section>
+                <h2>Redis Sets - Unordered Collections</h2>
+                <div class="two-column">
+                    <div>
+                        <h3>What are Sets?</h3>
+                        <ul>
+                            <li>Unordered collection of unique strings</li>
+                            <li>O(1) add, remove, and membership testing</li>
+                            <li>Support set algebra operations</li>
+                            <li>Perfect for relationships and tags</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Insurance Applications</h3>
+                        <ul>
+                            <li><strong>Customer Tags:</strong> Risk categories, preferences</li>
+                            <li><strong>Active Claims:</strong> Unique claimant tracking</li>
+                            <li><strong>Agent Skills:</strong> Certifications, specializations</li>
+                            <li><strong>Policy Features:</strong> Coverage types, riders</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="highlight-box">
+                    <strong>Key Feature:</strong> Automatic uniqueness guarantee - no duplicate members.
+                    Perfect for tracking distinct entities like active customers, unique claimants, or policy holders.
+                </div>
+            </section>
+
+            <!-- Basic Set Operations -->
+            <section>
+                <h2>Basic Set Operations</h2>
+                <table class="command-table">
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>Description</th>
+                            <th>Time Complexity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>SADD key member [member ...]</code></td>
+                            <td>Add one or more members to set</td>
+                            <td>O(N) where N is number of members</td>
+                        </tr>
+                        <tr>
+                            <td><code>SISMEMBER key member</code></td>
+                            <td>Check if member exists in set</td>
+                            <td>O(1)</td>
+                        </tr>
+                        <tr>
+                            <td><code>SMEMBERS key</code></td>
+                            <td>Get all members of set</td>
+                            <td>O(N)</td>
+                        </tr>
+                        <tr>
+                            <td><code>SCARD key</code></td>
+                            <td>Get number of members (cardinality)</td>
+                            <td>O(1)</td>
+                        </tr>
+                        <tr>
+                            <td><code>SREM key member [member ...]</code></td>
+                            <td>Remove one or more members</td>
+                            <td>O(N)</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="pattern-box">
+                    <strong>Use Case:</strong> Track active claimants, unique policy holders per state,
+                    or customers with specific coverage types.
+                </div>
+            </section>
+
+            <!-- Set Examples -->
+            <section>
+                <h2>Sets for Customer Analytics</h2>
+                <pre><code class="language-bash"># Track customers by risk category
+SADD customers:high_risk "customer:12345" "customer:67890" "customer:11111"
+SADD customers:low_risk "customer:22222" "customer:33333" "customer:44444"
+
+# Check if customer is in high risk category
+SISMEMBER customers:high_risk "customer:12345"  # Returns 1 (true)
+
+# Get all high-risk customers
+SMEMBERS customers:high_risk
+# Returns: ["customer:12345", "customer:67890", "customer:11111"]
+
+# Count high-risk customers
+SCARD customers:high_risk  # Returns: 3
+
+# Customer moved to low risk
+SREM customers:high_risk "customer:12345"
+SADD customers:low_risk "customer:12345"
+
+# Track active claimants (unique only)
+SADD claimants:active "claimant:1001" "claimant:1002" "claimant:1001"
+SCARD claimants:active  # Returns: 2 (duplicate ignored)
+</code></pre>
+            </section>
+
+            <!-- Set Operations -->
+            <section>
+                <h2>Set Operations - Union, Intersection, Difference</h2>
+                <table class="command-table">
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>Description</th>
+                            <th>Use Case</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>SINTER key1 key2</code></td>
+                            <td>Intersection - common members</td>
+                            <td>Find customers with multiple policies</td>
+                        </tr>
+                        <tr>
+                            <td><code>SUNION key1 key2</code></td>
+                            <td>Union - all unique members</td>
+                            <td>Combine customer segments</td>
+                        </tr>
+                        <tr>
+                            <td><code>SDIFF key1 key2</code></td>
+                            <td>Difference - members in key1 not in key2</td>
+                            <td>Find customers without certain coverage</td>
+                        </tr>
+                        <tr>
+                            <td><code>SINTERSTORE dest key1 key2</code></td>
+                            <td>Store intersection result</td>
+                            <td>Create targeted marketing lists</td>
+                        </tr>
+                        <tr>
+                            <td><code>SUNIONSTORE dest key1 key2</code></td>
+                            <td>Store union result</td>
+                            <td>Combine segments for campaigns</td>
+                        </tr>
+                        <tr>
+                            <td><code>SDIFFSTORE dest key1 key2</code></td>
+                            <td>Store difference result</td>
+                            <td>Identify coverage gaps</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Set Operations Examples -->
+            <section>
+                <h2>Insurance Analytics with Set Operations</h2>
+                <pre><code class="language-bash"># Agent skills and certifications
+SADD agent:john:skills "auto" "home" "life" "property_casualty"
+SADD agent:jane:skills "auto" "life" "commercial" "umbrella"
+
+# Common skills (intersection)
+SINTER agent:john:skills agent:jane:skills
+# Returns: ["auto", "life"]
+
+# All unique skills (union)
+SUNION agent:john:skills agent:jane:skills
+# Returns: ["auto", "home", "life", "property_casualty", "commercial", "umbrella"]
+
+# John's unique skills (difference)
+SDIFF agent:john:skills agent:jane:skills
+# Returns: ["home", "property_casualty"]
+
+# Find customers with both auto AND home insurance
+SADD policy:auto:customers "cust:001" "cust:002" "cust:003"
+SADD policy:home:customers "cust:002" "cust:003" "cust:004"
+
+# Multi-policy customers (cross-sell opportunity)
+SINTER policy:auto:customers policy:home:customers
+# Returns: ["cust:002", "cust:003"]
+
+# Customers with auto but NOT home (upsell target)
+SDIFF policy:auto:customers policy:home:customers
+# Returns: ["cust:001"]
+</code></pre>
+            </section>
+
+            <!-- Sorted Sets Introduction -->
+            <section>
+                <h2>Redis Sorted Sets - Ranked Collections</h2>
+                <div class="two-column">
+                    <div>
+                        <h3>What are Sorted Sets?</h3>
+                        <ul>
+                            <li>Members associated with scores (floating point)</li>
+                            <li>Automatically sorted by score</li>
+                            <li>Unique members, scores can duplicate</li>
+                            <li>O(log N) insert and lookup</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Insurance Applications</h3>
+                        <ul>
+                            <li><strong>Claim Rankings:</strong> By amount or urgency</li>
+                            <li><strong>Agent Performance:</strong> Sales leaderboards</li>
+                            <li><strong>Customer Scores:</strong> Risk ratings, loyalty points</li>
+                            <li><strong>Time-Series:</strong> Events by timestamp</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="highlight-box">
+                    <strong>Key Feature:</strong> Maintain automatic ordering by score while ensuring member uniqueness.
+                    Perfect for leaderboards, priority queues, and time-based data.
+                </div>
+            </section>
+
+            <!-- Basic Sorted Set Operations -->
+            <section>
+                <h2>Basic Sorted Set Operations</h2>
+                <table class="command-table small-text">
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>Description</th>
+                            <th>Time Complexity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>ZADD key score member</code></td>
+                            <td>Add member with score</td>
+                            <td>O(log N)</td>
+                        </tr>
+                        <tr>
+                            <td><code>ZSCORE key member</code></td>
+                            <td>Get member's score</td>
+                            <td>O(1)</td>
+                        </tr>
+                        <tr>
+                            <td><code>ZINCRBY key increment member</code></td>
+                            <td>Increment member's score</td>
+                            <td>O(log N)</td>
+                        </tr>
+                        <tr>
+                            <td><code>ZCARD key</code></td>
+                            <td>Get number of members</td>
+                            <td>O(1)</td>
+                        </tr>
+                        <tr>
+                            <td><code>ZREM key member</code></td>
+                            <td>Remove member</td>
+                            <td>O(log N)</td>
+                        </tr>
+                        <tr>
+                            <td><code>ZRANK key member</code></td>
+                            <td>Get member rank (0-based, ascending)</td>
+                            <td>O(log N)</td>
+                        </tr>
+                        <tr>
+                            <td><code>ZREVRANK key member</code></td>
+                            <td>Get member rank (descending)</td>
+                            <td>O(log N)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Sorted Set Range Operations -->
+            <section>
+                <h2>Sorted Set Range Queries</h2>
+                <table class="command-table small-text">
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>Description</th>
+                            <th>Use Case</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>ZRANGE key start stop [WITHSCORES]</code></td>
+                            <td>Get range by index (ascending)</td>
+                            <td>Top N performers</td>
+                        </tr>
+                        <tr>
+                            <td><code>ZREVRANGE key start stop [WITHSCORES]</code></td>
+                            <td>Get range by index (descending)</td>
+                            <td>Highest claims first</td>
+                        </tr>
+                        <tr>
+                            <td><code>ZRANGEBYSCORE key min max</code></td>
+                            <td>Get members by score range</td>
+                            <td>Claims $10K-$50K</td>
+                        </tr>
+                        <tr>
+                            <td><code>ZREVRANGEBYSCORE key max min</code></td>
+                            <td>Get by score range (descending)</td>
+                            <td>High-value policies</td>
+                        </tr>
+                        <tr>
+                            <td><code>ZCOUNT key min max</code></td>
+                            <td>Count members in score range</td>
+                            <td>Claims over threshold</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="pattern-box">
+                    <strong>Pro Tip:</strong> Use WITHSCORES to get both members and their scores in range queries.
+                    Essential for displaying claim amounts, scores, or timestamps alongside identifiers.
+                </div>
+            </section>
+
+            <!-- Sorted Set Examples -->
+            <section>
+                <h2>Claims Ranking by Amount</h2>
+                <pre><code class="language-bash"># Add claims with dollar amounts as scores
+ZADD claims:by:amount 2500 "CLAIM-2024-001"
+ZADD claims:by:amount 15000 "CLAIM-2024-002"
+ZADD claims:by:amount 8500 "CLAIM-2024-003"
+ZADD claims:by:amount 125000 "CLAIM-2024-004"
+ZADD claims:by:amount 3200 "CLAIM-2024-005"
+
+# Get highest value claims (top 3)
+ZREVRANGE claims:by:amount 0 2 WITHSCORES
+# Returns: ["CLAIM-2024-004", "125000", "CLAIM-2024-002", "15000", "CLAIM-2024-003", "8500"]
+
+# Get lowest value claims
+ZRANGE claims:by:amount 0 2 WITHSCORES
+# Returns: ["CLAIM-2024-001", "2500", "CLAIM-2024-005", "3200", "CLAIM-2024-003", "8500"]
+
+# Get specific claim amount
+ZSCORE claims:by:amount "CLAIM-2024-004"  # Returns: 125000
+
+# Get claim rank (0-based, lowest to highest)
+ZRANK claims:by:amount "CLAIM-2024-004"  # Returns: 4 (highest)
+ZREVRANK claims:by:amount "CLAIM-2024-004"  # Returns: 0 (1st place)
+
+# Claims between $5,000 and $20,000
+ZRANGEBYSCORE claims:by:amount 5000 20000 WITHSCORES
+# Returns: ["CLAIM-2024-003", "8500", "CLAIM-2024-002", "15000"]
+
+# Count high-value claims (over $100K)
+ZCOUNT claims:by:amount 100000 +inf  # Returns: 1
+
+# Increment claim amount (revised estimate)
+ZINCRBY claims:by:amount 2500 "CLAIM-2024-001"  # Now 5000
+</code></pre>
+            </section>
+
+            <!-- Leaderboard Example -->
+            <section>
+                <h2>Agent Performance Leaderboard</h2>
+                <pre><code class="language-bash"># Track agent sales for the quarter
+ZADD agent:sales:q1 125000 "agent:john"
+ZADD agent:sales:q1 98000 "agent:sarah"
+ZADD agent:sales:q1 156000 "agent:mike"
+ZADD agent:sales:q1 87000 "agent:lisa"
+ZADD agent:sales:q1 142000 "agent:tom"
+
+# Top 3 agents (highest sales)
+ZREVRANGE agent:sales:q1 0 2 WITHSCORES
+# Returns: ["agent:mike", "156000", "agent:tom", "142000", "agent:john", "125000"]
+
+# Get agent rank
+ZREVRANK agent:sales:q1 "agent:john"  # Returns: 2 (3rd place)
+
+# Agents with sales over $100K
+ZRANGEBYSCORE agent:sales:q1 100000 +inf WITHSCORES
+# Returns: ["agent:john", "125000", "agent:tom", "142000", "agent:mike", "156000"]
+
+# Total agents in leaderboard
+ZCARD agent:sales:q1  # Returns: 5
+
+# Award bonus (increment score)
+ZINCRBY agent:sales:q1 10000 "agent:sarah"  # Now 108000
+
+# Remove underperforming agent
+ZREM agent:sales:q1 "agent:lisa"
+</code></pre>
+            </section>
+
+            <!-- State-Level Analytics -->
+            <section>
+                <h2>Geographic Analytics with Sorted Sets</h2>
+                <pre><code class="language-bash"># Track total claim amounts by state
+ZADD claims:by:state 1250000 "CA"
+ZADD claims:by:state 890000 "TX"
+ZADD claims:by:state 2100000 "NY"
+ZADD claims:by:state 650000 "FL"
+ZADD claims:by:state 420000 "AZ"
+
+# Top 5 states by claim volume
+ZREVRANGE claims:by:state 0 4 WITHSCORES
+# Returns: ["NY", "2100000", "CA", "1250000", "TX", "890000", "FL", "650000", "AZ", "420000"]
+
+# States with claims over $1M
+ZRANGEBYSCORE claims:by:state 1000000 +inf WITHSCORES
+# Returns: ["CA", "1250000", "NY", "2100000"]
+
+# Get specific state total
+ZSCORE claims:by:state "TX"  # Returns: 890000
+
+# Update state total (new claim filed)
+ZINCRBY claims:by:state 15000 "FL"  # Now 665000
+
+# State rank (risk assessment)
+ZREVRANK claims:by:state "CA"  # Returns: 1 (2nd highest)
+
+# Count high-risk states (over $500K)
+ZCOUNT claims:by:state 500000 +inf  # Returns: 4
+</code></pre>
+            </section>
+
+            <!-- Time-Series with Sorted Sets -->
+            <section>
+                <h2>Time-Series Data with Sorted Sets</h2>
+                <div class="two-column">
+                    <div>
+                        <h3>Using Timestamps as Scores</h3>
+                        <ul>
+                            <li>Unix timestamps for precise ordering</li>
+                            <li>Range queries by time period</li>
+                            <li>Automatic chronological sorting</li>
+                            <li>TTL cleanup with ZREMRANGEBYSCORE</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <pre><code class="language-bash"># Track claim submissions by time
+# Score = Unix timestamp
+ZADD claims:timeline 1710432000 "CLAIM-001"
+ZADD claims:timeline 1710435600 "CLAIM-002"
+ZADD claims:timeline 1710439200 "CLAIM-003"
+
+# Get claims from last hour
+# (current_time - 3600 to current_time)
+ZRANGEBYSCORE claims:timeline \
+  1710435600 1710439200
+
+# Remove old claims (older than 30 days)
+ZREMRANGEBYSCORE claims:timeline 0 \
+  $(($(date +%s) - 2592000))
+</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sets vs Sorted Sets -->
+            <section>
+                <h2>Sets vs Sorted Sets - When to Use Each</h2>
+                <div class="two-column">
+                    <div class="comparison-box">
+                        <h3>Use Sets When:</h3>
+                        <ul>
+                            <li>Order doesn't matter</li>
+                            <li>Need set operations (union, intersection, diff)</li>
+                            <li>Binary membership testing (in/out)</li>
+                            <li>Tagging and categorization</li>
+                            <li>Relationship tracking</li>
+                        </ul>
+                        <p><strong>Example:</strong> Customer tags, active claimants, policy features</p>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>Use Sorted Sets When:</h3>
+                        <ul>
+                            <li>Need ranking or ordering</li>
+                            <li>Score-based queries (top N, ranges)</li>
+                            <li>Leaderboards and competitions</li>
+                            <li>Time-series data</li>
+                            <li>Priority queues</li>
+                        </ul>
+                        <p><strong>Example:</strong> Claim rankings, agent leaderboards, risk scores</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Real-World Combined Example -->
+            <section>
+                <h2>Complete Analytics Scenario - Lab 9 Preview</h2>
+                <pre><code class="language-bash"># Combine Sets and Sorted Sets for powerful analytics
+
+# Track unique active claimants per state (Sets)
+SADD claimants:CA "claimant:1001" "claimant:1002" "claimant:1003"
+SADD claimants:TX "claimant:2001" "claimant:2002"
+SADD claimants:NY "claimant:3001" "claimant:3002" "claimant:3003" "claimant:3004"
+
+# Count active claimants by state
+SCARD claimants:CA  # Returns: 3
+SCARD claimants:TX  # Returns: 2
+SCARD claimants:NY  # Returns: 4
+
+# Rank states by claim volume (Sorted Sets)
+ZADD state:rankings 1250000 "CA"
+ZADD state:rankings 890000 "TX"
+ZADD state:rankings 2100000 "NY"
+
+# Find claimants in multiple states (intersection)
+SADD claimants:relocations "claimant:1001" "claimant:2001"
+SINTER claimants:CA claimants:relocations  # Common claimants
+
+# Top 3 states by volume
+ZREVRANGE state:rankings 0 2 WITHSCORES
+
+# This pattern prepares you for Lab 9 where you'll build
+# comprehensive analytics dashboards using these data structures!
+</code></pre>
+            </section>
+
             <!-- Lab 7 Announcement -->
             <section>
                 <div class="callout">
                     <h2>🚀 Upcoming Lab</h2>
                     <p><strong>Lab 7: Customer Profiles & Policy Management</strong></p>
                     <p>Duration: 45 minutes</p>
-                    <p>Build a complete customer profile system with policy management using Redis Hashes, 
+                    <p>Build a complete customer profile system with policy management using Redis Hashes,
                     implement claims processing queues with Lists, and integrate everything with JavaScript</p>
+                </div>
+            </section>
+
+            <!-- Lab 9 Announcement -->
+            <section>
+                <div class="callout">
+                    <h2>📊 Coming Soon: Lab 9</h2>
+                    <p><strong>Lab 9: Sets & Analytics</strong></p>
+                    <p>Duration: 60 minutes</p>
+                    <p>Apply everything you've learned about Sets and Sorted Sets to build real-time insurance analytics:
+                    customer segmentation, agent leaderboards, claim rankings, and geographic analysis</p>
                 </div>
             </section>
 
@@ -653,15 +1165,17 @@ LLEN claims:processing
                 <h2>Key Takeaways</h2>
                 <ul>
                     <li><strong>Hashes:</strong> Perfect for customer profiles and policy records with field-level updates</li>
-                    <li><strong>Memory Efficient:</strong> Optimized storage for small to medium-sized objects</li>
-                    <li><strong>Lists:</strong> Ideal for workflow queues, processing pipelines, and audit trails</li>
-                    <li><strong>Blocking Operations:</strong> Enable real-time processing with BLPOP/BRPOP</li>
-                    <li><strong>Data Modeling:</strong> Choose structure based on access patterns and update frequency</li>
-                    <li><strong>JavaScript Ready:</strong> Both structures integrate seamlessly with Node.js applications</li>
+                    <li><strong>Lists:</strong> Ideal for workflow queues, processing pipelines, and audit trails with BLPOP/BRPOP</li>
+                    <li><strong>Sets:</strong> Track unique members with O(1) operations and powerful set algebra (union, intersection, difference)</li>
+                    <li><strong>Sorted Sets:</strong> Rankings, leaderboards, and time-series with automatic score-based ordering</li>
+                    <li><strong>Set Operations:</strong> Use SINTER, SUNION, SDIFF for powerful analytics and customer segmentation</li>
+                    <li><strong>Range Queries:</strong> ZRANGE, ZREVRANGE, ZRANGEBYSCORE for flexible sorted set queries</li>
+                    <li><strong>Data Modeling:</strong> Choose structure based on access patterns, ordering needs, and uniqueness requirements</li>
+                    <li><strong>Production Ready:</strong> All structures integrate seamlessly with JavaScript for real-world applications</li>
                 </ul>
                 <div style="text-align: center; margin-top: 40px;">
                     <p style="font-size: 1.1em; color: #e74c3c;">
-                        <strong>Ready to build real insurance applications with structured data!</strong>
+                        <strong>Complete toolkit for building production-grade insurance analytics!</strong>
                     </p>
                 </div>
             </section>

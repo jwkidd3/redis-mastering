@@ -296,6 +296,71 @@
                 </div>
             </section>
 
+            <!-- SETEX and PSETEX -->
+            <section>
+                <div class="session-header">
+                    <h2>Atomic SET with Expiration</h2>
+                </div>
+                <ul>
+                    <li><span class="highlight">SETEX</span> - Set value with expiration in seconds (atomic)</li>
+                    <li><span class="highlight">PSETEX</span> - Set value with expiration in milliseconds (atomic)</li>
+                    <li><span class="highlight">Advantage:</span> Single atomic operation vs SET + EXPIRE</li>
+                    <li><span class="highlight">Use cases:</span> Sessions, temporary tokens, rate limiting</li>
+                </ul>
+                <div class="code-block">
+                    # SETEX - Set with seconds TTL (atomic operation)
+                    SETEX session:user:123 3600 "user-session-data"
+                    # Equivalent to: SET + EXPIRE but atomic
+
+                    # PSETEX - Set with milliseconds TTL (high precision)
+                    PSETEX ratelimit:api:user456 100 "1"
+                    # Perfect for rate limiting with ms precision
+
+                    # Why atomic matters:
+                    # Wrong way (two commands, not atomic):
+                    SET token:temp "TOKEN-VALUE"
+                    EXPIRE token:temp 60
+                    # If crash occurs between commands, key has no expiration!
+
+                    # Right way (atomic):
+                    SETEX token:temp 60 "TOKEN-VALUE"
+                    # Guaranteed to have expiration
+                </div>
+                <div class="callout">
+                    <p><strong>Best Practice:</strong> Always use SETEX/PSETEX instead of SET + EXPIRE for temporary data. Atomicity prevents keys without expiration.</p>
+                </div>
+            </section>
+
+            <!-- SETEX vs SET EX -->
+            <section>
+                <div class="session-header">
+                    <h2>SETEX vs SET with EX Option</h2>
+                </div>
+                <div class="code-block">
+                    # These are equivalent (both atomic):
+                    SETEX session:123 3600 "data"
+                    SET session:123 "data" EX 3600
+
+                    # PSETEX for milliseconds:
+                    PSETEX session:123 3600000 "data"
+                    SET session:123 "data" PX 3600000
+
+                    # Choose based on preference:
+                    # SETEX/PSETEX: More explicit about expiration
+                    # SET EX/PX: Newer syntax, can combine with NX/XX
+                </div>
+                <ul>
+                    <li><span class="highlight">SETEX/PSETEX:</span> Traditional, explicit expiration commands</li>
+                    <li><span class="highlight">SET EX/PX:</span> Modern, can combine with NX (set if not exists)</li>
+                    <li><span class="highlight">Both atomic:</span> Either approach is safe</li>
+                </ul>
+                <div class="code-block">
+                    # Combine SET with EX and NX (only if key doesn't exist):
+                    SET lock:resource "worker-1" EX 30 NX
+                    # SETEX cannot be combined with NX
+                </div>
+            </section>
+
             <!-- Memory Optimization -->
             <section>
                 <div class="session-header">
@@ -401,13 +466,101 @@
                 </div>
             </section>
 
+            <!-- Introduction to Sets for Monitoring -->
+            <section>
+                <div class="session-header">
+                    <h2>Introduction to Sets for Tracking</h2>
+                </div>
+                <ul>
+                    <li><span class="highlight">Sets</span> - Collections of unique strings</li>
+                    <li><span class="highlight">SADD</span> - Add members to a set</li>
+                    <li><span class="highlight">Use case:</span> Track unique items (active sessions, processed IDs, etc.)</li>
+                    <li><span class="highlight">Coming in Day 2:</span> Full coverage of sets and sorted sets</li>
+                </ul>
+                <div class="code-block">
+                    # Track unique processed claim IDs
+                    SADD processed:claims "CLAIM-001"
+                    SADD processed:claims "CLAIM-002"
+                    SADD processed:claims "CLAIM-001"  # Duplicate ignored
+
+                    # Track active sessions
+                    SADD sessions:active "session:123" "session:456"
+
+                    # Monitor script will use SADD to track metrics
+                </div>
+                <div class="highlight">
+                    <strong>Lab 5 Note:</strong> You'll use SADD in monitoring scripts to track unique events. We'll cover sets in detail in Day 2!
+                </div>
+            </section>
+
+            <!-- Persistence Monitoring -->
+            <section>
+                <div class="session-header">
+                    <h2>Persistence & Backup Monitoring</h2>
+                </div>
+                <ul>
+                    <li><span class="highlight">LASTSAVE</span> - Get Unix timestamp of last successful RDB save</li>
+                    <li><span class="highlight">SAVE</span> - Synchronous save (blocks server)</li>
+                    <li><span class="highlight">BGSAVE</span> - Background save (non-blocking)</li>
+                    <li><span class="highlight">Use case:</span> Monitor backup freshness in production</li>
+                </ul>
+                <div class="code-block">
+                    # Check when last backup occurred
+                    LASTSAVE
+                    # Returns: 1699564800 (Unix timestamp)
+
+                    # Use in monitoring scripts:
+                    # current_time=$(date +%s)
+                    # last_save=$(redis-cli LASTSAVE)
+                    # age=$((current_time - last_save))
+                    # if [ $age -gt 3600 ]; then
+                    #     echo "WARNING: Last backup is over 1 hour old!"
+                    # fi
+                </div>
+                <div class="callout">
+                    <p><strong>Production Monitoring:</strong> Use LASTSAVE to verify backup automation is working. Critical for data protection!</p>
+                </div>
+            </section>
+
+            <!-- Production Persistence Best Practices -->
+            <section>
+                <div class="session-header">
+                    <h2>Persistence Best Practices</h2>
+                </div>
+                <ul>
+                    <li><span class="highlight">LASTSAVE monitoring:</span> Alert if backup is too old</li>
+                    <li><span class="highlight">BGSAVE frequency:</span> Balance durability vs performance</li>
+                    <li><span class="highlight">AOF + RDB:</span> Use both for maximum durability</li>
+                    <li><span class="highlight">Backup validation:</span> Regularly test restore process</li>
+                </ul>
+                <div class="code-block">
+                    # Check persistence status
+                    INFO persistence
+                    # Shows: rdb_last_save_time, rdb_changes_since_last_save, etc.
+
+                    # Get last save timestamp
+                    LASTSAVE
+                    # Returns Unix timestamp
+
+                    # Trigger manual backup (non-blocking)
+                    BGSAVE
+
+                    # Monitor backup progress
+                    INFO persistence | grep rdb_bgsave
+                    # Shows: rdb_bgsave_in_progress (0 or 1)
+                </div>
+                <div class="highlight">
+                    <strong>Lab 5 Preview:</strong> You'll use LASTSAVE in monitoring scripts to track backup freshness and create automated alerts.
+                </div>
+            </section>
+
             <!-- Lab Introduction -->
             <section>
                 <div class="lab-callout">
                     <h2>Labs 4-5 Coming Next</h2>
                     <p>Data Management & Monitoring</p>
                     <p><strong>Duration:</strong> 90 minutes total</p>
-                    <p>Hands-on practice with string operations and key management</p>
+                    <p>Hands-on practice with string operations, key management, SETEX/PSETEX, and persistence monitoring with LASTSAVE</p>
                 </div>
             </section>
 

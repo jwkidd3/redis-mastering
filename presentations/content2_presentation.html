@@ -492,16 +492,135 @@
                 </div>
             </section>
 
+            <!-- Introduction to Hashes -->
+            <section>
+                <h3>Introduction to Redis Hashes</h3>
+
+                <h4>What are Hashes?</h4>
+                <p>Hashes are field-value pairs within a single key - perfect for representing objects like customer profiles or policy records.</p>
+
+                <h4>Basic Hash Commands:</h4>
+                <div class="command-box">
+                    # Set single field<br>
+                    HSET user:1000 name "John Doe"<br>
+                    <br>
+                    # Set multiple fields at once<br>
+                    HMSET user:1000 email "john@example.com" age "30" city "Boston"<br>
+                    <br>
+                    # Get single field value<br>
+                    HGET user:1000 name<br>
+                    # Returns: "John Doe"<br>
+                    <br>
+                    # Get multiple field values<br>
+                    HMGET user:1000 name email<br>
+                    # Returns: ["John Doe", "john@example.com"]<br>
+                    <br>
+                    # Get all fields and values<br>
+                    HGETALL user:1000<br>
+                    # Returns: name, John Doe, email, john@example.com, age, 30, city, Boston
+                </div>
+
+                <div class="highlight">
+                    <strong>Why Hashes?</strong> More memory efficient than individual string keys, allows partial updates without loading entire object.
+                </div>
+            </section>
+
+            <!-- Hash RESP Protocol -->
+            <section>
+                <h3>Hash Operations in RESP Protocol</h3>
+
+                <h4>HSET Command:</h4>
+                <div class="protocol-example">
+                    <strong>Client sends:</strong><br>
+                    <code>*4\r\n$4\r\nHSET\r\n$8\r\nuser:100\r\n$4\r\nname\r\n$8\r\nJohn Doe\r\n</code>
+                    <br><br>
+                    <strong>Server responds:</strong><br>
+                    <code>:1\r\n</code> (1 = field was created, 0 = field updated)
+                </div>
+
+                <h4>HGETALL Command:</h4>
+                <div class="protocol-example">
+                    <strong>Client sends:</strong><br>
+                    <code>*2\r\n$7\r\nHGETALL\r\n$8\r\nuser:100\r\n</code>
+                    <br><br>
+                    <strong>Server responds (Array):</strong><br>
+                    <code>*4\r\n$4\r\nname\r\n$8\r\nJohn Doe\r\n$5\r\nemail\r\n$17\r\njohn@example.com\r\n</code>
+                </div>
+
+                <div class="highlight">
+                    <strong>Lab 2 Note:</strong> You'll observe these RESP messages for hash commands to understand how Redis communicates structured data.
+                </div>
+            </section>
+
+            <!-- Introduction to Sorted Sets -->
+            <section>
+                <h3>Introduction to Sorted Sets</h3>
+
+                <h4>What are Sorted Sets?</h4>
+                <p>Sorted Sets store unique members with associated scores, automatically maintaining order by score. Perfect for rankings, leaderboards, and time-series data.</p>
+
+                <h4>Basic Sorted Set Commands:</h4>
+                <div class="command-box">
+                    # Add members with scores<br>
+                    ZADD leaderboard 100 "player1"<br>
+                    ZADD leaderboard 250 "player2" 175 "player3"<br>
+                    <br>
+                    # Get range by rank (index-based)<br>
+                    ZRANGE leaderboard 0 -1<br>
+                    # Returns: player1, player3, player2 (sorted by score)<br>
+                    <br>
+                    # Get range with scores<br>
+                    ZRANGE leaderboard 0 -1 WITHSCORES<br>
+                    # Returns: player1, 100, player3, 175, player2, 250<br>
+                    <br>
+                    # Get top players (highest scores first)<br>
+                    ZREVRANGE leaderboard 0 2<br>
+                    # Returns top 3: player2, player3, player1
+                </div>
+
+                <div class="highlight">
+                    <strong>Use Cases:</strong> Insurance claim rankings by amount, agent performance leaderboards, customer risk scores.
+                </div>
+            </section>
+
+            <!-- Sorted Set RESP Protocol -->
+            <section>
+                <h3>Sorted Set Operations in RESP Protocol</h3>
+
+                <h4>ZADD Command:</h4>
+                <div class="protocol-example">
+                    <strong>Client sends:</strong><br>
+                    <code>*4\r\n$4\r\nZADD\r\n$11\r\nleaderboard\r\n$3\r\n100\r\n$7\r\nplayer1\r\n</code>
+                    <br><br>
+                    <strong>Server responds:</strong><br>
+                    <code>:1\r\n</code> (number of new members added)
+                </div>
+
+                <h4>ZRANGE with WITHSCORES:</h4>
+                <div class="protocol-example">
+                    <strong>Client sends:</strong><br>
+                    <code>*5\r\n$6\r\nZRANGE\r\n$11\r\nleaderboard\r\n$1\r\n0\r\n$2\r\n-1\r\n$10\r\nWITHSCORES\r\n</code>
+                    <br><br>
+                    <strong>Server responds (Array alternating members and scores):</strong><br>
+                    <code>*6\r\n$7\r\nplayer1\r\n$3\r\n100\r\n$7\r\nplayer3\r\n$3\r\n175\r\n$7\r\nplayer2\r\n$3\r\n250\r\n</code>
+                </div>
+
+                <div class="highlight">
+                    <strong>Lab 2 Note:</strong> Observing sorted set RESP messages shows how Redis encodes scores and maintains ordering in the protocol.
+                </div>
+            </section>
+
             <!-- Lab Transition -->
             <section class="lab-callout">
                 <h3>🧪 Hands-On Labs Coming Up</h3>
                 <h4>Labs 2-3: RESP Protocol & Data Operations</h4>
                 <p><strong>Duration:</strong> 90 minutes total</p>
-                <p><strong>Focus:</strong> Hands-on experience with RESP protocol observation and data operations using both CLI and Redis Insight</p>
+                <p><strong>Focus:</strong> Hands-on experience with RESP protocol observation for multiple data types including hashes and sorted sets</p>
                 <ul style="text-align: left; max-width: 600px; margin: 0 auto;">
-                    <li><strong>Lab 2:</strong> RESP Protocol Analysis (45 minutes)</li>
-                    <li><strong>Lab 3:</strong> Data Operations with Strings (45 minutes)</li>
+                    <li><strong>Lab 2:</strong> RESP Protocol Analysis (strings, hashes, sorted sets) - 45 minutes</li>
+                    <li><strong>Lab 3:</strong> Data Operations with Strings - 45 minutes</li>
                 </ul>
+                <p><strong>Note:</strong> We'll dive deeper into hashes and sorted sets in Day 2, but now you have foundational knowledge for Lab 2!</p>
             </section>
         </div>
     </div>

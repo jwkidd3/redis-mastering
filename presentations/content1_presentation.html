@@ -424,15 +424,47 @@ redis-cli -h [remote-host] -p 6379
                 </div>
             </section>
 
+            <!-- SETEX Introduction -->
+            <section>
+                <div class="session-header">
+                    <h2>Setting Values with Automatic Expiration</h2>
+                </div>
+                <div style="font-size: 0.9em;">
+                    <h4>SETEX Command</h4>
+                    <p><strong>SETEX</strong> combines SET and EXPIRE into a single atomic operation.</p>
+                    <div class="code-block" style="font-size: 0.8em;">
+# SETEX - Set with expiration (seconds)
+SETEX session:12345 3600 "user-session-data"
+# Atomically sets key with 1-hour TTL
+
+# Equivalent to (but safer than):
+SET session:12345 "user-session-data"
+EXPIRE session:12345 3600
+# Two commands = not atomic!
+                    </div>
+
+                    <h4>Why Atomic Matters</h4>
+                    <ul style="font-size: 0.95em;">
+                        <li><strong>Safety:</strong> Prevents keys without expiration if crash occurs</li>
+                        <li><strong>Efficiency:</strong> Single network round-trip vs two</li>
+                        <li><strong>Common use:</strong> Sessions, temporary tokens, rate limiting</li>
+                    </ul>
+
+                    <div class="highlight-box">
+                        <p><strong>Lab 1 Note:</strong> You'll use SETEX when testing basic CLI operations to see how temporary data works in Redis.</p>
+                    </div>
+                </div>
+            </section>
+
             <!-- Lab Introduction -->
             <section>
                 <div class="lab-callout">
                     <h2>🧪 Lab 1: Redis Environment & CLI Basics</h2>
                     <p><strong>Duration: 45 minutes</strong></p>
-                    <p>Next, we'll set up our Redis environment and explore basic CLI operations with real data.</p>
+                    <p>Next, we'll set up our Redis environment and explore basic CLI operations including SETEX with real data.</p>
                     <ul style="font-size: 0.9em; margin-top: 15px;">
                         <li>Connect to Redis using CLI and Redis Insight</li>
-                        <li>Execute basic commands</li>
+                        <li>Execute basic commands (GET, SET, SETEX, EXPIRE, TTL)</li>
                         <li>Explore the Redis environment</li>
                         <li>Test basic operations with sample data</li>
                     </ul>

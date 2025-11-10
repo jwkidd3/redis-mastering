@@ -532,6 +532,50 @@ appendfsync everysec
                 </div>
             </section>
 
+            <!-- Quick Review: Production Commands -->
+            <section>
+                <div class="session-header">
+                    <h2>Essential Commands Review</h2>
+                </div>
+
+                <h3>Commands for Production Use Cases</h3>
+                <p style="font-size: 0.9em; margin-bottom: 20px;">Quick refresher on key commands you learned in Day 2 that we'll use in production scenarios:</p>
+
+                <div class="two-column">
+                    <div>
+                        <h4>Session Management (Lab 11)</h4>
+                        <div class="code-block" style="font-size: 0.7em;">
+# Track active sessions (Set operations)
+SADD sessions:active "session:123"
+SMEMBERS sessions:active
+# Returns all active session IDs
+
+# Covered in Day 2, Content 5
+                        </div>
+                        <div class="bullet-point"><strong>SMEMBERS</strong> - Get all members of a set</div>
+                        <div class="bullet-point">Use case: List all active sessions</div>
+                    </div>
+
+                    <div>
+                        <h4>Rate Limiting (Lab 12)</h4>
+                        <div class="code-block" style="font-size: 0.7em;">
+# Track API requests with timestamps
+ZADD ratelimit:user:123 [timestamp] "req_id"
+ZRANGE ratelimit:user:123 0 -1
+# Returns all request IDs in order
+
+# Covered in Day 2, Content 5
+                        </div>
+                        <div class="bullet-point"><strong>ZRANGE</strong> - Get sorted set range by index</div>
+                        <div class="bullet-point">Use case: Query recent API requests</div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <strong>Reminder:</strong> These commands were introduced in Day 2. We're now applying them to real-world production scenarios in Labs 11-14.
+                </div>
+            </section>
+
             <!-- Lab Callout -->
             <section data-background="#e8f5e8">
                 <div class="lab-callout">
@@ -541,7 +585,7 @@ appendfsync everysec
                     <p><strong>Duration: 45 minutes</strong></p>
                     <br>
                     <div style="font-size: 0.9em;">
-                        <p>• Implement secure session management for customer portals</p>
+                        <p>• Implement secure session management using SMEMBERS and Sets</p>
                         <p>• Configure user authentication and role-based access control</p>
                         <p>• Set up session monitoring and security alerting</p>
                         <p>• Practice production security patterns with Redis Insight</p>
