@@ -11,6 +11,7 @@ A comprehensive 3-day intensive Redis training course focused on insurance indus
 
 - [Quick Start](#quick-start)
 - [Course Structure](#course-structure)
+- [Detailed Course Flow](#detailed-course-flow)
 - [Prerequisites & Installation](#prerequisites--installation)
 - [Platform Support](#platform-support)
 - [Running Labs](#running-labs)
@@ -26,12 +27,28 @@ A comprehensive 3-day intensive Redis training course focused on insurance indus
 
 ### 1. Start Redis Server
 
+**Mac/Linux:**
 ```bash
 # Start Redis with Docker
-docker run -d -p 6379:6379 --name redis-course redis:latest
+docker run -d -p 6379:6379 --name redis redis/redis-stack:latest
 
 # Verify Redis is running
 redis-cli ping  # Should return PONG
+```
+
+**Windows:**
+```cmd
+# Navigate to scripts directory
+cd scripts
+
+# Start Redis using batch script
+start-redis.bat
+
+# Verify Redis is running
+redis-cli ping  # Should return PONG
+
+# When done, stop Redis
+stop-redis.bat
 ```
 
 ### 2. Install Dependencies
@@ -99,6 +116,156 @@ redis-cli
 
 ---
 
+## Detailed Course Flow
+
+This section shows the exact order of presentations and labs for each day.
+
+### Day 1: Redis CLI & Core Operations (7 hours)
+
+**Morning Session (3.5 hours)**
+
+1. **Presentation 1: Introduction to Redis** (50 min)
+   - File: `presentations/content1_presentation.html`
+   - Topics: Redis overview, architecture, use cases, installation, CLI basics, SETEX
+
+2. **Presentation 2: RESP Protocol & CLI Operations** (45 min)
+   - File: `presentations/content2_presentation.html`
+   - Topics: RESP protocol, CLI debugging, hash basics (HSET/HGET), sorted set basics (ZADD/ZRANGE)
+
+3. **Lab 1: Redis Environment & CLI Basics** (45 min)
+   - Directory: `lab1-redis-cli-basics/`
+   - Activities: Docker setup, CLI navigation, Redis Insight, basic commands
+
+4. **Lab 2: RESP Protocol Deep Dive** (45 min)
+   - Directory: `lab2-resp-protocol/`
+   - Activities: Protocol monitoring, raw format analysis, debugging
+
+**Break** (15 min)
+
+**Afternoon Session (3.5 hours)**
+
+5. **Presentation 3: String Operations & Key Management** (45 min)
+   - File: `presentations/content3_presentation.html`
+   - Topics: String operations, TTL management, SETEX/PSETEX, LASTSAVE, SADD introduction
+
+6. **Lab 3: String Operations & Data Management** (45 min)
+   - Directory: `lab3-data-operations-strings/`
+   - Activities: String ops, INCR/DECR, MSET/MGET, performance testing
+
+7. **Lab 4: Key Management & TTL Strategies** (45 min)
+   - Directory: `lab4-key-management-ttl/`
+   - Activities: Key naming, TTL strategies, SCAN, memory optimization
+
+8. **Lab 5: Advanced CLI & Production Monitoring** (45 min)
+   - Directory: `lab5-advanced-cli-monitoring/`
+   - Activities: Monitoring, benchmarking, slow queries, alerts
+
+---
+
+### Day 2: JavaScript Integration (7 hours)
+
+**Morning Session (3.5 hours)**
+
+1. **Presentation 4: JavaScript Redis Client Fundamentals** (50 min)
+   - File: `presentations/content4_presentation.html`
+   - Topics: Node.js client setup, connection pooling, async/await patterns
+
+2. **Presentation 5: Hash, List, Set & Sorted Set Data Structures** (60 min)
+   - File: `presentations/content5.html`
+   - Topics: Hashes (HSET/HGET/HMSET/HGETALL), Lists, **Sets (SADD/SMEMBERS/SINTER/SUNION/SDIFF)**, **Sorted Sets (ZADD/ZRANGE/ZRANGEBYSCORE/ZSCORE/ZRANK)**
+   - **Note:** This is the comprehensive data structures module preparing for Lab 9
+
+3. **Lab 6: JavaScript Redis Client Setup** (45 min)
+   - Directory: `lab6-javascript-redis-client/`
+   - Activities: Node.js client, connection pooling, async/await patterns
+
+4. **Lab 7: Customer Profiles with Hashes** (45 min)
+   - Directory: `lab7-customer-policy-hashes/`
+   - Activities: Hash operations, nested structures, customer management
+
+**Break** (15 min)
+
+**Afternoon Session (3.5 hours)**
+
+5. **Presentation 6: Redis Streams & Event Sourcing** (45 min)
+   - File: `presentations/content6-presentation.html`
+   - Topics: Redis Streams, XADD/XREAD, consumer groups, event sourcing patterns
+
+6. **Lab 8: Claims Event Sourcing with Streams** (60 min)
+   - Directory: `lab8-claims-event-sourcing/`
+   - Activities: Event sourcing, producer/consumer groups, audit trails
+
+7. **Lab 9: Insurance Analytics with Sets & Sorted Sets** (60 min)
+   - Directory: `lab9-sets-analytics/`
+   - Activities: Customer segmentation, leaderboards, rankings, analytics
+   - **Uses:** All SET and SORTED SET commands taught in Presentation 5
+
+8. **Lab 10: Advanced Caching Patterns** (45 min)
+   - Directory: `lab10-advanced-caching-patterns/`
+   - Activities: Cache-aside, write-through, event-driven invalidation
+
+---
+
+### Day 3: Production & Advanced Topics (7 hours)
+
+**Morning Session (3.5 hours)**
+
+1. **Presentation 7: Production Security & Best Practices** (50 min)
+   - File: `presentations/content7_presentation.html`
+   - Topics: Authentication, encryption, access control, monitoring
+   - **Includes:** Review of SMEMBERS (for Lab 11) and ZRANGE (for Lab 12)
+
+2. **Presentation 8: Production Configuration & Persistence** (45 min)
+   - File: `presentations/content8_presentation.html`
+   - Topics: RDB/AOF persistence, backup strategies, replication
+
+3. **Lab 11: Session Management & Security** (45 min)
+   - Directory: `lab11-session-management/`
+   - Activities: JWT tokens, RBAC, session cleanup, security monitoring
+
+4. **Lab 12: Rate Limiting & API Protection** (45 min)
+   - Directory: `lab12-rate-limiting-api-protection/`
+   - Activities: Token bucket, sliding window, DDoS protection
+
+**Break** (15 min)
+
+**Afternoon Session (3.5 hours)**
+
+5. **Presentation 9: Production Monitoring & Observability** (45 min)
+   - File: `presentations/content9_presentation.html`
+   - Topics: Metrics collection, alerting, health checks, dashboards
+
+6. **Lab 13: Production Configuration** (45 min)
+   - Directory: `lab13-production-configuration/`
+   - Activities: RDB/AOF setup, backups, security hardening
+
+7. **Lab 14: Production Monitoring & Health Checks** (45 min)
+   - Directory: `lab14-production-monitoring/`
+   - Activities: Metrics collection, alerting, dashboards
+
+8. **Presentation 10: Redis Cluster & High Availability** (45 min)
+   - File: `presentations/lab15-presentation.html`
+   - Topics: Clustering fundamentals, sharding, failover, replication
+
+9. **Lab 15: Redis Cluster & High Availability** (45 min)
+   - Directory: `lab15-redis-cluster-ha/`
+   - Activities: 6-node cluster setup, sharding, failover testing, replication
+
+---
+
+## Course Timing Summary
+
+| Day | Presentations | Labs | Total Teaching Time |
+|-----|---------------|------|---------------------|
+| **Day 1** | 3 presentations (140 min) | 5 labs (225 min) | 6 hours 5 min |
+| **Day 2** | 3 presentations (155 min) | 5 labs (255 min) | 6 hours 50 min |
+| **Day 3** | 4 presentations (185 min) | 5 labs (225 min) | 6 hours 50 min |
+| **Total** | **10 presentations** | **15 labs** | **~20 hours** |
+
+**Note:** Breaks and Q&A add approximately 1 hour per day, bringing total to 21 hours over 3 days.
+
+---
+
 ## Prerequisites & Installation
 
 ### Required Software
@@ -125,26 +292,58 @@ redis-cli
 
 #### 3. Redis CLI Tools
 
-**Mac (Homebrew):**
+**Mac/Linux (Automated - Recommended):**
+```bash
+# Navigate to scripts directory
+cd scripts
+
+# Run bash installation script
+bash install-redis-cli.sh
+
+# Or make executable and run
+chmod +x install-redis-cli.sh
+./install-redis-cli.sh
+```
+
+**Windows (PowerShell - Recommended):**
+```powershell
+# Navigate to scripts directory
+cd scripts
+
+# Run PowerShell installation script
+.\install-redis-cli-windows.ps1
+
+# Or choose specific method:
+.\install-redis-cli-windows.ps1 -Method chocolatey  # Requires admin (recommended)
+.\install-redis-cli-windows.ps1 -Method direct      # No admin needed
+.\install-redis-cli-windows.ps1 -Method wsl         # Uses WSL/Linux
+.\install-redis-cli-windows.ps1 -Method manual      # Show instructions
+```
+
+**Quick Manual Install:**
+
+Mac:
 ```bash
 brew install redis
 ```
 
-**Windows (Chocolatey):**
-```powershell
-choco install redis
-```
-
-**Linux (Ubuntu/Debian):**
+Linux (Ubuntu/Debian):
 ```bash
 sudo apt-get install redis-tools
 ```
 
-**Alternative (Docker):**
+Windows (Chocolatey):
+```powershell
+choco install redis-64
+```
+
+**Alternative (Docker - All Platforms):**
 ```bash
 # Use Redis CLI from Docker container
 docker exec redis-course redis-cli
 ```
+
+📖 **See `scripts/README.md` for detailed installation guides**
 
 #### 4. Optional but Recommended
 - **Redis Insight** - GUI tool: https://redis.io/insight/
