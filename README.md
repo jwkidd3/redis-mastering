@@ -27,55 +27,62 @@ A comprehensive 3-day intensive Redis training course focused on insurance indus
 
 ### 1. Start Redis Server
 
+**Windows:**
+```cmd
+cd scripts
+start-redis.bat
+```
+
 **Mac/Linux:**
 ```bash
-# Start Redis with Docker
 docker run -d -p 6379:6379 --name redis redis/redis-stack:latest
-
-# Verify Redis is running
-redis-cli ping  # Should return PONG
 ```
+
+📖 **See `scripts/README.md` for detailed Redis server management**
+
+### 2. Install Redis CLI (Optional)
+
+Redis Insight includes a built-in CLI, but you can also install the terminal redis-cli:
 
 **Windows:**
 ```cmd
-# Navigate to scripts directory
 cd scripts
-
-# Start Redis using batch script
-start-redis.bat
-
-# Verify Redis is running
-redis-cli ping  # Should return PONG
-
-# When done, stop Redis
-stop-redis.bat
+install-redis-cli.bat
 ```
 
-### 2. Install Dependencies
+**Mac/Linux:**
+```bash
+cd scripts
+bash install-redis-cli.sh
+```
+
+### 3. Connect Redis Insight
+
+1. Open Redis Insight (desktop app or http://localhost:8001)
+2. Click **"Add Database"**
+3. Enter connection details:
+   - Host: `localhost`
+   - Port: `6379`
+   - Name: `Redis Course`
+4. Click **"Test Connection"** → **"Add Database"**
+
+### 4. Install Course Dependencies
 
 ```bash
-# Clone/extract course materials
-cd redis-mastering
-
-# Install root dependencies for testing
+# In course root directory
 npm install
 ```
 
-### 3. Run Your First Lab
+### 5. Start Your First Lab
 
-```bash
-# Lab 1: Redis CLI Basics
-cd lab1-redis-cli-basics
+**Using Redis Insight Workbench (Recommended):**
+1. Open Redis Insight
+2. Click your database connection
+3. Go to **"Workbench"** tab
+4. Follow: `lab1-redis-cli-basics/REDIS-INSIGHT.md`
+5. Run commands directly in Workbench!
 
-# Mac/Linux
-bash scripts/mac/setup-lab.sh
-
-# Windows (PowerShell)
-.\scripts\win\setup-lab.ps1
-
-# Start using Redis CLI
-redis-cli
-```
+💡 **All labs can be run in Redis Insight Workbench!** See `REDIS-INSIGHT-GUIDE.md`
 
 ---
 
@@ -290,57 +297,43 @@ This section shows the exact order of presentations and labs for each day.
 - **Verify:** `node --version` (should be 18.0+)
 - **Includes:** npm (Node Package Manager)
 
-#### 3. Redis CLI Tools
+#### 3. Redis CLI (Optional)
 
-**Mac/Linux (Automated - Recommended):**
-```bash
-# Navigate to scripts directory
-cd scripts
+**Redis Insight includes a built-in CLI** - separate installation is optional.
 
-# Run bash installation script
-bash install-redis-cli.sh
+If you prefer terminal redis-cli, use the automated scripts:
 
-# Or make executable and run
-chmod +x install-redis-cli.sh
-./install-redis-cli.sh
-```
-
-**Windows (Batch Script - Recommended):**
+**Windows:**
 ```cmd
-# Navigate to scripts directory
 cd scripts
-
-# Run installation helper script (shows all installation options)
 install-redis-cli.bat
 ```
 
-**Quick Manual Install:**
-
-Mac:
+**Mac/Linux:**
 ```bash
-brew install redis
+cd scripts
+bash install-redis-cli.sh
 ```
 
-Linux (Ubuntu/Debian):
-```bash
-sudo apt-get install redis-tools
-```
+📖 **See `scripts/README.md` for detailed installation guides and manual installation options**
 
-Windows (Chocolatey):
-```powershell
-choco install redis-64
-```
+#### 4. Redis Insight (Required)
 
-**Alternative (Docker - All Platforms):**
-```bash
-# Use Redis CLI from Docker container
-docker exec redis-course redis-cli
-```
+**Redis Insight** is the primary tool for this course alongside your terminal:
 
-📖 **See `scripts/README.md` for detailed installation guides**
+- **Download:** https://redis.io/insight/
+- **Purpose:** Visual Redis management, command execution, monitoring
+- **Required for:** All 15 labs include Redis Insight exercises
 
-#### 4. Optional but Recommended
-- **Redis Insight** - GUI tool: https://redis.io/insight/
+**Why Redis Insight:**
+- **Workbench:** Execute Redis commands with autocomplete and formatting
+- **Browser:** Visual key explorer with tree view
+- **Profiler:** Real-time command monitoring (better than MONITOR)
+- **Memory Analyzer:** Visual memory usage analysis
+
+📖 **See `REDIS-INSIGHT-GUIDE.md` for complete course-wide Redis Insight usage guide**
+
+#### 5. Optional but Recommended
 - **VS Code** - Code editor: https://code.visualstudio.com/
 - **Windows Terminal** - Modern terminal (Windows only)
 
@@ -449,21 +442,27 @@ wsl --set-default-version 2
 
 **Port 6379 Already in Use:**
 ```powershell
+# Stop existing Redis
+cd scripts
+stop-redis.bat
+
 # Find process using port
 netstat -ano | findstr :6379
 
-# Use different port
-docker run -d -p 6380:6379 --name redis-course redis:latest
+# Use different port if needed
+docker run -d -p 6380:6379 --name redis-alt redis/redis-stack:latest
 $env:REDIS_PORT = "6380"
 ```
 
 **Redis CLI Not Found:**
-```powershell
-# Create PowerShell alias
-function redis-cli { docker exec redis-course redis-cli $args }
+```cmd
+# Install redis-cli
+cd scripts
+install-redis-cli.bat
 
-# OR use full command
-docker exec redis-course redis-cli <command>
+# Or use Redis Insight Workbench (recommended)
+# Or use Docker:
+docker exec redis redis-cli <command>
 ```
 
 ---
@@ -692,21 +691,42 @@ npm run test:day3  # Production & Advanced (Labs 11-15)
 
 ### Redis Connection Issues
 
+**Windows (Use Scripts):**
+```cmd
+cd scripts
+
+# Stop and restart Redis
+stop-redis.bat
+start-redis.bat
+
+# Or clean restart
+cleanup-redis.bat
+start-redis.bat
+```
+
+**Mac/Linux:**
 ```bash
 # Check if Redis is running
 docker ps | grep redis
 
 # Restart Redis
-docker restart redis-course
+docker restart redis
 
+# Check Redis logs
+docker logs redis
+
+# Stop and restart
+docker stop redis
+docker start redis
+```
+
+**Test Connection:**
+```bash
 # Test connection
 redis-cli ping
 
-# Test with password
-redis-cli -a <password> ping
-
-# Check Redis logs
-docker logs redis-course
+# Or use Redis Insight Workbench
+# Run: PING
 ```
 
 ### Node.js Dependencies
@@ -734,16 +754,26 @@ lsof -i :6379
 netstat -ano | findstr :6379
 
 # Stop conflicting process
-docker stop redis-course
+docker stop redis
 
 # Start with different port
-docker run -d -p 6380:6379 --name redis-course redis:latest
+docker run -d -p 6380:6379 --name redis-alt redis/redis-stack:latest
 export REDIS_PORT=6380  # Mac/Linux
 $env:REDIS_PORT = "6380"  # Windows
 ```
 
 ### Docker Issues
 
+**Windows (Use Scripts):**
+```cmd
+cd scripts
+
+# Clean restart
+cleanup-redis.bat
+start-redis.bat
+```
+
+**Mac/Linux:**
 ```bash
 # Check Docker status
 docker info
@@ -752,16 +782,16 @@ docker info
 docker ps
 
 # View container logs
-docker logs redis-course
+docker logs redis
 
 # Restart Docker Desktop
 # Windows/Mac: Restart Docker Desktop application
 # Linux: sudo systemctl restart docker
 
 # Remove and recreate Redis container
-docker stop redis-course
-docker rm redis-course
-docker run -d -p 6379:6379 --name redis-course redis:latest
+docker stop redis
+docker rm redis
+docker run -d -p 6379:6379 --name redis redis/redis-stack:latest
 ```
 
 ### Common Environment Variable Issues
