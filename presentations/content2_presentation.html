@@ -9,51 +9,94 @@
     <style>
         .reveal .slides section {
             text-align: left;
-            font-size: 0.75em;
+            font-size: 0.75em !important;
+            line-height: 1.3;
+            max-height: 90vh !important;
+            overflow-y: auto !important;
+            padding: 0.5em 1em !important;
+        }
+        .reveal h1 {
+            font-size: 1.8em !important;
+            margin: 0.3em 0 !important;
+        }
+        .reveal h2 {
+            font-size: 1.4em !important;
+            margin: 0.3em 0 !important;
+        }
+        .reveal h3 {
+            font-size: 1.2em !important;
+            margin: 0.3em 0 !important;
+        }
+        .reveal h4 {
+            font-size: 1em !important;
+            margin: 0.2em 0 !important;
         }
         .reveal h1, .reveal h2, .reveal h3 {
             color: #2c3e50;
             text-align: center;
-            margin-bottom: 20px;
-            font-size: 1.8em;
         }
-        .reveal h4 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-            font-size: 1.3em;
+        .reveal p {
+            margin: 0.3em 0 !important;
         }
-        .reveal .title-slide {
+        .reveal ul, .reveal ol {
+            margin: 0.5em 0 !important;
+        }
+        .reveal li {
+            margin: 0.2em 0 !important;
+        }
+        .main-title {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            color: white !important;
+            padding: 1.5em;
+            border-radius: 10px;
             text-align: center;
-            padding: 40px;
         }
-        .reveal .title-slide h1, .reveal .title-slide h2 {
-            color: white;
+        .title-slide {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            padding: 1.5em;
+            text-align: center;
         }
-        .reveal .section-header {
+        .title-slide h1, .title-slide h2 {
+            color: white !important;
+        }
+        .section-header {
             background: #f8f9fa;
-            color: #2c3e50;
-            text-align: center;
-            padding: 30px;
+            color: #2c3e50 !important;
+            padding: 0.6em;
             border: 2px solid #e9ecef;
-        }
-        .reveal .lab-callout {
-            background: #e8f5e8;
-            border: 3px solid #28a745;
-            border-radius: 8px;
-            padding: 20px;
             text-align: center;
-            margin: 15px 0;
         }
-        .reveal .lab-callout h3 {
-            color: #155724;
-            margin-bottom: 10px;
-            font-size: 1.4em;
+        .session-header {
+            background: #f8f9fa;
+            color: #2c3e50 !important;
+            padding: 0.6em;
+            border-left: 5px solid #3498db;
+            margin-bottom: 0.5em;
+        }
+        .session-header h3 {
+            margin: 0 !important;
+            font-size: 1.1em !important;
+        }
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            border: 2px solid #34495e;
+            border-radius: 5px;
+            padding: 0.5em;
+            font-family: 'Courier New', 'Monaco', monospace;
+            font-size: 0.6em;
+            margin: 0.3em 0;
+            line-height: 1.2;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
         }
         .reveal code {
             background: #f1f3f4;
-            padding: 2px 6px;
+            padding: 0.1em 0.3em;
             border-radius: 3px;
             color: #d73a49;
             font-size: 0.9em;
@@ -61,56 +104,100 @@
         .reveal pre code {
             background: #282c34;
             color: #abb2bf;
-            padding: 12px;
+            padding: 0.5em;
             border-radius: 6px;
-            font-size: 0.65em;
+            font-size: 0.6em;
             line-height: 1.3;
         }
-        .reveal .command-box {
+        .command-box {
             background: #282c34;
             color: #61dafb;
-            padding: 10px;
+            padding: 0.5em;
             border-radius: 6px;
             font-family: 'Courier New', monospace;
-            margin: 10px 0;
-            font-size: 0.8em;
+            margin: 0.3em 0;
+            font-size: 0.7em;
             line-height: 1.4;
         }
-        .reveal ul, .reveal ol {
-            margin-left: 15px;
+        .highlight {
+            background: #ffffcc;
+            padding: 0.1em 0.3em;
+            border-radius: 3px;
         }
-        .reveal li {
-            margin-bottom: 6px;
-            font-size: 0.95em;
-        }
-        .reveal .highlight {
-            background: #fff3cd;
-            padding: 12px;
-            border-left: 3px solid #ffc107;
-            margin: 10px 0;
+        .lab-callout {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white !important;
+            padding: 0.8em;
+            border-radius: 8px;
+            text-align: center;
             font-size: 0.9em;
+            margin: 0.5em 0;
         }
-        .reveal .protocol-example {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            padding: 15px;
-            border-radius: 6px;
-            margin: 10px 0;
+        .lab-callout h3 {
+            color: white !important;
+            margin: 0.2em 0 !important;
+            font-size: 1.1em !important;
         }
-        .reveal .protocol-example h4 {
-            font-size: 1.1em;
-            margin-bottom: 8px;
+        .bullet-point {
+            margin: 0.2em 0;
+            line-height: 1.3;
         }
-        .reveal .two-column {
+        .two-column {
             display: flex;
-            gap: 20px;
+            gap: 1em;
         }
-        .reveal .column {
+        .column {
             flex: 1;
         }
-        .reveal p {
-            margin-bottom: 10px;
-            line-height: 1.4;
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 0.5em;
+            margin: 0.3em 0;
+            font-size: 0.75em;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            padding: 0.5em;
+            margin: 0.3em 0;
+            font-size: 0.75em;
+        }
+        .info {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 4px;
+            padding: 0.5em;
+            margin: 0.3em 0;
+            font-size: 0.75em;
+        }
+        .protocol-example {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 0.5em;
+            border-radius: 6px;
+            margin: 0.3em 0;
+        }
+        .protocol-example h4 {
+            font-size: 1em !important;
+            margin: 0.2em 0 !important;
+        }
+        /* Scrollbar styling */
+        .reveal .slides section::-webkit-scrollbar {
+            width: 8px;
+        }
+        .reveal .slides section::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .reveal .slides section::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        .reveal .slides section::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
     </style>
 </head>

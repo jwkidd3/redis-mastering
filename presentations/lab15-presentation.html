@@ -10,164 +10,267 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/theme/black.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/highlight/monokai.css">
     
-    <style>
-        .reveal h1, .reveal h2, .reveal h3 {
-            color: #ff6b6b;
-        }
-        .reveal .progress {
-            color: #ff6b6b;
-        }
-        .reveal .controls button {
-            color: #ff6b6b;
-        }
-        .architecture-diagram {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-        .highlight-red { color: #ff6b6b !important; }
-        .highlight-green { color: #51cf66 !important; }
-        .highlight-blue { color: #339af0 !important; }
-        .highlight-yellow { color: #ffd43b !important; }
-        
-        /* Prevent content cutoff */
+        <style>
         .reveal .slides section {
-            box-sizing: border-box;
-            max-width: 100%;
-            overflow: visible;
-        }
-        
-        .reveal pre {
-            font-size: 0.45em;
-            line-height: 1.2;
-            max-width: 100%;
-            overflow-x: auto;
-            word-wrap: break-word;
-        }
-        
-        .reveal code {
-            font-size: 0.85em;
-            word-break: break-all;
-        }
-        
-        .reveal table {
-            font-size: 0.6em;
-            margin: 10px auto;
-            max-width: 100%;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .reveal h1 { font-size: 1.8em; }
-            .reveal h2 { font-size: 1.4em; }
-            .reveal h3 { font-size: 1.2em; }
-            .reveal pre { font-size: 0.35em; }
-            .reveal table { font-size: 0.5em; }
-        }
-        
-        .cluster-node {
-            display: inline-block;
-            padding: 10px 20px;
-            margin: 10px;
-            border: 2px solid #ff6b6b;
-            border-radius: 5px;
-            background: rgba(255, 107, 107, 0.1);
-        }
-        
-        .master-node {
-            border-color: #51cf66;
-            background: rgba(81, 207, 102, 0.1);
-        }
-        
-        .replica-node {
-            border-color: #339af0;
-            background: rgba(51, 154, 240, 0.1);
-        }
-        
-        .slot-range {
-            font-size: 0.8em;
-            color: #ffd43b;
-        }
-        
-        .performance-metric {
-            display: inline-block;
-            padding: 15px;
-            margin: 10px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 10px;
-            min-width: 150px;
-        }
-        
-        .metric-value {
-            font-size: 2em;
-            font-weight: bold;
-            color: #ffd43b;
-        }
-        
-        .metric-label {
-            font-size: 0.8em;
-            color: #ccc;
-        }
-        
-        table.comparison-table {
-            font-size: 0.8em;
-            margin: 20px auto;
-        }
-        
-        table.comparison-table th {
-            background: rgba(255, 107, 107, 0.3);
-            padding: 10px;
-        }
-        
-        table.comparison-table td {
-            padding: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .code-container {
-            background: #282c34;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
             text-align: left;
+            font-size: 0.75em !important;
+            line-height: 1.3;
+            max-height: 90vh !important;
+            overflow-y: auto !important;
+            padding: 0.5em 1em !important;
         }
-        
-        .reveal pre {
-            box-shadow: none;
-            font-size: 0.8em;
+        .reveal h1 {
+            font-size: 1.8em !important;
+            margin: 0.3em 0 !important;
         }
-        
+        .reveal h2 {
+            font-size: 1.4em !important;
+            margin: 0.3em 0 !important;
+        }
+        .reveal h3 {
+            font-size: 1.2em !important;
+            margin: 0.3em 0 !important;
+        }
+        .reveal h4 {
+            font-size: 1em !important;
+            margin: 0.2em 0 !important;
+        }
+        .reveal h1, .reveal h2, .reveal h3 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .reveal p {
+            margin: 0.3em 0 !important;
+        }
+        .reveal ul, .reveal ol {
+            margin: 0.5em 0 !important;
+        }
+        .reveal li {
+            margin: 0.2em 0 !important;
+        }
+        .main-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            padding: 1.5em;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .title-block {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            padding: 1.5em;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .title-slide {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            padding: 1.5em;
+            text-align: center;
+        }
+        .title-slide h1, .title-slide h2 {
+            color: white !important;
+        }
+        .session-header {
+            background: #f8f9fa;
+            color: #2c3e50 !important;
+            padding: 0.6em;
+            border-left: 5px solid #3498db;
+            margin-bottom: 0.5em;
+        }
+        .session-header h3 {
+            margin: 0 !important;
+            font-size: 1.1em !important;
+        }
+        .section-header {
+            background: #f8f9fa;
+            color: #2c3e50 !important;
+            padding: 0.6em;
+            border: 2px solid #e9ecef;
+            text-align: center;
+        }
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            border: 2px solid #34495e;
+            border-radius: 5px;
+            padding: 0.5em;
+            font-family: 'Courier New', 'Monaco', monospace;
+            font-size: 0.6em;
+            margin: 0.3em 0;
+            line-height: 1.2;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
         .reveal code {
-            background: #282c34;
-            color: #abb2bf;
-            padding: 2px 6px;
+            background-color: #f8f9fa;
+            color: #e74c3c;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 0.85em;
+            font-family: 'Courier New', monospace;
+        }
+        .reveal pre code {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 0.5em;
+            border-radius: 8px;
+            font-size: 0.6em;
+            line-height: 1.3;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .callout {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            padding: 0.8em;
+            border-radius: 10px;
+            text-align: center;
+            margin: 0.5em 0;
+        }
+        .callout h2 {
+            color: white !important;
+            margin: 0.2em 0 !important;
+            font-size: 1.3em !important;
+        }
+        .callout p {
+            font-size: 0.9em;
+            margin: 0.2em 0 !important;
+        }
+        .highlight {
+            background: #ffffcc;
+            padding: 0.1em 0.3em;
             border-radius: 3px;
         }
-        
-        .icon-large {
-            font-size: 3em;
-            margin: 20px;
+        .highlight-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 0.5em;
+            border-radius: 8px;
+            margin: 0.3em 0;
         }
-        
-        .failover-step {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            margin: 10px 0;
-            border-left: 4px solid #ff6b6b;
+        .lab-callout {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white !important;
+            padding: 0.8em;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9em;
+            margin: 0.5em 0;
+        }
+        .lab-callout h3 {
+            color: white !important;
+            margin: 0.2em 0 !important;
+            font-size: 1.1em !important;
+        }
+        .bullet-point {
+            margin: 0.2em 0;
+            line-height: 1.3;
+        }
+        .two-column {
+            display: flex;
+            gap: 1em;
+        }
+        .two-column > div {
+            flex: 1;
+        }
+        .column {
+            flex: 1;
+        }
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.8em;
+            margin: 0.5em 0;
+        }
+        .command-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.3em 0;
+            font-size: 0.7em;
+        }
+        .command-table th,
+        .command-table td {
+            border: 1px solid #dee2e6;
+            padding: 0.4em;
             text-align: left;
         }
-        
-        .best-practice {
+        .command-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .command-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .small-text {
+            font-size: 0.75em;
+        }
+        .comparison-box {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+            padding: 0.5em;
+            border-radius: 8px;
+            margin: 0.3em 0;
+        }
+        .pattern-box {
+            background: #f0f7ff;
+            border-left: 5px solid #2196f3;
+            padding: 0.5em;
+            margin: 0.3em 0;
+        }
+        .pattern-box h4 {
+            color: #3498db;
+            margin: 0.2em 0 !important;
+            font-size: 1em !important;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 0.5em;
+            margin: 0.3em 0;
+            font-size: 0.75em;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            padding: 0.5em;
+            margin: 0.3em 0;
+            font-size: 0.75em;
+        }
+        .info {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 4px;
+            padding: 0.5em;
+            margin: 0.3em 0;
+            font-size: 0.75em;
+        }
+        .stream-feature {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-            margin: 15px 0;
-            border-radius: 10px;
-            text-align: left;
+            color: white !important;
+            padding: 0.5em;
+            border-radius: 8px;
+            margin: 0.3em 0;
         }
-        
-        .reveal .slides section .fragment.highlight-current-blue.current-fragment {
-            color: #339af0;
+        /* Scrollbar styling */
+        .reveal .slides section::-webkit-scrollbar {
+            width: 8px;
+        }
+        .reveal .slides section::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .reveal .slides section::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        .reveal .slides section::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
     </style>
 </head>

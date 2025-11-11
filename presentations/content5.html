@@ -8,154 +8,220 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/monokai.css">
     <style>
-        .reveal {
-            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-            font-size: 32px; /* Increased for better readability */
-        }
-        
         .reveal .slides section {
             text-align: left;
-            padding: 20px;
+            font-size: 0.75em !important;
+            line-height: 1.3;
+            max-height: 90vh !important;
+            overflow-y: auto !important;
+            padding: 0.5em 1em !important;
         }
-        
+        .reveal h1 {
+            font-size: 1.8em !important;
+            margin: 0.3em 0 !important;
+        }
+        .reveal h2 {
+            font-size: 1.4em !important;
+            margin: 0.3em 0 !important;
+        }
+        .reveal h3 {
+            font-size: 1.2em !important;
+            margin: 0.3em 0 !important;
+        }
+        .reveal h4 {
+            font-size: 1em !important;
+            margin: 0.2em 0 !important;
+        }
         .reveal h1, .reveal h2, .reveal h3 {
             color: #2c3e50;
             text-align: center;
-            margin-bottom: 30px;
         }
-        
-        .reveal h1 {
-            font-size: 2.2em;
-            background: #ecf0f1;
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 40px;
+        .reveal p {
+            margin: 0.3em 0 !important;
         }
-        
-        .reveal h2 {
-            font-size: 1.8em;
-            background: #ecf0f1;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 35px;
+        .reveal ul, .reveal ol {
+            margin: 0.5em 0 !important;
         }
-        
-        .reveal h3 {
-            font-size: 1.4em;
-            color: #e74c3c;
-            margin-bottom: 25px;
-        }
-        
-        .reveal ul {
-            margin-left: 40px;
-            line-height: 1.8;
-        }
-        
         .reveal li {
-            margin-bottom: 15px;
-            font-size: 1em;
+            margin: 0.2em 0 !important;
         }
-        
+        .main-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            padding: 1.5em;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .session-header {
+            background: #f8f9fa;
+            color: #2c3e50 !important;
+            padding: 0.6em;
+            border-left: 5px solid #3498db;
+            margin-bottom: 0.5em;
+        }
+        .session-header h3 {
+            margin: 0 !important;
+            font-size: 1.1em !important;
+        }
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            border: 2px solid #34495e;
+            border-radius: 5px;
+            padding: 0.5em;
+            font-family: 'Courier New', 'Monaco', monospace;
+            font-size: 0.6em;
+            margin: 0.3em 0;
+            line-height: 1.2;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
         .reveal code {
             background-color: #f8f9fa;
             color: #e74c3c;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 0.9em;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 0.85em;
             font-family: 'Courier New', monospace;
         }
-        
         .reveal pre code {
             background-color: #2d3748;
             color: #e2e8f0;
-            padding: 25px;
+            padding: 0.5em;
             border-radius: 8px;
-            font-size: 0.8em;
-            line-height: 1.6;
-            max-height: 500px;
+            font-size: 0.6em;
+            line-height: 1.3;
+            max-height: 300px;
             overflow-y: auto;
         }
-        
         .callout {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 40px;
-            border-radius: 15px;
+            color: white !important;
+            padding: 0.8em;
+            border-radius: 10px;
             text-align: center;
-            margin: 30px 0;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            margin: 0.5em 0;
         }
-        
         .callout h2 {
-            color: white;
-            margin-bottom: 20px;
-            font-size: 1.8em;
+            color: white !important;
+            margin: 0.2em 0 !important;
+            font-size: 1.3em !important;
         }
-        
         .callout p {
-            font-size: 1.2em;
-            margin: 0;
-            font-weight: 500;
+            font-size: 0.9em;
+            margin: 0.2em 0 !important;
         }
-        
+        .highlight {
+            background: #ffffcc;
+            padding: 0.1em 0.3em;
+            border-radius: 3px;
+        }
         .highlight-box {
             background: #fff3cd;
             border: 2px solid #ffc107;
-            padding: 25px;
+            padding: 0.5em;
             border-radius: 8px;
-            margin: 25px 0;
+            margin: 0.3em 0;
         }
-        
+        .lab-callout {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white !important;
+            padding: 0.8em;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9em;
+            margin: 0.5em 0;
+        }
+        .bullet-point {
+            margin: 0.2em 0;
+            line-height: 1.3;
+        }
         .two-column {
             display: flex;
-            gap: 40px;
-            align-items: flex-start;
+            gap: 1em;
         }
-        
         .two-column > div {
             flex: 1;
         }
-        
+        .column {
+            flex: 1;
+        }
         .command-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 25px 0;
-            font-size: 0.9em;
+            margin: 0.3em 0;
+            font-size: 0.75em;
         }
-        
         .command-table th,
         .command-table td {
             border: 1px solid #dee2e6;
-            padding: 15px;
+            padding: 0.4em;
             text-align: left;
         }
-        
         .command-table th {
             background-color: #f8f9fa;
             font-weight: bold;
         }
-        
         .command-table tr:nth-child(even) {
             background-color: #f8f9fa;
         }
-        
         .small-text {
-            font-size: 0.85em;
+            font-size: 0.75em;
         }
-        
         .comparison-box {
             background: #e8f5e9;
             border: 2px solid #4caf50;
-            padding: 20px;
+            padding: 0.5em;
             border-radius: 8px;
-            margin: 20px 0;
+            margin: 0.3em 0;
         }
-        
         .pattern-box {
             background: #f0f7ff;
             border-left: 5px solid #2196f3;
-            padding: 20px;
-            margin: 20px 0;
+            padding: 0.5em;
+            margin: 0.3em 0;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 0.5em;
+            margin: 0.3em 0;
+            font-size: 0.75em;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            padding: 0.5em;
+            margin: 0.3em 0;
+            font-size: 0.75em;
+        }
+        .info {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 4px;
+            padding: 0.5em;
+            margin: 0.3em 0;
+            font-size: 0.75em;
+        }
+        /* Scrollbar styling */
+        .reveal .slides section::-webkit-scrollbar {
+            width: 8px;
+        }
+        .reveal .slides section::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .reveal .slides section::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        .reveal .slides section::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
     </style>
 </head>
