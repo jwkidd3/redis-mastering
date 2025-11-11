@@ -199,17 +199,14 @@ DBSIZE
 
 ## 🔧 Troubleshooting
 
-**Connection failed:**
-```bash
-# Check connection details
-redis-cli -h hostname -p port PING
-
-# Test network connectivity
-ping hostname
-```
+**Connection failed in Redis Insight:**
+1. Click **"Test Connection"** in the database setup dialog
+2. Verify hostname, port, and password are correct
+3. Check if Redis server is running (see main README Quick Start)
+4. In Workbench, run `PING` - should return `PONG`
 
 **Authentication error:**
-```bash
-# Use password if required
-redis-cli -h hostname -p port -a password PING
-```
+1. Click **"Edit"** on your database connection
+2. Enable **"Use Password"** toggle
+3. Enter password provided by instructor
+4. Click **"Test Connection"** again

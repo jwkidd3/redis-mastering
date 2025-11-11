@@ -10,8 +10,6 @@
 lab7-customer-policy-hashes/
 ├── package.json                         # Node.js project configuration
 ├── test-connection.js                   # Redis connection test
-├── scripts/
-│   └── setup-lab.sh                    # Environment setup script
 ├── src/
 │   ├── redis-client.js                 # Redis connection management
 │   ├── customer-manager.js             # Customer CRUD operations
@@ -31,9 +29,9 @@ lab7-customer-policy-hashes/
 
 ## 🚀 Quick Start
 
-1. **Run setup script:**
+1. **Install dependencies:**
    ```bash
-   ./scripts/setup-lab.sh
+   npm install
    ```
 
 2. **Test Redis connection:**
