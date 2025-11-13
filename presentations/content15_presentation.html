@@ -1,16 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lab 15: Redis Cluster with High Availability</title>
-    
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/reset.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/reveal.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/theme/black.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/highlight/monokai.css">
-    
-        <style>
+    <title>Content 15: Redis Cluster with High Availability</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.min.css">
+    <style>
         .reveal .slides section {
             text-align: left;
             font-size: 0.75em !important;
@@ -257,6 +253,108 @@
             border-radius: 8px;
             margin: 0.3em 0;
         }
+        /* Highlight color classes */
+        .highlight-red {
+            color: #e74c3c;
+        }
+        .highlight-green {
+            color: #27ae60;
+        }
+        .highlight-blue {
+            color: #3498db;
+        }
+        .highlight-yellow {
+            color: #f39c12;
+        }
+        /* Architecture diagram */
+        .architecture-diagram {
+            display: flex;
+            justify-content: space-around;
+            margin: 1em 0;
+        }
+        .cluster-node {
+            padding: 1em;
+            border-radius: 8px;
+            text-align: center;
+            margin: 0.5em;
+            font-size: 0.85em;
+        }
+        .master-node {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+        }
+        .replica-node {
+            background: #f3e5f5;
+            border: 2px solid #9c27b0;
+        }
+        .slot-range {
+            font-size: 0.75em;
+            color: #666;
+        }
+        /* Performance metrics */
+        .performance-metric {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1em;
+            text-align: center;
+            margin: 0.5em;
+        }
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .metric-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 0.3em;
+        }
+        /* Failover steps */
+        .failover-step {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 0.5em;
+            margin: 0.5em 0;
+        }
+        /* Best practices */
+        .best-practice {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+            border-radius: 8px;
+            padding: 0.8em;
+            margin: 0.5em 0;
+        }
+        .best-practice h3 {
+            color: #27ae60;
+            margin: 0.2em 0 !important;
+        }
+        /* Icon large */
+        .icon-large {
+            font-size: 3em;
+            text-align: center;
+            margin: 0.5em 0;
+        }
+        /* Comparison table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.5em 0;
+            font-size: 0.75em;
+        }
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid #dee2e6;
+            padding: 0.5em;
+            text-align: left;
+        }
+        .comparison-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .comparison-table tr:nth-child(even) {
+            background-color: #fafafa;
+        }
         /* Scrollbar styling */
         .reveal .slides section::-webkit-scrollbar {
             width: 8px;
@@ -279,13 +377,13 @@
         <div class="slides">
             
             <!-- Title Slide -->
-            <section data-background="linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)">
-                <h1>Redis Cluster</h1>
-                <h3>High Availability, Sharding & Replication</h3>
-                <p class="highlight-yellow">Lab 15: Building Production-Grade Distributed Redis</p>
-                <p style="margin-top: 50px;">
-                    <small>Duration: 3-4 hours | Level: Advanced</small>
-                </p>
+            <section>
+                <div class="title-block">
+                    <h1>Content 15: Redis Cluster</h1>
+                    <h3>High Availability, Sharding & Replication</h3>
+                    <p><strong>Day 4 - Advanced Session</strong></p>
+                    <p>Building Production-Grade Distributed Redis</p>
+                </div>
             </section>
 
             <!-- Learning Objectives -->
@@ -998,54 +1096,25 @@ $ npm run monitor
             </section>
 
             <!-- Thank You -->
-            <section data-background="linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
-                <h1>Thank You!</h1>
-                <h3>Questions?</h3>
-                <p style="margin-top: 50px;">
-                    <span class="highlight-yellow">Lab 15: Redis Cluster with High Availability</span>
-                </p>
-                <p>
-                    <small>Build • Scale • Monitor • Survive</small>
-                </p>
+            <section>
+                <div class="title-block">
+                    <h1>Thank You!</h1>
+                    <h3>Questions?</h3>
+                    <p style="margin-top: 30px;">Ready to build production-grade Redis Cluster systems</p>
+                    <p><small>Build • Scale • Monitor • Survive</small></p>
+                </div>
             </section>
 
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/reveal.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/notes/notes.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/markdown/markdown.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/highlight/highlight.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/zoom/zoom.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/math/math.js"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
     <script>
         Reveal.initialize({
             hash: true,
-            controls: true,
-            progress: true,
-            center: true,
             transition: 'slide',
-            backgroundTransition: 'fade',
-            
-            plugins: [ RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom, RevealMath ],
-            
-            width: 1200,
-            height: 900,
-            margin: 0.1,
-            minScale: 0.2,
-            maxScale: 2.0
-        });
-        
-        // Custom event listeners
-        Reveal.on('slidechanged', event => {
-            // Add animation to performance metrics
-            const metrics = event.currentSlide.querySelectorAll('.performance-metric');
-            metrics.forEach((metric, index) => {
-                setTimeout(() => {
-                    metric.style.animation = 'pulse 0.5s ease-in-out';
-                }, index * 100);
-            });
+            transitionSpeed: 'default',
+            backgroundTransition: 'fade'
         });
     </script>
 </body>
