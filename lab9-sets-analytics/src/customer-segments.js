@@ -17,8 +17,8 @@ class CustomerSegments {
         if (!this.segments[segmentName]) {
             throw new Error(`Invalid segment: ${segmentName}`);
         }
-        
-        const result = await client.sadd(this.segments[segmentName], customerId);
+
+        const result = await client.sAdd(this.segments[segmentName], customerId);
         console.log(`Customer ${customerId} added to ${segmentName}: ${result ? 'new' : 'existing'}`);
         return result;
     }
@@ -27,8 +27,8 @@ class CustomerSegments {
         if (!this.segments[segmentName]) {
             throw new Error(`Invalid segment: ${segmentName}`);
         }
-        
-        const result = await client.srem(this.segments[segmentName], customerId);
+
+        const result = await client.sRem(this.segments[segmentName], customerId);
         console.log(`Customer ${customerId} removed from ${segmentName}: ${result ? 'success' : 'not found'}`);
         return result;
     }
@@ -37,8 +37,8 @@ class CustomerSegments {
         if (!this.segments[segmentName]) {
             throw new Error(`Invalid segment: ${segmentName}`);
         }
-        
-        const result = await client.sismember(this.segments[segmentName], customerId);
+
+        const result = await client.sIsMember(this.segments[segmentName], customerId);
         return result === 1;
     }
 
@@ -46,8 +46,8 @@ class CustomerSegments {
         if (!this.segments[segmentName]) {
             throw new Error(`Invalid segment: ${segmentName}`);
         }
-        
-        const members = await client.smembers(this.segments[segmentName]);
+
+        const members = await client.sMembers(this.segments[segmentName]);
         console.log(`${segmentName} segment has ${members.length} customers:`, members);
         return members;
     }
@@ -56,22 +56,22 @@ class CustomerSegments {
         if (!this.segments[segmentName]) {
             throw new Error(`Invalid segment: ${segmentName}`);
         }
-        
-        const size = await client.scard(this.segments[segmentName]);
+
+        const size = await client.sCard(this.segments[segmentName]);
         console.log(`${segmentName} segment size: ${size}`);
         return size;
     }
 
     async getCustomerSegments(customerId) {
         const customerSegments = [];
-        
+
         for (const [segmentName, segmentKey] of Object.entries(this.segments)) {
-            const isMember = await client.sismember(segmentKey, customerId);
+            const isMember = await client.sIsMember(segmentKey, customerId);
             if (isMember) {
                 customerSegments.push(segmentName);
             }
         }
-        
+
         console.log(`Customer ${customerId} segments:`, customerSegments);
         return customerSegments;
     }

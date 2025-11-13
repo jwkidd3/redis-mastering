@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Content 13: Production Configuration & Persistence</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.min.css">
+    <style>
+        .reveal .slides section {text-align: left; font-size: 0.75em !important; line-height: 1.3; max-height: 90vh !important; overflow-y: auto !important; padding: 0.5em 1em !important;}
+        .reveal h1 {font-size: 1.8em !important; margin: 0.3em 0 !important;}
+        .reveal h2 {font-size: 1.4em !important; margin: 0.3em 0 !important;}
+        .reveal h3 {font-size: 1.2em !important; margin: 0.3em 0 !important;}
+        .reveal h1, .reveal h2, .reveal h3 {color: #2c3e50; text-align: center;}
+        .main-title {background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; padding: 1.5em; border-radius: 10px; text-align: center;}
+        .session-header {background: #f8f9fa; color: #2c3e50 !important; padding: 0.6em; border-left: 5px solid #3498db; margin-bottom: 0.5em;}
+        .code-block {background: #2c3e50; color: #ecf0f1; padding: 0.5em; font-family: monospace; font-size: 0.6em; margin: 0.3em 0; overflow-x: auto;}
+        .lab-callout {background: linear-gradient(45deg, #ff6b6b, #ee5a24); color: white !important; padding: 0.8em; border-radius: 8px; text-align: center; margin: 0.5em 0;}
+        .warning {background: #fff3cd; border: 1px solid #ffeaa7; padding: 0.5em; margin: 0.3em 0;}
+        .success {background: #d4edda; border: 1px solid #c3e6cb; padding: 0.5em; margin: 0.3em 0;}
+        .info {background: #e3f2fd; border: 1px solid #bbdefb; padding: 0.5em; margin: 0.3em 0;}
+        .reveal .slides section::-webkit-scrollbar {width: 8px;}
+        .reveal .slides section::-webkit-scrollbar-thumb {background: #888; border-radius: 4px;}
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+            <section><div class="main-title"><h1>Content 13</h1><h2>Production Configuration & Persistence</h2><p>RDB, AOF, Memory Management</p><p><strong>Day 3 - Session 4</strong></p></div></section>
+            
+            <section><div class="session-header"><h2>Learning Objectives</h2></div>
+                <ul><li>Configure RDB snapshots for backups</li><li>Set up AOF for durability</li><li>Manage memory with eviction policies</li><li>Configure production security settings</li><li>Use Redis Insight Workbench for configuration</li></ul>
+            </section>
+
+            <section><div class="session-header"><h2>Data Persistence Options</h2></div>
+                <h3>RDB (Snapshots)</h3>
+                <div class="success"><strong>Best for:</strong> Backups, disaster recovery, replication</div>
+                <ul><li>Point-in-time snapshots</li><li>Compact single file</li><li>Fast restarts</li><li>Less resource intensive</li></ul>
+                <h3>AOF (Append-Only File)</h3>
+                <div class="success"><strong>Best for:</strong> Maximum durability, audit trails</div>
+                <ul><li>Log of every write operation</li><li>More durable (can lose only 1 second of data)</li><li>Automatic rewriting for compaction</li><li>Human-readable format</li></ul>
+            </section>
+
+            <section><div class="session-header"><h2>RDB Configuration</h2></div>
+                <div class="code-block">
+# Configure snapshot intervals (Redis Insight Workbench)
+CONFIG SET save "900 1 300 10 60 10000"
+# Save after: 900s if ≥1 key changed
+#            300s if ≥10 keys changed
+#            60s if ≥10000 keys changed
+
+# Manual snapshot
+BGSAVE
+
+# Check last save time
+LASTSAVE
+
+# Get snapshot info
+INFO persistence
+                </div>
+                <div class="info"><strong>Best Practice:</strong> Use BGSAVE (background) not SAVE (blocks server)</div>
+            </section>
+
+            <section><div class="session-header"><h2>AOF Configuration</h2></div>
+                <div class="code-block">
+# Enable AOF (Redis Insight Workbench)
+CONFIG SET appendonly yes
+
+# Set fsync policy
+CONFIG SET appendfsync everysec
+# Options:
+#   always - fsync after every write (slowest, safest)
+#   everysec - fsync once per second (balanced)
+#   no - let OS handle fsync (fastest, least safe)
+
+# Trigger AOF rewrite
+BGREWRITEAOF
+
+# Check AOF status
+INFO persistence
+                </div>
+                <div class="warning"><strong>Disk Usage:</strong> AOF files grow large, enable auto-rewrite</div>
+            </section>
+
+            <section><div class="session-header"><h2>Memory Management</h2></div>
+                <h3>Set Maximum Memory</h3>
+                <div class="code-block">
+# Set max memory (2GB example)
+CONFIG SET maxmemory 2gb
+
+# Check current memory usage
+INFO memory
+                </div>
+                <h3>Eviction Policies</h3>
+                <div class="code-block">
+# Set eviction policy
+CONFIG SET maxmemory-policy allkeys-lru
+
+# Policies:
+#   noeviction - Return errors when memory full
+#   allkeys-lru - Evict any key, LRU algorithm
+#   volatile-lru - Evict keys with TTL, LRU
+#   allkeys-random - Evict random keys
+#   volatile-ttl - Evict keys with shortest TTL
+                </div>
+            </section>
+
+            <section><div class="session-header"><h2>Production Security</h2></div>
+                <div class="code-block">
+# Require password
+CONFIG SET requirepass "strong_password_here"
+
+# Rename dangerous commands
+CONFIG SET rename-command FLUSHALL ""
+CONFIG SET rename-command FLUSHDB ""
+CONFIG SET rename-command CONFIG "CONFIG_abc123"
+
+# Limit connections
+CONFIG SET maxclients 10000
+
+# Bind to specific interface
+CONFIG SET bind "127.0.0.1 192.168.1.100"
+                </div>
+                <div class="warning"><strong>Security:</strong> Always use passwords and firewall rules in production</div>
+            </section>
+
+            <section><div class="session-header"><h2>Monitoring Configuration</h2></div>
+                <div class="code-block">
+# Enable slowlog
+CONFIG SET slowlog-log-slower-than 10000
+CONFIG SET slowlog-max-len 128
+
+# View slow queries
+SLOWLOG GET 10
+
+# Check config
+CONFIG GET *
+
+# Save config to file
+CONFIG REWRITE
+                </div>
+            </section>
+
+            <section><div class="lab-callout"><h2>🧪 Lab 13: Production Configuration</h2><p><strong>Duration: 45 minutes</strong></p></div>
+                <h3>What You'll Configure</h3>
+                <ul><li>RDB snapshots with custom intervals</li><li>AOF with everysec fsync</li><li>Memory limits and eviction policies</li><li>Security settings and passwords</li><li>All via Redis Insight Workbench</li></ul>
+            </section>
+
+            <section><div class="session-header"><h2>Summary</h2></div>
+                <ul><li><strong>RDB</strong> provides efficient point-in-time backups</li><li><strong>AOF</strong> ensures maximum data durability</li><li><strong>Memory limits</strong> prevent OOM crashes</li><li><strong>Eviction policies</strong> handle memory pressure</li><li><strong>Security</strong> requires passwords and command restrictions</li><li><strong>Redis Insight</strong> simplifies configuration management</li></ul>
+            </section>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
+    <script>Reveal.initialize({hash: true, center: false});</script>
+</body>
+</html>

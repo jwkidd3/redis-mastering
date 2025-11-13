@@ -23,8 +23,6 @@ lab9-sets-analytics/
 │   ├── customer-segments.js    # Set operations
 │   ├── risk-scoring.js         # Sorted set operations
 │   └── analytics-dashboard.js  # Combined analytics
-├── scripts/
-│   └── setup-lab9.js           # Lab initialization
 └── reference/
     └── redis-sets-commands.md  # Command reference
 ```
@@ -41,12 +39,6 @@ npm install
 
 ```bash
 node -e "const c = require('./src/connection'); c.ping().then(r => console.log(r))"
-```
-
-### 3. Run Setup
-
-```bash
-node scripts/setup-lab9.js
 ```
 
 ## Part 1: Customer Segmentation with Sets

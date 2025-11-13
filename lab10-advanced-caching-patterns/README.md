@@ -166,9 +166,16 @@ setInterval(() => this.cleanMemoryCache(), 60000);
 ## 🚨 Common Issues & Solutions
 
 ### Connection Issues
+**Using Redis Insight Workbench:**
+1. Open Redis Insight and connect to your Redis instance
+2. Navigate to **Workbench**
+3. Test connectivity by running: `PING`
+4. Expected response: `PONG`
+
+**Or use Node.js test script:**
 ```bash
-# Check Redis connectivity
-redis-cli -h redis-server.training.com ping
+# Check Redis connectivity programmatically
+node test-connection.js
 ```
 
 ### Memory Leaks

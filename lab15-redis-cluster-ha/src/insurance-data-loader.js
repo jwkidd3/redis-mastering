@@ -145,19 +145,19 @@ async function loadInsuranceData() {
       // Store policies with hash tags
       for (const policy of policyData) {
         customerPipeline.hset(`{customer:${customerId}}:policy:${policy.id}`, policy.data);
-        customerPipeline.sadd(`{customer:${customerId}}:policies`, policy.id);
+        customerPipeline.sAdd(`{customer:${customerId}}:policies`, policy.id);
         stats.policies++;
       }
 
       // Store claims with hash tags
       for (const claim of claimData) {
         customerPipeline.hset(`{customer:${customerId}}:claim:${claim.id}`, claim.data);
-        customerPipeline.sadd(`{customer:${customerId}}:claims`, claim.id);
-        
+        customerPipeline.sAdd(`{customer:${customerId}}:claims`, claim.id);
+
         // Find the policy this claim belongs to
         const policy = policyData.find(p => p.id === claim.data.policy_id);
         if (policy) {
-          customerPipeline.sadd(`{customer:${customerId}}:policy:${policy.id}:claims`, claim.id);
+          customerPipeline.sAdd(`{customer:${customerId}}:policy:${policy.id}:claims`, claim.id);
         }
         stats.claims++;
       }
@@ -250,9 +250,9 @@ async function loadInsuranceData() {
     console.log(chalk.yellow('\nSample queries to verify data:'));
     
     // Get random customer
-    const randomCustomer = await cluster.srandmember('customers:all');
+    const randomCustomer = await cluster.sRandMember('customers:all');
     if (randomCustomer) {
-      const profile = await cluster.hgetall(`{customer:${randomCustomer}}:profile`);
+      const profile = await cluster.hGetAll(`{customer:${randomCustomer}}:profile`);
       console.log(`\nRandom Customer: ${randomCustomer}`);
       console.log(`  Name: ${profile.first_name} ${profile.last_name}`);
       console.log(`  Segment: ${profile.segment}`);
@@ -260,14 +260,14 @@ async function loadInsuranceData() {
     }
 
     // Get top risk customers
-    const highRiskCustomers = await cluster.zrevrange('customers:by_risk', 0, 2, 'WITHSCORES');
+    const highRiskCustomers = await cluster.zRevRange('customers:by_risk', 0, 2, 'WITHSCORES');
     console.log('\nTop 3 High Risk Customers:');
     for (let i = 0; i < highRiskCustomers.length; i += 2) {
       console.log(`  ${highRiskCustomers[i]}: Risk Score ${highRiskCustomers[i + 1]}`);
     }
 
     // Get recent claims
-    const recentClaims = await cluster.zrevrange('claims:by_date', 0, 2);
+    const recentClaims = await cluster.zRevRange('claims:by_date', 0, 2);
     console.log('\nMost Recent Claims:');
     for (const claimId of recentClaims) {
       console.log(`  ${claimId}`);

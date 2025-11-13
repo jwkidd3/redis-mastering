@@ -66,13 +66,13 @@ class ClusterClient {
     
     // Store customer profile
     pipeline.hset(`${key}:profile`, customerData);
-    
+
     // Add to customer index
-    pipeline.sadd('customers:all', customerId);
-    
+    pipeline.sAdd('customers:all', customerId);
+
     // Add to segment if provided
     if (customerData.segment) {
-      pipeline.sadd(`customers:segment:${customerData.segment}`, customerId);
+      pipeline.sAdd(`customers:segment:${customerData.segment}`, customerId);
     }
     
     // Set creation timestamp
@@ -91,13 +91,13 @@ class ClusterClient {
     
     // Store policy data
     pipeline.hset(policyKey, policyData);
-    
+
     // Link policy to customer
-    pipeline.sadd(`{customer:${customerId}}:policies`, policyId);
-    
+    pipeline.sAdd(`{customer:${customerId}}:policies`, policyId);
+
     // Add to policy index
-    pipeline.sadd('policies:all', policyId);
-    pipeline.sadd(`policies:type:${policyData.type}`, policyId);
+    pipeline.sAdd('policies:all', policyId);
+    pipeline.sAdd(`policies:type:${policyData.type}`, policyId);
     
     // Update customer's total coverage
     if (policyData.coverage) {
@@ -123,11 +123,11 @@ class ClusterClient {
     });
     
     // Add to claims queue
-    pipeline.lpush('claims:pending', claimId);
-    
+    pipeline.lPush('claims:pending', claimId);
+
     // Link claim to customer and policy
-    pipeline.sadd(`{customer:${customerId}}:claims`, claimId);
-    pipeline.sadd(`policy:${policyId}:claims`, claimId);
+    pipeline.sAdd(`{customer:${customerId}}:claims`, claimId);
+    pipeline.sAdd(`policy:${policyId}:claims`, claimId);
     
     // Increment statistics
     pipeline.hincrby('stats:claims', 'total', 1);
@@ -139,18 +139,18 @@ class ClusterClient {
 
   async getCustomerProfile(customerId) {
     const pipeline = this.cluster.pipeline();
-    
+
     // Get customer profile
-    pipeline.hgetall(`customer:${customerId}:profile`);
-    
+    pipeline.hGetAll(`customer:${customerId}:profile`);
+
     // Get policies (using hash tags for co-location)
-    pipeline.smembers(`{customer:${customerId}}:policies`);
-    
+    pipeline.sMembers(`{customer:${customerId}}:policies`);
+
     // Get claims
-    pipeline.smembers(`{customer:${customerId}}:claims`);
-    
+    pipeline.sMembers(`{customer:${customerId}}:claims`);
+
     // Get metadata
-    pipeline.hgetall(`customer:${customerId}:metadata`);
+    pipeline.hGetAll(`customer:${customerId}:metadata`);
     
     const [[, profile], [, policies], [, claims], [, metadata]] = await pipeline.exec();
     

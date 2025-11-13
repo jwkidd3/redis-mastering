@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Content 11: Session Management & Authentication</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.min.css">
+    <style>
+        .reveal .slides section {
+            text-align: left;
+            font-size: 0.75em !important;
+            line-height: 1.3;
+            max-height: 90vh !important;
+            overflow-y: auto !important;
+            padding: 0.5em 1em !important;
+        }
+        .reveal h1 {
+            font-size: 1.8em !important;
+            margin: 0.3em 0 !important;
+        }
+        .reveal h2 {
+            font-size: 1.4em !important;
+            margin: 0.3em 0 !important;
+        }
+        .reveal h3 {
+            font-size: 1.2em !important;
+            margin: 0.3em 0 !important;
+        }
+        .reveal h4 {
+            font-size: 1em !important;
+            margin: 0.2em 0 !important;
+        }
+        .reveal h1, .reveal h2, .reveal h3 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .reveal p {
+            margin: 0.3em 0 !important;
+        }
+        .reveal ul, .reveal ol {
+            margin: 0.5em 0 !important;
+        }
+        .reveal li {
+            margin: 0.2em 0 !important;
+        }
+        .main-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            padding: 1.5em;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .session-header {
+            background: #f8f9fa;
+            color: #2c3e50 !important;
+            padding: 0.6em;
+            border-left: 5px solid #3498db;
+            margin-bottom: 0.5em;
+        }
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            border: 2px solid #34495e;
+            border-radius: 5px;
+            padding: 0.5em;
+            font-family: 'Courier New', 'Monaco', monospace;
+            font-size: 0.6em;
+            margin: 0.3em 0;
+            line-height: 1.2;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .highlight {
+            background: #ffffcc;
+            padding: 0.1em 0.3em;
+            border-radius: 3px;
+        }
+        .lab-callout {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white !important;
+            padding: 0.8em;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9em;
+            margin: 0.5em 0;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 0.5em;
+            margin: 0.3em 0;
+            font-size: 0.75em;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            padding: 0.5em;
+            margin: 0.3em 0;
+            font-size: 0.75em;
+        }
+        .info {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 4px;
+            padding: 0.5em;
+            margin: 0.3em 0;
+            font-size: 0.75em;
+        }
+        .two-column {
+            display: flex;
+            gap: 1em;
+        }
+        .column {
+            flex: 1;
+        }
+        /* Scrollbar styling */
+        .reveal .slides section::-webkit-scrollbar {
+            width: 8px;
+        }
+        .reveal .slides section::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .reveal .slides section::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        .reveal .slides section::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- Title Slide -->
+            <section data-background="#f8f9fa">
+                <div class="main-title">
+                    <h1>Content 11</h1>
+                    <h2>Session Management & Authentication</h2>
+                    <p>Building Secure User Sessions with Redis</p>
+                    <p><strong>Day 3 - Session 2</strong></p>
+                </div>
+            </section>
+
+            <!-- Learning Objectives -->
+            <section>
+                <div class="session-header">
+                    <h2>Learning Objectives</h2>
+                </div>
+                <ul>
+                    <li>Implement Redis-based session management</li>
+                    <li>Configure session TTL and automatic cleanup</li>
+                    <li>Build role-based access control (RBAC) systems</li>
+                    <li>Implement security monitoring and threat detection</li>
+                    <li>Handle multi-device sessions for users</li>
+                    <li>Use Redis data structures for session tracking</li>
+                </ul>
+            </section>
+
+            <!-- Why Redis for Sessions -->
+            <section>
+                <div class="session-header">
+                    <h2>Why Use Redis for Session Management?</h2>
+                </div>
+                <h3>Traditional Session Storage Problems</h3>
+                <ul>
+                    <li><strong>In-Memory (Node.js):</strong> Lost on restart, doesn't scale</li>
+                    <li><strong>Database:</strong> Too slow for every request</li>
+                    <li><strong>File System:</strong> Not suitable for distributed systems</li>
+                </ul>
+                <div class="success">
+                    <h4>Redis Advantages</h4>
+                    <ul>
+                        <li>✓ Fast (sub-millisecond reads)</li>
+                        <li>✓ Automatic expiration with TTL</li>
+                        <li>✓ Shared across multiple servers</li>
+                        <li>✓ Built-in data structures (Sets, Hashes)</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Session Storage Patterns -->
+            <section>
+                <div class="session-header">
+                    <h2>Session Storage Patterns</h2>
+                </div>
+                <div class="two-column">
+                    <div>
+                        <h3>Hash-Based (Recommended)</h3>
+                        <div class="code-block">
+// Store session as hash
+HSET session:abc123
+  userId "user_456"
+  role "customer"
+  email "user@example.com"
+  loginTime "2024-11-12T10:00:00Z"
+  lastActivity "2024-11-12T10:15:00Z"
+
+// Set TTL (30 minutes)
+EXPIRE session:abc123 1800
+
+// Get specific field
+HGET session:abc123 userId
+
+// Get all session data
+HGETALL session:abc123
+                        </div>
+                    </div>
+                    <div>
+                        <h3>String-Based (Simple)</h3>
+                        <div class="code-block">
+// Store as JSON string
+SET session:abc123 '{
+  "userId": "user_456",
+  "role": "customer",
+  "email": "user@example.com"
+}' EX 1800
+
+// Get entire session
+GET session:abc123
+                        </div>
+                        <div class="warning">
+                            <strong>Limitation:</strong> Must deserialize entire object to read/update single field
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Session Implementation -->
+            <section>
+                <div class="session-header">
+                    <h2>Session Manager Implementation</h2>
+                </div>
+                <div class="code-block">
+class SessionManager {
+    constructor(redisClient) {
+        this.redis = redisClient;
+        this.SESSION_TTL = 1800; // 30 minutes
+    }
+
+    async createSession(userId, userData) {
+        const sessionId = crypto.randomUUID();
+        const sessionKey = `session:${sessionId}`;
+
+        // Store session data as hash
+        await this.redis.hSet(sessionKey, {
+            userId: userId,
+            role: userData.role,
+            email: userData.email,
+            loginTime: new Date().toISOString(),
+            lastActivity: new Date().toISOString()
+        });
+
+        // Set TTL
+        await this.redis.expire(sessionKey, this.SESSION_TTL);
+
+        // Track active sessions for user
+        await this.redis.sAdd(`user:${userId}:sessions`, sessionId);
+
+        return sessionId;
+    }
+
+    async getSession(sessionId) {
+        const sessionKey = `session:${sessionId}`;
+        const session = await this.redis.hGetAll(sessionKey);
+
+        if (!session || Object.keys(session).length === 0) {
+            return null; // Session expired or doesn't exist
+        }
+
+        // Update last activity
+        await this.redis.hSet(sessionKey, 'lastActivity',
+            new Date().toISOString());
+
+        // Refresh TTL
+        await this.redis.expire(sessionKey, this.SESSION_TTL);
+
+        return session;
+    }
+
+    async destroySession(sessionId) {
+        const session = await this.getSession(sessionId);
+        if (session) {
+            // Remove from user's active sessions
+            await this.redis.sRem(`user:${session.userId}:sessions`,
+                sessionId);
+
+            // Delete session
+            await this.redis.del(`session:${sessionId}`);
+        }
+    }
+}
+                </div>
+            </section>
+
+            <!-- Multi-Device Sessions -->
+            <section>
+                <div class="session-header">
+                    <h2>Multi-Device Session Management</h2>
+                </div>
+                <h3>Tracking Active Sessions with Sets</h3>
+                <div class="code-block">
+// User logs in from laptop
+SADD user:456:sessions "session:laptop_abc123"
+
+// User logs in from phone
+SADD user:456:sessions "session:phone_xyz789"
+
+// Get all active sessions for user
+SMEMBERS user:456:sessions
+// Returns: ["session:laptop_abc123", "session:phone_xyz789"]
+
+// Logout from specific device
+SREM user:456:sessions "session:laptop_abc123"
+DEL session:laptop_abc123
+
+// Logout from ALL devices (security feature)
+SMEMBERS user:456:sessions  // Get all sessions
+DEL session:laptop_abc123 session:phone_xyz789  // Delete all
+DEL user:456:sessions  // Clear set
+                </div>
+                <div class="info">
+                    <strong>Use Case:</strong> "Log out from all devices" security feature in account settings
+                </div>
+            </section>
+
+            <!-- Role-Based Access Control -->
+            <section>
+                <div class="session-header">
+                    <h2>Role-Based Access Control (RBAC)</h2>
+                </div>
+                <h3>Role Hierarchy</h3>
+                <ul>
+                    <li><strong>Customer:</strong> View own policies, submit claims</li>
+                    <li><strong>Agent:</strong> View customer data, process claims</li>
+                    <li><strong>Admin:</strong> Full system access, user management</li>
+                </ul>
+                <div class="code-block">
+class RBACManager {
+    constructor(redisClient) {
+        this.redis = redisClient;
+
+        // Define permissions for each role
+        this.permissions = {
+            customer: ['view_own_policy', 'submit_claim', 'view_own_claims'],
+            agent: ['view_customer_data', 'process_claims', 'update_policy'],
+            admin: ['*'] // All permissions
+        };
+    }
+
+    async hasPermission(sessionId, permission) {
+        const session = await this.redis.hGetAll(`session:${sessionId}`);
+        if (!session || !session.role) {
+            return false;
+        }
+
+        const rolePermissions = this.permissions[session.role];
+
+        // Admin has all permissions
+        if (rolePermissions.includes('*')) {
+            return true;
+        }
+
+        return rolePermissions.includes(permission);
+    }
+
+    async requirePermission(sessionId, permission) {
+        const allowed = await this.hasPermission(sessionId, permission);
+        if (!allowed) {
+            throw new Error(`Permission denied: ${permission}`);
+        }
+    }
+}
+
+// Usage in API endpoint
+app.get('/api/customer/:id', async (req, res) => {
+    try {
+        await rbac.requirePermission(
+            req.sessionId,
+            'view_customer_data'
+        );
+        // Process request...
+    } catch (error) {
+        res.status(403).json({ error: 'Forbidden' });
+    }
+});
+                </div>
+            </section>
+
+            <!-- Security Monitoring -->
+            <section>
+                <div class="session-header">
+                    <h2>Security Monitoring & Threat Detection</h2>
+                </div>
+                <h3>Failed Login Tracking</h3>
+                <div class="code-block">
+class SecurityMonitor {
+    constructor(redisClient) {
+        this.redis = redisClient;
+        this.MAX_FAILED_ATTEMPTS = 5;
+        this.LOCKOUT_DURATION = 900; // 15 minutes
+    }
+
+    async recordFailedLogin(userId, ip) {
+        const key = `failed_login:${userId}`;
+
+        // Increment failed attempts
+        const attempts = await this.redis.incr(key);
+
+        // Set expiration on first attempt
+        if (attempts === 1) {
+            await this.redis.expire(key, 300); // 5 minutes
+        }
+
+        // Lock account if too many attempts
+        if (attempts >= this.MAX_FAILED_ATTEMPTS) {
+            await this.lockAccount(userId);
+
+            // Log security event
+            await this.logSecurityEvent(userId,
+                'ACCOUNT_LOCKED', { ip, attempts });
+        }
+
+        return attempts;
+    }
+
+    async lockAccount(userId) {
+        await this.redis.set(
+            `account_locked:${userId}`,
+            'true',
+            'EX',
+            this.LOCKOUT_DURATION
+        );
+    }
+
+    async isAccountLocked(userId) {
+        const locked = await this.redis.get(`account_locked:${userId}`);
+        return locked === 'true';
+    }
+
+    async clearFailedAttempts(userId) {
+        await this.redis.del(`failed_login:${userId}`);
+    }
+
+    async logSecurityEvent(userId, eventType, metadata) {
+        const event = {
+            userId,
+            eventType,
+            timestamp: Date.now(),
+            ...metadata
+        };
+
+        // Store in sorted set by timestamp
+        await this.redis.zAdd('security:events', {
+            score: event.timestamp,
+            value: JSON.stringify(event)
+        });
+    }
+}
+                </div>
+            </section>
+
+            <!-- Session Analytics -->
+            <section>
+                <div class="session-header">
+                    <h2>Session Analytics & Monitoring</h2>
+                </div>
+                <h3>Key Metrics to Track</h3>
+                <ul>
+                    <li><strong>Active Sessions:</strong> Current logged-in users</li>
+                    <li><strong>Session Duration:</strong> Average time users stay logged in</li>
+                    <li><strong>Failed Logins:</strong> Security threat indicators</li>
+                    <li><strong>Device Distribution:</strong> Desktop vs mobile usage</li>
+                </ul>
+                <div class="code-block">
+// Get active session count
+DBSIZE  // Total keys in database
+// Or count sessions specifically
+KEYS session:*  // In development only!
+// In production, track count separately
+
+// Get failed login attempts (last hour)
+const oneHourAgo = Date.now() - 3600000;
+ZRANGEBYSCORE security:events ${oneHourAgo} +inf
+
+// Get sessions by role
+// Store in separate sets for fast queries
+SADD sessions:customer "session:abc123"
+SADD sessions:agent "session:xyz789"
+SADD sessions:admin "session:def456"
+
+SCARD sessions:customer  // Count customer sessions
+SCARD sessions:agent     // Count agent sessions
+SCARD sessions:admin     // Count admin sessions
+                </div>
+            </section>
+
+            <!-- Session Cleanup -->
+            <section>
+                <div class="session-header">
+                    <h2>Automatic Session Cleanup</h2>
+                </div>
+                <h3>Redis TTL-Based Cleanup</h3>
+                <div class="success">
+                    <strong>Best Approach:</strong> Redis automatically removes expired keys with TTL
+                </div>
+                <div class="code-block">
+// When creating session, set TTL
+HSET session:abc123 userId "456" role "customer"
+EXPIRE session:abc123 1800  // 30 minutes
+
+// Redis automatically deletes after 30 minutes
+// No manual cleanup needed!
+
+// Optional: Manually cleanup orphaned keys
+async function cleanupOrphanedSessions() {
+    // Get all user session sets
+    const userKeys = await redis.keys('user:*:sessions');
+
+    for (const key of userKeys) {
+        const sessionIds = await redis.sMembers(key);
+
+        for (const sessionId of sessionIds) {
+            // Check if session still exists
+            const exists = await redis.exists(`session:${sessionId}`);
+            if (!exists) {
+                // Remove from set
+                await redis.sRem(key, sessionId);
+            }
+        }
+    }
+}
+                </div>
+            </section>
+
+            <!-- Redis Insight Usage -->
+            <section>
+                <div class="session-header">
+                    <h2>Monitoring Sessions with Redis Insight</h2>
+                </div>
+                <h3>Real-Time Session Monitoring</h3>
+                <ul>
+                    <li><strong>Key Browser:</strong> View all active sessions</li>
+                    <li><strong>TTL Display:</strong> See when sessions expire</li>
+                    <li><strong>Data Inspection:</strong> Examine session contents</li>
+                    <li><strong>Profiler:</strong> Track session creation/deletion rate</li>
+                </ul>
+                <div class="info">
+                    <strong>In Lab 11:</strong> You'll use Redis Insight Workbench to:
+                    <ul>
+                        <li>Monitor active sessions in real-time</li>
+                        <li>Track failed login attempts</li>
+                        <li>Analyze session duration patterns</li>
+                        <li>Debug RBAC permission issues</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Best Practices -->
+            <section>
+                <div class="session-header">
+                    <h2>Session Management Best Practices</h2>
+                </div>
+                <h3>✅ DO</h3>
+                <ul>
+                    <li>Use secure, random session IDs (UUID or crypto.randomBytes)</li>
+                    <li>Set appropriate TTLs (15-30 minutes for sensitive apps)</li>
+                    <li>Refresh TTL on activity to prevent mid-action expiration</li>
+                    <li>Implement "remember me" with longer TTL (7-30 days)</li>
+                    <li>Store minimal data in sessions (reference IDs, not full objects)</li>
+                    <li>Use HTTPS to prevent session hijacking</li>
+                </ul>
+                <h3>❌ DON'T</h3>
+                <ul>
+                    <li>Store sensitive data unencrypted in sessions</li>
+                    <li>Use predictable session IDs</li>
+                    <li>Forget to implement session expiration</li>
+                    <li>Store large objects in sessions (> 1KB)</li>
+                    <li>Share sessions between different security contexts</li>
+                </ul>
+            </section>
+
+            <!-- Lab 11 Callout -->
+            <section>
+                <div class="lab-callout">
+                    <h2>🧪 Lab 11: Session Management</h2>
+                    <p><strong>Duration: 45 minutes</strong></p>
+                </div>
+                <h3>What You'll Build</h3>
+                <ul>
+                    <li>Complete session management system with Redis</li>
+                    <li>Multi-device session tracking with Sets</li>
+                    <li>Role-based access control (customer/agent/admin)</li>
+                    <li>Security monitoring for failed logins</li>
+                    <li>Session analytics dashboard</li>
+                </ul>
+                <div class="success">
+                    <strong>Tools:</strong> Node.js, ioredis, Redis Insight Workbench for real-time monitoring
+                </div>
+            </section>
+
+            <!-- Summary -->
+            <section>
+                <div class="session-header">
+                    <h2>Session Summary</h2>
+                </div>
+                <h3>Key Takeaways</h3>
+                <ul>
+                    <li><strong>Redis is ideal</strong> for session storage: fast, scalable, TTL built-in</li>
+                    <li><strong>Hash storage</strong> allows efficient field-level updates</li>
+                    <li><strong>Sets track</strong> multi-device sessions per user</li>
+                    <li><strong>RBAC systems</strong> control access based on user roles</li>
+                    <li><strong>Security monitoring</strong> detects and prevents brute force attacks</li>
+                    <li><strong>TTL-based cleanup</strong> automatically removes expired sessions</li>
+                </ul>
+                <div class="success">
+                    <strong>Ready for Lab 11!</strong> You now have the knowledge to build production-grade session management
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            center: false,
+            transition: 'slide',
+            width: 1200,
+            height: 800
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Content 10: Advanced Caching Patterns</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.min.css">
+    <style>
+        .reveal .slides section {
+            text-align: left;
+            font-size: 0.75em !important;
+            line-height: 1.3;
+            max-height: 90vh !important;
+            overflow-y: auto !important;
+            padding: 0.5em 1em !important;
+        }
+        .reveal h1 {
+            font-size: 1.8em !important;
+            margin: 0.3em 0 !important;
+        }
+        .reveal h2 {
+            font-size: 1.4em !important;
+            margin: 0.3em 0 !important;
+        }
+        .reveal h3 {
+            font-size: 1.2em !important;
+            margin: 0.3em 0 !important;
+        }
+        .reveal h4 {
+            font-size: 1em !important;
+            margin: 0.2em 0 !important;
+        }
+        .reveal h1, .reveal h2, .reveal h3 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .reveal p {
+            margin: 0.3em 0 !important;
+        }
+        .reveal ul, .reveal ol {
+            margin: 0.5em 0 !important;
+        }
+        .reveal li {
+            margin: 0.2em 0 !important;
+        }
+        .main-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            padding: 1.5em;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .session-header {
+            background: #f8f9fa;
+            color: #2c3e50 !important;
+            padding: 0.6em;
+            border-left: 5px solid #3498db;
+            margin-bottom: 0.5em;
+        }
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            border: 2px solid #34495e;
+            border-radius: 5px;
+            padding: 0.5em;
+            font-family: 'Courier New', 'Monaco', monospace;
+            font-size: 0.6em;
+            margin: 0.3em 0;
+            line-height: 1.2;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .highlight {
+            background: #ffffcc;
+            padding: 0.1em 0.3em;
+            border-radius: 3px;
+        }
+        .lab-callout {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white !important;
+            padding: 0.8em;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9em;
+            margin: 0.5em 0;
+        }
+        .pattern-box {
+            background: #f0f7ff;
+            border-left: 5px solid #2196f3;
+            padding: 0.5em;
+            margin: 0.3em 0;
+        }
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.8em;
+            margin: 0.5em 0;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 0.5em;
+            margin: 0.3em 0;
+            font-size: 0.75em;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            padding: 0.5em;
+            margin: 0.3em 0;
+            font-size: 0.75em;
+        }
+        .info {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 4px;
+            padding: 0.5em;
+            margin: 0.3em 0;
+            font-size: 0.75em;
+        }
+        /* Scrollbar styling */
+        .reveal .slides section::-webkit-scrollbar {
+            width: 8px;
+        }
+        .reveal .slides section::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .reveal .slides section::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        .reveal .slides section::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+            
+            <!-- Title Slide -->
+            <section data-background="#f8f9fa">
+                <div class="main-title">
+                    <h1>Content 10</h1>
+                    <h2>Advanced Caching Patterns</h2>
+                    <p>Multi-Level Caching & Performance Optimization</p>
+                    <p><strong>Day 3 - Session 1</strong></p>
+                </div>
+            </section>
+
+            <!-- Learning Objectives -->
+            <section>
+                <div class="session-header">
+                    <h2>Learning Objectives</h2>
+                </div>
+                <ul>
+                    <li>Master cache-aside and write-through caching patterns</li>
+                    <li>Implement multi-level caching architectures</li>
+                    <li>Design intelligent cache invalidation strategies</li>
+                    <li>Optimize cache performance with warming and monitoring</li>
+                    <li>Apply caching best practices for production systems</li>
+                </ul>
+            </section>
+
+            <!-- Why Caching Matters -->
+            <section>
+                <div class="session-header">
+                    <h2>Why Advanced Caching Matters</h2>
+                </div>
+                <div class="info">
+                    <strong>The Performance Challenge:</strong> Database queries can take 10-100ms, but Redis GET operations complete in &lt;1ms
+                </div>
+                <h3>Business Impact</h3>
+                <ul>
+                    <li><strong>Response Time:</strong> 10-100x faster user experience</li>
+                    <li><strong>Scalability:</strong> Handle 10-100x more traffic</li>
+                    <li><strong>Cost Savings:</strong> Reduce database load by 70-90%</li>
+                    <li><strong>Availability:</strong> Resilience during database issues</li>
+                </ul>
+            </section>
+
+            <!-- Caching Patterns Overview -->
+            <section>
+                <div class="session-header">
+                    <h2>Core Caching Patterns</h2>
+                </div>
+                <div class="three-column">
+                    <div class="pattern-box">
+                        <h4>Cache-Aside</h4>
+                        <p>Application manages cache explicitly. Read from cache, if miss then fetch from DB and populate cache.</p>
+                        <div class="success">Best for: Read-heavy workloads</div>
+                    </div>
+                    <div class="pattern-box">
+                        <h4>Write-Through</h4>
+                        <p>Write to cache and database simultaneously. Ensures data consistency but adds latency.</p>
+                        <div class="success">Best for: Strong consistency needs</div>
+                    </div>
+                    <div class="pattern-box">
+                        <h4>Write-Behind</h4>
+                        <p>Write to cache immediately, database asynchronously. Better performance but risk of data loss.</p>
+                        <div class="warning">Risk: Data loss if cache fails</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Cache-Aside Implementation -->
+            <section>
+                <div class="session-header">
+                    <h2>Cache-Aside Pattern - Implementation</h2>
+                </div>
+                <div class="code-block">
+class CustomerCache {
+    constructor(redisClient, dbClient) {
+        this.redis = redisClient;
+        this.db = dbClient;
+    }
+    
+    async getCustomer(customerId) {
+        const cacheKey = `customer:${customerId}`;
+        
+        // Try cache first
+        let customer = await this.redis.get(cacheKey);
+        if (customer) {
+            console.log('Cache HIT');
+            return JSON.parse(customer);
+        }
+        
+        console.log('Cache MISS - fetching from database');
+        // Cache miss - fetch from database
+        customer = await this.db.getCustomer(customerId);
+        if (customer) {
+            // Cache for 1 hour
+            await this.redis.setex(cacheKey, 3600, JSON.stringify(customer));
+        }
+        
+        return customer;
+    }
+    
+    async updateCustomer(customerId, data) {
+        // Update database first
+        await this.db.updateCustomer(customerId, data);
+        
+        // Invalidate cache
+        await this.redis.del(`customer:${customerId}`);
+    }
+}
+                </div>
+            </section>
+
+            <!-- Multi-Level Caching -->
+            <section>
+                <div class="session-header">
+                    <h2>Multi-Level Caching Architecture</h2>
+                </div>
+                <h3>Architecture Layers</h3>
+                <ul>
+                    <li><strong>L1:</strong> Application memory cache (Node.js Map/LRU) - 100µs access</li>
+                    <li><strong>L2:</strong> Redis cache (shared, persistent) - 1ms access</li>
+                    <li><strong>L3:</strong> Database (source of truth) - 10-100ms access</li>
+                </ul>
+                <div class="success">
+                    <strong>Performance Gains:</strong> L1 cache can serve 99% of requests in 100µs, Redis handles cache sharing across instances
+                </div>
+            </section>
+
+            <!-- Multi-Level Implementation -->
+            <section>
+                <div class="session-header">
+                    <h2>Multi-Level Cache - Implementation</h2>
+                </div>
+                <div class="code-block">
+class MultiLevelCache {
+    constructor(redis, localCache) {
+        this.redis = redis;
+        this.local = localCache; // LRU cache with max 1000 items
+    }
+    
+    async get(key) {
+        // L1: Check local memory cache
+        let value = this.local.get(key);
+        if (value) {
+            console.log('L1 HIT');
+            return value;
+        }
+        
+        // L2: Check Redis
+        value = await this.redis.get(key);
+        if (value) {
+            console.log('L2 HIT');
+            this.local.set(key, value); // Populate L1
+            return value;
+        }
+        
+        console.log('L1 + L2 MISS');
+        return null;
+    }
+    
+    async set(key, value, ttl) {
+        // Write to both levels
+        this.local.set(key, value);
+        await this.redis.setex(key, ttl, value);
+    }
+    
+    async invalidate(key) {
+        // Invalidate both levels
+        this.local.del(key);
+        await this.redis.del(key);
+    }
+}
+                </div>
+            </section>
+
+            <!-- Cache Invalidation -->
+            <section>
+                <div class="session-header">
+                    <h2>Cache Invalidation Strategies</h2>
+                </div>
+                <h3>Invalidation Approaches</h3>
+                <ul>
+                    <li><strong>Time-based (TTL):</strong> Automatic expiration after N seconds</li>
+                    <li><strong>Event-driven:</strong> Invalidate on data updates</li>
+                    <li><strong>Pattern-based:</strong> Invalidate by key patterns (e.g., customer:*)</li>
+                    <li><strong>Tag-based:</strong> Group related keys for bulk invalidation</li>
+                </ul>
+                <div class="warning">
+                    <strong>Hardest Problem:</strong> "There are only two hard things in Computer Science: cache invalidation and naming things" - Phil Karlton
+                </div>
+            </section>
+
+            <!-- Event-Driven Invalidation -->
+            <section>
+                <div class="session-header">
+                    <h2>Event-Driven Cache Invalidation</h2>
+                </div>
+                <div class="code-block">
+// Using Redis Pub/Sub for cache invalidation
+class CacheInvalidator {
+    constructor(redis, caches) {
+        this.redis = redis;
+        this.caches = caches; // All cache instances to invalidate
+        
+        // Subscribe to invalidation events
+        this.redis.subscribe('cache:invalidate');
+        this.redis.on('message', (channel, message) => {
+            const { key, pattern } = JSON.parse(message);
+            this.invalidate(key, pattern);
+        });
+    }
+    
+    async invalidate(key, pattern) {
+        if (pattern) {
+            // Pattern-based invalidation
+            const keys = await this.redis.keys(pattern);
+            for (const k of keys) {
+                await this.caches.invalidate(k);
+            }
+        } else {
+            // Single key invalidation
+            await this.caches.invalidate(key);
+        }
+    }
+    
+    async publishInvalidation(key, pattern) {
+        // Notify all instances to invalidate
+        await this.redis.publish('cache:invalidate', 
+            JSON.stringify({ key, pattern }));
+    }
+}
+                </div>
+            </section>
+
+            <!-- Cache Warming -->
+            <section>
+                <div class="session-header">
+                    <h2>Cache Warming Strategies</h2>
+                </div>
+                <h3>When to Warm Cache</h3>
+                <ul>
+                    <li><strong>Application Startup:</strong> Pre-load critical data</li>
+                    <li><strong>After Deploy:</strong> Avoid cold cache performance hits</li>
+                    <li><strong>Scheduled:</strong> Pre-populate before peak hours</li>
+                    <li><strong>Predictive:</strong> Pre-fetch likely-needed data</li>
+                </ul>
+                <div class="code-block">
+// Cache warming on application startup
+async function warmCache(cache, db) {
+    console.log('Warming cache...');
+    
+    // Pre-load hot products
+    const hotProducts = await db.getHotProducts(100);
+    for (const product of hotProducts) {
+        await cache.set(`product:${product.id}`, 
+            JSON.stringify(product), 3600);
+    }
+    
+    // Pre-load active customers
+    const activeCustomers = await db.getActiveCustomers(1000);
+    for (const customer of activeCustomers) {
+        await cache.set(`customer:${customer.id}`, 
+            JSON.stringify(customer), 1800);
+    }
+    
+    console.log('Cache warming complete');
+}
+                </div>
+            </section>
+
+            <!-- Performance Monitoring -->
+            <section>
+                <div class="session-header">
+                    <h2>Cache Performance Monitoring</h2>
+                </div>
+                <h3>Key Metrics to Track</h3>
+                <ul>
+                    <li><strong>Hit Rate:</strong> (hits / (hits + misses)) - Target: &gt;80%</li>
+                    <li><strong>Latency:</strong> P50, P95, P99 response times</li>
+                    <li><strong>Memory Usage:</strong> Track cache size and evictions</li>
+                    <li><strong>Throughput:</strong> Requests per second</li>
+                </ul>
+                <div class="code-block">
+class CacheMonitor {
+    constructor() {
+        this.hits = 0;
+        this.misses = 0;
+        this.totalLatency = 0;
+    }
+    
+    recordHit(latencyMs) {
+        this.hits++;
+        this.totalLatency += latencyMs;
+    }
+    
+    recordMiss(latencyMs) {
+        this.misses++;
+        this.totalLatency += latencyMs;
+    }
+    
+    getStats() {
+        const total = this.hits + this.misses;
+        return {
+            hitRate: (this.hits / total * 100).toFixed(2),
+            avgLatency: (this.totalLatency / total).toFixed(2),
+            hits: this.hits,
+            misses: this.misses
+        };
+    }
+}
+                </div>
+            </section>
+
+            <!-- Best Practices -->
+            <section>
+                <div class="session-header">
+                    <h2>Caching Best Practices</h2>
+                </div>
+                <h3>✅ DO</h3>
+                <ul>
+                    <li>Set appropriate TTLs for your data freshness requirements</li>
+                    <li>Use consistent key naming patterns (e.g., entity:id)</li>
+                    <li>Monitor hit rates and adjust cache size accordingly</li>
+                    <li>Implement graceful degradation when cache is unavailable</li>
+                    <li>Use compression for large cached values</li>
+                </ul>
+                <h3>❌ DON'T</h3>
+                <ul>
+                    <li>Cache everything - analyze access patterns first</li>
+                    <li>Use tiny TTLs (defeats caching purpose)</li>
+                    <li>Ignore cache stampedes (many requests after expiration)</li>
+                    <li>Store sensitive data unencrypted in cache</li>
+                    <li>Forget to handle cache failures gracefully</li>
+                </ul>
+            </section>
+
+            <!-- Cache Stampede Problem -->
+            <section>
+                <div class="session-header">
+                    <h2>Solving Cache Stampedes</h2>
+                </div>
+                <div class="warning">
+                    <strong>Problem:</strong> When a popular cache entry expires, many requests simultaneously try to regenerate it, overwhelming the database
+                </div>
+                <h3>Solution: Probabilistic Early Expiration</h3>
+                <div class="code-block">
+async function getWithEarlyExpiration(key, ttl, regenerateFn) {
+    const cached = await redis.get(key);
+    
+    if (cached) {
+        const ttlRemaining = await redis.ttl(key);
+        const delta = ttl - ttlRemaining;
+        const beta = 1.0; // Tuning parameter
+        
+        // Probabilistically regenerate before expiration
+        const shouldRegenerate = 
+            Math.random() < (delta * beta / ttl);
+        
+        if (shouldRegenerate) {
+            // Regenerate in background
+            regenerateFn().then(value => {
+                redis.setex(key, ttl, value);
+            });
+        }
+        
+        return cached;
+    }
+    
+    // Cache miss - regenerate
+    const value = await regenerateFn();
+    await redis.setex(key, ttl, value);
+    return value;
+}
+                </div>
+            </section>
+
+            <!-- Redis Insight Usage -->
+            <section>
+                <div class="session-header">
+                    <h2>Using Redis Insight for Cache Analysis</h2>
+                </div>
+                <h3>Key Analysis Features</h3>
+                <ul>
+                    <li><strong>Memory Analysis:</strong> View cache size and key distribution</li>
+                    <li><strong>Key Browser:</strong> Inspect cached values and TTLs</li>
+                    <li><strong>Slowlog:</strong> Identify slow cache operations</li>
+                    <li><strong>Profiler:</strong> Real-time command monitoring</li>
+                </ul>
+                <div class="info">
+                    <strong>In Lab 10:</strong> You'll use Redis Insight Workbench to monitor cache hit rates, analyze key patterns, and optimize cache performance in real-time
+                </div>
+            </section>
+
+            <!-- Lab 10 Callout -->
+            <section>
+                <div class="lab-callout">
+                    <h2>🧪 Lab 10: Advanced Caching Patterns</h2>
+                    <p><strong>Duration: 45 minutes</strong></p>
+                </div>
+                <h3>What You'll Build</h3>
+                <ul>
+                    <li>Implement cache-aside pattern with database fallback</li>
+                    <li>Create multi-level caching (Memory + Redis)</li>
+                    <li>Build smart cache invalidation with events</li>
+                    <li>Add performance monitoring and metrics</li>
+                    <li>Implement cache warming strategies</li>
+                </ul>
+                <div class="success">
+                    <strong>Tools:</strong> Node.js, ioredis, Redis Insight Workbench
+                </div>
+            </section>
+
+            <!-- Summary -->
+            <section>
+                <div class="session-header">
+                    <h2>Session Summary</h2>
+                </div>
+                <h3>Key Takeaways</h3>
+                <ul>
+                    <li><strong>Cache-aside</strong> pattern gives you full control over caching logic</li>
+                    <li><strong>Multi-level caching</strong> combines speed of memory with Redis sharing</li>
+                    <li><strong>Cache invalidation</strong> is critical - use event-driven approaches</li>
+                    <li><strong>Cache warming</strong> prevents cold-start performance issues</li>
+                    <li><strong>Monitoring</strong> hit rates and latency guides optimization</li>
+                    <li><strong>Best practices</strong> include proper TTLs, key patterns, and graceful degradation</li>
+                </ul>
+                <div class="success">
+                    <strong>Ready for Lab 10!</strong> You now have the knowledge to implement production-grade caching systems
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            center: false,
+            transition: 'slide',
+            width: 1200,
+            height: 800
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Content 12: Rate Limiting & API Protection</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.min.css">
+    <style>
+        .reveal .slides section {text-align: left; font-size: 0.75em !important; line-height: 1.3; max-height: 90vh !important; overflow-y: auto !important; padding: 0.5em 1em !important;}
+        .reveal h1 {font-size: 1.8em !important; margin: 0.3em 0 !important;}
+        .reveal h2 {font-size: 1.4em !important; margin: 0.3em 0 !important;}
+        .reveal h3 {font-size: 1.2em !important; margin: 0.3em 0 !important;}
+        .reveal h4 {font-size: 1em !important; margin: 0.2em 0 !important;}
+        .reveal h1, .reveal h2, .reveal h3 {color: #2c3e50; text-align: center;}
+        .reveal p {margin: 0.3em 0 !important;}
+        .reveal ul, .reveal ol {margin: 0.5em 0 !important;}
+        .reveal li {margin: 0.2em 0 !important;}
+        .main-title {background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; padding: 1.5em; border-radius: 10px; text-align: center;}
+        .session-header {background: #f8f9fa; color: #2c3e50 !important; padding: 0.6em; border-left: 5px solid #3498db; margin-bottom: 0.5em;}
+        .code-block {background: #2c3e50; color: #ecf0f1; border: 2px solid #34495e; border-radius: 5px; padding: 0.5em; font-family: 'Courier New', 'Monaco', monospace; font-size: 0.6em; margin: 0.3em 0; line-height: 1.2; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; max-height: 300px; overflow-y: auto;}
+        .highlight {background: #ffffcc; padding: 0.1em 0.3em; border-radius: 3px;}
+        .lab-callout {background: linear-gradient(45deg, #ff6b6b, #ee5a24); color: white !important; padding: 0.8em; border-radius: 8px; text-align: center; font-size: 0.9em; margin: 0.5em 0;}
+        .warning {background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; padding: 0.5em; margin: 0.3em 0; font-size: 0.75em;}
+        .success {background: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; padding: 0.5em; margin: 0.3em 0; font-size: 0.75em;}
+        .info {background: #e3f2fd; border: 1px solid #bbdefb; border-radius: 4px; padding: 0.5em; margin: 0.3em 0; font-size: 0.75em;}
+        .two-column {display: flex; gap: 1em;}
+        .column {flex: 1;}
+        .reveal .slides section::-webkit-scrollbar {width: 8px;}
+        .reveal .slides section::-webkit-scrollbar-track {background: #f1f1f1; border-radius: 4px;}
+        .reveal .slides section::-webkit-scrollbar-thumb {background: #888; border-radius: 4px;}
+        .reveal .slides section::-webkit-scrollbar-thumb:hover {background: #555;}
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+            <section data-background="#f8f9fa">
+                <div class="main-title">
+                    <h1>Content 12</h1>
+                    <h2>Rate Limiting & API Protection</h2>
+                    <p>Securing APIs from Abuse with Redis</p>
+                    <p><strong>Day 3 - Session 3</strong></p>
+                </div>
+            </section>
+
+            <section>
+                <div class="session-header"><h2>Learning Objectives</h2></div>
+                <ul>
+                    <li>Understand rate limiting algorithms (token bucket, sliding window)</li>
+                    <li>Implement rate limiting with Redis sorted sets</li>
+                    <li>Create tier-based rate limits (premium vs basic users)</li>
+                    <li>Build endpoint-specific rate limits</li>
+                    <li>Detect and prevent API abuse patterns</li>
+                    <li>Monitor rate limiting effectiveness</li>
+                </ul>
+            </section>
+
+            <section>
+                <div class="session-header"><h2>Why Rate Limiting Matters</h2></div>
+                <h3>Threats Without Rate Limiting</h3>
+                <ul>
+                    <li><strong>Brute Force Attacks:</strong> Attackers try thousands of passwords</li>
+                    <li><strong>API Abuse:</strong> Users exceed fair usage, degrading service for others</li>
+                    <li><strong>DDoS Attacks:</strong> Overwhelming requests crash your servers</li>
+                    <li><strong>Cost Overruns:</strong> Excessive API calls increase infrastructure costs</li>
+                    <li><strong>Data Scraping:</strong> Competitors steal your data via API</li>
+                </ul>
+                <div class="warning"><strong>Real Example:</strong> A single abusive user making 10,000 requests/minute can cost $1000+ in cloud fees</div>
+            </section>
+
+            <section>
+                <div class="session-header"><h2>Rate Limiting Algorithms</h2></div>
+                <div class="two-column">
+                    <div>
+                        <h3>Fixed Window</h3>
+                        <div class="code-block">
+// Simple but has burst problem
+INCR requests:user123:minute1
+EXPIRE requests:user123:minute1 60
+
+// Allow if count < limit
+GET requests:user123:minute1 < 100
+                        </div>
+                        <div class="warning"><strong>Problem:</strong> Users can make 200 requests in 2 seconds (100 at 0:59, 100 at 1:00)</div>
+                    </div>
+                    <div>
+                        <h3>Sliding Window (Best)</h3>
+                        <div class="code-block">
+// Use sorted set with timestamps
+ZADD requests:user123 
+  [timestamp1] "req1"
+  [timestamp2] "req2"
+
+// Count requests in last minute
+now = Date.now()
+oneMinuteAgo = now - 60000
+ZCOUNT requests:user123 
+  oneMinuteAgo now
+
+// Remove old requests
+ZREMRANGEBYSCORE requests:user123 
+  0 oneMinuteAgo
+                        </div>
+                        <div class="success"><strong>Best:</strong> Smooth limit enforcement, no burst problem</div>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="session-header"><h2>Token Bucket Implementation</h2></div>
+                <div class="code-block">
+class RateLimiter {
+    constructor(redisClient, options) {
+        this.redis = redisClient;
+        this.limit = options.limit; // Max requests
+        this.window = options.window; // Time window in seconds
+    }
+
+    async checkLimit(userId) {
+        const key = `ratelimit:${userId}`;
+        const now = Date.now();
+        const windowStart = now - (this.window * 1000);
+
+        // Start Redis pipeline for atomic operations
+        const pipeline = this.redis.pipeline();
+
+        // Remove old requests outside time window
+        pipeline.zRemRangeByScore(key, 0, windowStart);
+
+        // Count requests in current window
+        pipeline.zCard(key);
+
+        // Add current request with timestamp
+        pipeline.zAdd(key, { score: now, value: `${now}` });
+
+        // Set expiration to prevent memory leaks
+        pipeline.expire(key, this.window);
+
+        const results = await pipeline.exec();
+        const currentCount = results[1][1];
+
+        // Check if limit exceeded
+        if (currentCount >= this.limit) {
+            // Remove the request we just added (over limit)
+            await this.redis.zRem(key, `${now}`);
+            return {
+                allowed: false,
+                current: currentCount,
+                limit: this.limit,
+                retryAfter: Math.ceil(this.window)
+            };
+        }
+
+        return {
+            allowed: true,
+            current: currentCount + 1,
+            limit: this.limit,
+            remaining: this.limit - currentCount - 1
+        };
+    }
+}
+                </div>
+            </section>
+
+            <section>
+                <div class="session-header"><h2>Tier-Based Rate Limiting</h2></div>
+                <h3>Customer Tier Strategy</h3>
+                <div class="code-block">
+const RATE_LIMITS = {
+    trial: {
+        limit: 20,      // 20 requests
+        window: 60      // per minute
+    },
+    basic: {
+        limit: 50,
+        window: 60
+    },
+    standard: {
+        limit: 100,
+        window: 60
+    },
+    premium: {
+        limit: 500,
+        window: 60
+    },
+    enterprise: {
+        limit: 10000,
+        window: 60
+    }
+};
+
+async function getRateLimiterForUser(userId) {
+    // Get user's tier from database or cache
+    const user = await getUser(userId);
+    const tierLimits = RATE_LIMITS[user.tier];
+
+    return new RateLimiter(redis, tierLimits);
+}
+
+// Usage in API endpoint
+app.post('/api/quote', async (req, res) => {
+    const limiter = await getRateLimiterForUser(req.userId);
+    const result = await limiter.checkLimit(req.userId);
+
+    if (!result.allowed) {
+        return res.status(429).json({
+            error: 'Too many requests',
+            retryAfter: result.retryAfter
+        });
+    }
+
+    // Process quote request...
+});
+                </div>
+            </section>
+
+            <section>
+                <div class="session-header"><h2>Endpoint-Specific Rate Limits</h2></div>
+                <h3>Different Limits for Different Operations</h3>
+                <div class="code-block">
+const ENDPOINT_LIMITS = {
+    '/api/quotes': {
+        limit: 10,      // Quote generation is expensive
+        window: 60
+    },
+    '/api/policies': {
+        limit: 50,      // Policy operations are moderate
+        window: 60
+    },
+    '/api/claims': {
+        limit: 20,      // Claims processing is sensitive
+        window: 60
+    },
+    '/api/search': {
+        limit: 100,     // Search is lightweight
+        window: 60
+    }
+};
+
+// Express middleware
+function rateLimitMiddleware(req, res, next) {
+    const endpoint = req.path;
+    const limits = ENDPOINT_LIMITS[endpoint] || { limit: 100, window: 60 };
+
+    const limiter = new RateLimiter(redis, limits);
+    const key = `${req.userId}:${endpoint}`;
+
+    limiter.checkLimit(key).then(result => {
+        // Add rate limit headers
+        res.set({
+            'X-RateLimit-Limit': result.limit,
+            'X-RateLimit-Remaining': result.remaining,
+            'X-RateLimit-Reset': Date.now() + (limits.window * 1000)
+        });
+
+        if (!result.allowed) {
+            res.set('Retry-After', result.retryAfter);
+            return res.status(429).json({
+                error: 'Rate limit exceeded',
+                message: `Max ${result.limit} requests per ${limits.window}s`
+            });
+        }
+
+        next();
+    });
+}
+                </div>
+            </section>
+
+            <section>
+                <div class="session-header"><h2>Abuse Detection Patterns</h2></div>
+                <h3>Detecting Suspicious Behavior</h3>
+                <div class="code-block">
+class AbuseDetector {
+    constructor(redisClient) {
+        this.redis = redisClient;
+    }
+
+    async detectAbuse(userId) {
+        const patterns = await this.checkPatterns(userId);
+        const score = this.calculateAbuseScore(patterns);
+
+        if (score > 80) {
+            await this.blockUser(userId, 'HIGH_ABUSE_SCORE');
+        } else if (score > 50) {
+            await this.flagForReview(userId, patterns);
+        }
+
+        return { score, patterns };
+    }
+
+    async checkPatterns(userId) {
+        const now = Date.now();
+        const oneHourAgo = now - 3600000;
+
+        // Pattern 1: Rapid requests (> 10 per second sustained)
+        const rapidCount = await this.redis.zCount(
+            `requests:${userId}`,
+            now - 10000,
+            now
+        );
+
+        // Pattern 2: Failed requests (> 50% error rate)
+        const totalRequests = await this.redis.get(`total:${userId}`);
+        const failedRequests = await this.redis.get(`failed:${userId}`);
+        const errorRate = failedRequests / totalRequests;
+
+        // Pattern 3: Off-hours activity (3 AM - 5 AM unusual)
+        const hour = new Date().getHours();
+        const offHours = hour >= 3 && hour <= 5;
+
+        // Pattern 4: Geographic anomaly
+        const recentIps = await this.getRecentIPs(userId);
+        const ipAnomaly = recentIps.size > 10; // >10 IPs in 1 hour
+
+        return {
+            rapidRequests: rapidCount > 100,
+            highErrorRate: errorRate > 0.5,
+            offHoursActivity: offHours,
+            ipAnomaly: ipAnomaly
+        };
+    }
+
+    calculateAbuseScore(patterns) {
+        let score = 0;
+        if (patterns.rapidRequests) score += 40;
+        if (patterns.highErrorRate) score += 30;
+        if (patterns.offHoursActivity) score += 15;
+        if (patterns.ipAnomaly) score += 35;
+        return score;
+    }
+
+    async blockUser(userId, reason) {
+        await this.redis.set(`blocked:${userId}`, reason, 'EX', 86400);
+        await this.logSecurityEvent(userId, 'USER_BLOCKED', reason);
+    }
+}
+                </div>
+            </section>
+
+            <section>
+                <div class="session-header"><h2>Monitoring Rate Limiting</h2></div>
+                <h3>Key Metrics</h3>
+                <ul>
+                    <li><strong>Blocked Requests:</strong> How many hit rate limit</li>
+                    <li><strong>Top Consumers:</strong> Users making most requests</li>
+                    <li><strong>Endpoint Usage:</strong> Which APIs are hit most</li>
+                    <li><strong>Abuse Score Trends:</strong> Potential attackers</li>
+                </ul>
+                <div class="code-block">
+// Track blocked requests
+async function logBlockedRequest(userId, endpoint) {
+    const key = 'blocked:requests';
+    const timestamp = Date.now();
+
+    await redis.zAdd(key, {
+        score: timestamp,
+        value: JSON.stringify({ userId, endpoint, timestamp })
+    });
+
+    // Keep only last 24 hours
+    const oneDayAgo = timestamp - 86400000;
+    await redis.zRemRangeByScore(key, 0, oneDayAgo);
+}
+
+// Get top consumers in last hour
+async function getTopConsumers() {
+    const now = Date.now();
+    const oneHourAgo = now - 3600000;
+
+    // This is simplified - in production, aggregate from multiple keys
+    const userKeys = await redis.keys('ratelimit:*');
+    const consumers = [];
+
+    for (const key of userKeys) {
+        const count = await redis.zCount(key, oneHourAgo, now);
+        const userId = key.split(':')[1];
+        consumers.push({ userId, requests: count });
+    }
+
+    return consumers.sort((a, b) => b.requests - a.requests).slice(0, 10);
+}
+                </div>
+            </section>
+
+            <section>
+                <div class="session-header"><h2>Graceful Rate Limit Responses</h2></div>
+                <h3>User-Friendly Error Messages</h3>
+                <div class="code-block">
+// ❌ Bad: Cryptic error
+{ "error": "429" }
+
+// ✅ Good: Informative response
+{
+    "error": "Rate limit exceeded",
+    "message": "You have exceeded the maximum of 100 requests per minute.",
+    "currentUsage": 105,
+    "limit": 100,
+    "window": "60 seconds",
+    "retryAfter": 45,
+    "suggestedAction": "Please wait 45 seconds before retrying, or upgrade to Premium for higher limits.",
+    "upgradeLink": "/pricing"
+}
+                </div>
+                <div class="success"><strong>Best Practice:</strong> Include retry-after time and upgrade options</div>
+            </section>
+
+            <section>
+                <div class="session-header"><h2>Redis Insight for Rate Limit Debugging</h2></div>
+                <h3>Monitoring Tools</h3>
+                <ul>
+                    <li><strong>Key Browser:</strong> Inspect rate limit counters</li>
+                    <li><strong>Sorted Set Viewer:</strong> See request timestamps</li>
+                    <li><strong>Profiler:</strong> Monitor ZADD/ZCOUNT commands</li>
+                    <li><strong>Memory Analysis:</strong> Track rate limit key sizes</li>
+                </ul>
+                <div class="info">
+                    <strong>In Lab 12:</strong> Use Redis Insight Workbench to:
+                    <ul>
+                        <li>Monitor rate limit key patterns</li>
+                        <li>Inspect sorted sets with request timestamps</li>
+                        <li>Debug rate limit logic in real-time</li>
+                        <li>Analyze abuse detection scores</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section>
+                <div class="session-header"><h2>Best Practices</h2></div>
+                <h3>✅ DO</h3>
+                <ul>
+                    <li>Use sliding window algorithm for accurate enforcement</li>
+                    <li>Set appropriate limits based on user tier/subscription</li>
+                    <li>Return clear error messages with retry-after guidance</li>
+                    <li>Monitor and alert on unusual patterns</li>
+                    <li>Set expiration on rate limit keys to prevent memory leaks</li>
+                    <li>Use pipelines for atomic operations</li>
+                </ul>
+                <h3>❌ DON'T</h3>
+                <ul>
+                    <li>Use fixed window (allows burst attacks)</li>
+                    <li>Apply same limit to all users/endpoints</li>
+                    <li>Forget to clean up old data</li>
+                    <li>Rate limit authenticated and unauthenticated users the same</li>
+                    <li>Ignore monitoring - adjust limits based on actual usage</li>
+                </ul>
+            </section>
+
+            <section>
+                <div class="lab-callout">
+                    <h2>🧪 Lab 12: Rate Limiting & API Protection</h2>
+                    <p><strong>Duration: 45 minutes</strong></p>
+                </div>
+                <h3>What You'll Build</h3>
+                <ul>
+                    <li>Token bucket rate limiter with Redis sorted sets</li>
+                    <li>Tier-based limits (trial, basic, premium, enterprise)</li>
+                    <li>Endpoint-specific rate limits</li>
+                    <li>Abuse detection system</li>
+                    <li>Express.js middleware integration</li>
+                    <li>Monitoring dashboard</li>
+                </ul>
+                <div class="success"><strong>Tools:</strong> Node.js, Express.js, ioredis, Redis Insight</div>
+            </section>
+
+            <section>
+                <div class="session-header"><h2>Session Summary</h2></div>
+                <h3>Key Takeaways</h3>
+                <ul>
+                    <li><strong>Sliding window</strong> algorithm provides smooth rate limiting</li>
+                    <li><strong>Sorted sets</strong> are perfect for timestamp-based rate limiting</li>
+                    <li><strong>Tier-based limits</strong> support different customer tiers</li>
+                    <li><strong>Endpoint-specific</strong> limits protect expensive operations</li>
+                    <li><strong>Abuse detection</strong> identifies suspicious patterns</li>
+                    <li><strong>Monitoring</strong> helps optimize limits and detect attacks</li>
+                </ul>
+                <div class="success"><strong>Ready for Lab 12!</strong> Build production-grade API protection</div>
+            </section>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
+    <script>Reveal.initialize({hash: true, center: false, transition: 'slide', width: 1200, height: 800});</script>
+</body>
+</html>

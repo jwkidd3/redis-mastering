@@ -19,10 +19,15 @@ By the end of this lab, you will be able to:
 
 ### Step 1: Verify Connection and Setup
 
-```bash
-# Test Redis connection with instructor-provided details
-redis-cli -h [instructor-provided-host] -p 6379 PING
+**Test Redis Connection using Redis Insight:**
+1. Open Redis Insight
+2. Add your Redis connection with instructor-provided details
+3. Connect to your instance
+4. Navigate to **Workbench** and run: `PING`
+5. Expected response: `PONG`
 
+**Setup Lab Environment:**
+```bash
 # Setup lab environment
 ./scripts/setup-lab.sh
 
@@ -277,11 +282,13 @@ CLIENT LIST                              # Connected clients
 # Check configuration
 cat config/.env
 
-# Test Redis connection
-redis-cli -h [host] -p 6379 PING
-
 # View recent logs
 node scripts/monitor-sessions.js
 ```
+
+**Test Redis Connection:**
+- Open Redis Insight Workbench
+- Run command: `PING`
+- Expected response: `PONG`
 
 🎉 **Congratulations!** You've successfully implemented a complete session management system with Redis.

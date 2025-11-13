@@ -15,7 +15,7 @@ class AgentLeaderboard {
             throw new Error(`Invalid leaderboard: ${leaderboardType}`);
         }
 
-        const result = await client.zadd(this.leaderboards[leaderboardType], score, agentId);
+        const result = await client.zAdd(this.leaderboards[leaderboardType], { score, value: agentId });
         console.log(`Agent ${agentId} ${leaderboardType} score updated to ${score}`);
         return result;
     }
@@ -25,7 +25,7 @@ class AgentLeaderboard {
             throw new Error(`Invalid leaderboard: ${leaderboardType}`);
         }
 
-        const newScore = await client.zincrby(this.leaderboards[leaderboardType], increment, agentId);
+        const newScore = await client.zIncrBy(this.leaderboards[leaderboardType], increment, agentId);
         console.log(`Agent ${agentId} ${leaderboardType} score incremented by ${increment}, new score: ${newScore}`);
         return parseFloat(newScore);
     }
@@ -35,7 +35,7 @@ class AgentLeaderboard {
             throw new Error(`Invalid leaderboard: ${leaderboardType}`);
         }
 
-        const rank = await client.zrevrank(this.leaderboards[leaderboardType], agentId);
+        const rank = await client.zRevRank(this.leaderboards[leaderboardType], agentId);
         const finalRank = rank !== null ? rank + 1 : null;
         console.log(`Agent ${agentId} rank in ${leaderboardType}: ${finalRank || 'Not ranked'}`);
         return finalRank;
@@ -46,7 +46,7 @@ class AgentLeaderboard {
             throw new Error(`Invalid leaderboard: ${leaderboardType}`);
         }
 
-        const score = await client.zscore(this.leaderboards[leaderboardType], agentId);
+        const score = await client.zScore(this.leaderboards[leaderboardType], agentId);
         console.log(`Agent ${agentId} ${leaderboardType} score: ${score || 'No score'}`);
         return score ? parseFloat(score) : null;
     }
@@ -56,19 +56,19 @@ class AgentLeaderboard {
             throw new Error(`Invalid leaderboard: ${leaderboardType}`);
         }
 
-        const results = await client.zrevrange(
+        const results = await client.zRevRangeWithScores(
             this.leaderboards[leaderboardType],
             0,
-            count - 1,
-            'WITHSCORES'
+            count - 1
         );
 
         const topPerformers = [];
-        for (let i = 0; i < results.length; i += 2) {
+        let rank = 1;
+        for (const item of results) {
             topPerformers.push({
-                agentId: results[i],
-                score: parseFloat(results[i + 1]),
-                rank: (i / 2) + 1
+                agentId: item.value,
+                score: item.score,
+                rank: rank++
             });
         }
 
@@ -81,18 +81,17 @@ class AgentLeaderboard {
             throw new Error(`Invalid leaderboard: ${leaderboardType}`);
         }
 
-        const results = await client.zrangebyscore(
+        const results = await client.zRangeByScoreWithScores(
             this.leaderboards[leaderboardType],
             minScore,
-            maxScore,
-            'WITHSCORES'
+            maxScore
         );
 
         const performers = [];
-        for (let i = 0; i < results.length; i += 2) {
+        for (const item of results) {
             performers.push({
-                agentId: results[i],
-                score: parseFloat(results[i + 1])
+                agentId: item.value,
+                score: item.score
             });
         }
 
@@ -105,19 +104,19 @@ class AgentLeaderboard {
             throw new Error(`Invalid leaderboard: ${leaderboardType}`);
         }
 
-        const count = await client.zcard(this.leaderboards[leaderboardType]);
-        
+        const count = await client.zCard(this.leaderboards[leaderboardType]);
+
         if (count === 0) {
             return { count: 0, minScore: null, maxScore: null };
         }
 
-        const minScoreResult = await client.zrange(this.leaderboards[leaderboardType], 0, 0, 'WITHSCORES');
-        const maxScoreResult = await client.zrevrange(this.leaderboards[leaderboardType], 0, 0, 'WITHSCORES');
+        const minScoreResult = await client.zRangeWithScores(this.leaderboards[leaderboardType], 0, 0);
+        const maxScoreResult = await client.zRevRangeWithScores(this.leaderboards[leaderboardType], 0, 0);
 
         const stats = {
             count,
-            minScore: minScoreResult.length > 1 ? parseFloat(minScoreResult[1]) : null,
-            maxScore: maxScoreResult.length > 1 ? parseFloat(maxScoreResult[1]) : null
+            minScore: minScoreResult.length > 0 ? minScoreResult[0].score : null,
+            maxScore: maxScoreResult.length > 0 ? maxScoreResult[0].score : null
         };
 
         console.log(`${leaderboardType} leaderboard stats:`, stats);

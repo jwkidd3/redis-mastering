@@ -8,11 +8,7 @@
     "segments": "node src/customer-segments.js",
     "leaderboard": "node src/agent-leaderboard.js",
     "risk": "node src/risk-scoring.js",
-    "dashboard": "node src/analytics-dashboard.js",
-    "setup": "node scripts/setup-lab9.js",
-    "load-data": "node scripts/load-analytics-data.js",
-    "test": "node tests/analytics.test.js",
-    "validate": "node validation/validate-setup.js"
+    "dashboard": "node src/analytics-dashboard.js"
   },
   "dependencies": {
     "redis": "^4.6.0",

@@ -44,11 +44,11 @@ class RiskScoring {
         score = Math.min(1000, Math.max(0, Math.round(score)));
 
         // Store risk score
-        await client.zadd(this.riskKey, score, customerId);
-        
+        await client.zAdd(this.riskKey, { score, value: customerId });
+
         const category = this.getRiskCategory(score);
         console.log(`Customer ${customerId} risk score: ${score} (${category})`);
-        
+
         return { score, category };
     }
 
@@ -67,18 +67,17 @@ class RiskScoring {
         }
 
         const range = this.riskCategories[level];
-        const results = await client.zrangebyscore(
+        const results = await client.zRangeByScoreWithScores(
             this.riskKey,
             range.min,
-            range.max,
-            'WITHSCORES'
+            range.max
         );
 
         const customers = [];
-        for (let i = 0; i < results.length; i += 2) {
+        for (const item of results) {
             customers.push({
-                customerId: results[i],
-                riskScore: parseFloat(results[i + 1]),
+                customerId: item.value,
+                riskScore: item.score,
                 riskLevel: level
             });
         }
@@ -88,16 +87,16 @@ class RiskScoring {
     }
 
     async getHighestRiskCustomers(count = 10) {
-        const results = await client.zrevrange(this.riskKey, 0, count - 1, 'WITHSCORES');
-        
+        const results = await client.zRevRangeWithScores(this.riskKey, 0, count - 1);
+
         const customers = [];
-        for (let i = 0; i < results.length; i += 2) {
-            const score = parseFloat(results[i + 1]);
+        let rank = 1;
+        for (const item of results) {
             customers.push({
-                customerId: results[i],
-                riskScore: score,
-                riskLevel: this.getRiskCategory(score),
-                rank: (i / 2) + 1
+                customerId: item.value,
+                riskScore: item.score,
+                riskLevel: this.getRiskCategory(item.score),
+                rank: rank++
             });
         }
 
@@ -107,24 +106,24 @@ class RiskScoring {
 
     async updateRiskScore(customerId, newScore) {
         newScore = Math.min(1000, Math.max(0, Math.round(newScore)));
-        await client.zadd(this.riskKey, newScore, customerId);
-        
+        await client.zAdd(this.riskKey, { score: newScore, value: customerId });
+
         const category = this.getRiskCategory(newScore);
         console.log(`Customer ${customerId} risk score updated to: ${newScore} (${category})`);
-        
+
         return { score: newScore, category };
     }
 
     async getCustomerRiskProfile(customerId) {
-        const score = await client.zscore(this.riskKey, customerId);
-        
+        const score = await client.zScore(this.riskKey, customerId);
+
         if (score === null) {
             console.log(`Customer ${customerId} not found in risk database`);
             return null;
         }
 
         const numericScore = parseFloat(score);
-        const rank = await client.zrevrank(this.riskKey, customerId);
+        const rank = await client.zRevRank(this.riskKey, customerId);
         const category = this.getRiskCategory(numericScore);
 
         const profile = {
