@@ -149,7 +149,12 @@ if (require.main === module) {
         }
     }
     
-    loadTester.runLoadTest(options);
+    loadTester.runLoadTest(options)
+        .then(() => process.exit(0))
+        .catch(err => {
+            console.error('Error:', err);
+            process.exit(1);
+        });
 }
 
 module.exports = LoadTester;

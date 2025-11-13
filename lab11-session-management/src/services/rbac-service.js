@@ -57,9 +57,15 @@ class RBACService {
     async getAccessLogs(date) {
         const client = await getRedisClient();
         const logKey = `access_log:${date}`;
-        
+
         const logs = await client.lRange(logKey, 0, -1);
         return logs.map(log => JSON.parse(log));
+    }
+
+    async disconnect() {
+        const client = await getRedisClient();
+        await client.quit();
+        console.log('🔌 Redis connection closed');
     }
 }
 

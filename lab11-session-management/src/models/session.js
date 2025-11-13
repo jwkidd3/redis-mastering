@@ -89,30 +89,36 @@ class SessionManager {
     async cleanupExpiredSessions() {
         const client = await getRedisClient();
         const pattern = `${this.prefix}*`;
-        
+
         let cursor = '0';
         let cleanedCount = 0;
-        
+
         do {
             const reply = await client.scan(cursor, {
                 MATCH: pattern,
                 COUNT: 100
             });
-            
+
             cursor = reply.cursor;
             const keys = reply.keys;
-            
+
             for (const key of keys) {
                 const ttl = await client.ttl(key);
                 if (ttl === -1) { // No expiration set
                     await client.expire(key, this.ttl);
                 }
             }
-            
+
         } while (cursor !== '0');
-        
+
         console.log(`🧹 Cleanup completed. Processed sessions.`);
         return cleanedCount;
+    }
+
+    async disconnect() {
+        const client = await getRedisClient();
+        await client.quit();
+        console.log('🔌 Redis connection closed');
     }
 }
 

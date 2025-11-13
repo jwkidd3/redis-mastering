@@ -131,7 +131,12 @@ async function collectAndStore() {
 }
 
 if (require.main === module) {
-    collectAndStore();
+    collectAndStore()
+        .then(() => process.exit(0))
+        .catch(err => {
+            console.error('Error:', err);
+            process.exit(1);
+        });
 }
 
 module.exports = MetricsCollector;

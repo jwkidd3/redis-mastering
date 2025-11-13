@@ -53,8 +53,19 @@ async function runSessionTests() {
 
         console.log('\n🎉 All session tests completed successfully!');
 
+        // Close Redis connection
+        await sessionManager.disconnect();
+        process.exit(0);
+
     } catch (error) {
         console.error('❌ Test failed:', error.message);
+        // Close Redis connection on error
+        try {
+            await sessionManager.disconnect();
+        } catch (disconnectError) {
+            // Ignore disconnect errors
+        }
+        process.exit(1);
     }
 }
 

@@ -66,8 +66,19 @@ async function runSecurityTests() {
 
         console.log('\n🎉 All security tests completed successfully!');
 
+        // Close Redis connection
+        await security.disconnect();
+        process.exit(0);
+
     } catch (error) {
         console.error('❌ Security test failed:', error.message);
+        // Close Redis connection on error
+        try {
+            await security.disconnect();
+        } catch (disconnectError) {
+            // Ignore disconnect errors
+        }
+        process.exit(1);
     }
 }
 

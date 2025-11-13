@@ -50,8 +50,19 @@ async function runRBACTests() {
 
         console.log('\n🎉 All RBAC tests completed successfully!');
 
+        // Close Redis connection
+        await rbac.disconnect();
+        process.exit(0);
+
     } catch (error) {
         console.error('❌ RBAC test failed:', error.message);
+        // Close Redis connection on error
+        try {
+            await rbac.disconnect();
+        } catch (disconnectError) {
+            // Ignore disconnect errors
+        }
+        process.exit(1);
     }
 }
 

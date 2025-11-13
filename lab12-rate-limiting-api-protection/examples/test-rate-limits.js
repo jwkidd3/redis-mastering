@@ -187,7 +187,12 @@ class RateLimitTester {
 // Run tests if this file is executed directly
 if (require.main === module) {
     const tester = new RateLimitTester();
-    tester.runAllTests();
+    tester.runAllTests()
+        .then(() => process.exit(0))
+        .catch(err => {
+            console.error('Error:', err);
+            process.exit(1);
+        });
 }
 
 module.exports = RateLimitTester;

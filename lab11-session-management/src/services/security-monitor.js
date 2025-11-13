@@ -114,6 +114,12 @@ class SecurityMonitor {
 
         return stats;
     }
+
+    async disconnect() {
+        const client = await getRedisClient();
+        await client.quit();
+        console.log('🔌 Redis connection closed');
+    }
 }
 
 module.exports = SecurityMonitor;

@@ -207,8 +207,15 @@ class HealthCheckService {
     }
     
     async countActiveSessions() {
-        const sessionKeys = await this.redis.keys('session:*');
-        return sessionKeys.length;
+        // Use SCAN instead of KEYS to avoid blocking Redis in production
+        let cursor = '0';
+        let count = 0;
+        do {
+            const result = await this.redis.scan(cursor, 'MATCH', 'session:*', 'COUNT', 100);
+            cursor = result[0];
+            count += result[1].length;
+        } while (cursor !== '0');
+        return count;
     }
     
     async calculateCacheEfficiency() {
