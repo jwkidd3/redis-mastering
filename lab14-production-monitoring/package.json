@@ -8,9 +8,7 @@
     "dev": "nodemon src/main.js",
     "test": "npm run test:health && npm run test:monitoring",
     "test:health": "curl -f http://localhost:3000/health || exit 1",
-    "test:monitoring": "curl -f http://localhost:4000/api/metrics/realtime || exit 1",
-    "load-data": "node scripts/load-production-monitoring-data.js",
-    "setup": "npm install && npm run load-data"
+    "test:monitoring": "curl -f http://localhost:4000/api/metrics/realtime || exit 1"
   },
   "dependencies": {
     "express": "^4.21.2",

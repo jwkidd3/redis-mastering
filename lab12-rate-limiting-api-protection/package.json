@@ -7,9 +7,7 @@
     "start": "node src/server.js",
     "dev": "node src/server.js",
     "test": "node examples/test-rate-limits.js",
-    "load-test": "node examples/load-test.js",
-    "reset": "node scripts/reset-limits.js",
-    "monitor": "node scripts/monitor-limits.js"
+    "load-test": "node examples/load-test.js"
   },
   "dependencies": {
     "express": "^4.18.2",

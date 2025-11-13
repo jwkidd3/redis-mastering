@@ -8,9 +8,7 @@
     "dev": "node src/app.js",
     "test": "node tests/session-tests.js",
     "test-rbac": "node tests/rbac-tests.js",
-    "test-security": "node tests/security-tests.js",
-    "monitor": "node scripts/monitor-sessions.js",
-    "cleanup": "node scripts/cleanup-sessions.js"
+    "test-security": "node tests/security-tests.js"
   },
   "dependencies": {
     "redis": "^4.6.0",
