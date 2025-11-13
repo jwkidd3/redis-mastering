@@ -133,18 +133,13 @@ EXISTS account_lock:testuser
 
 ## Part 4: Real-Time Monitoring (10 minutes)
 
-### Step 8: Session Monitoring Dashboard
+### Step 8: Session Monitoring in Redis Insight
 
-```bash
-# Start real-time session monitor
-npm run monitor
-```
-
-**Monitor Features:**
-- Active session count
-- User distribution by role
-- Memory usage tracking
-- Security event summary
+**Use Redis Insight to monitor sessions in real-time:**
+- Active session count: `KEYS portal:session:*`
+- User distribution by role: Check session hashes
+- Memory usage: `INFO memory`
+- Security events: `LRANGE security_log:YYYY-MM-DD 0 -1`
 
 ### Step 9: Session Analytics
 
@@ -201,16 +196,23 @@ if (session.ipAddress !== currentIP) {
 
 ### Step 11: Session Cleanup and Maintenance
 
-```bash
-# Run session cleanup
-node scripts/cleanup-sessions.js
+**Use Redis Insight Workbench for manual cleanup:**
+
+```redis
+# Find sessions without TTL
+SCAN 0 MATCH portal:session:* COUNT 100
+
+# Clean up orphaned active session sets
+SCAN 0 MATCH active_sessions:* COUNT 100
+
+# View old security logs
+SCAN 0 MATCH security_log:* COUNT 100
 ```
 
-**Cleanup Process:**
-- Removes expired sessions
-- Cleans orphaned active session lists
-- Archives old security logs
-- Optimizes memory usage
+**Automatic Cleanup:**
+- Sessions expire automatically based on TTL
+- Redis handles memory optimization
+- Logs expire after 24 hours
 
 ---
 
@@ -282,8 +284,10 @@ CLIENT LIST                              # Connected clients
 # Check configuration
 cat config/.env
 
-# View recent logs
-node scripts/monitor-sessions.js
+# Run all tests
+npm test
+npm run test-rbac
+npm run test-security
 ```
 
 **Test Redis Connection:**
