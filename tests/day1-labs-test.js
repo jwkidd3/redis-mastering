@@ -110,6 +110,46 @@ async function testLab1() {
             failed++;
         }
 
+        // Test 5: DECRBY — counter decrement
+        try {
+            const key = 'lab1:decrby:counter';
+            await testUtils.redisClient.set(key, '10');
+            await testUtils.redisClient.decrBy(key, 3);
+            const val = await testUtils.redisClient.get(key);
+            if (val === '7') {
+                testUtils.logTest('Lab 1', 'DECRBY (10 - 3 = 7)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 1', 'DECRBY', false, `Expected 7, got ${val}`);
+                failed++;
+            }
+            await testUtils.redisClient.del(key);
+        } catch (error) {
+            testUtils.logTest('Lab 1', 'DECRBY', false, error.message);
+            failed++;
+        }
+
+        // Test 6: TYPE — returns underlying Redis type
+        try {
+            const sKey = 'lab1:type:string';
+            const setKey = 'lab1:type:set';
+            await testUtils.redisClient.set(sKey, 'hello');
+            await testUtils.redisClient.sAdd(setKey, ['a', 'b']);
+            const strType = await testUtils.redisClient.type(sKey);
+            const setType = await testUtils.redisClient.type(setKey);
+            if (strType === 'string' && setType === 'set') {
+                testUtils.logTest('Lab 1', 'TYPE (string + set)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 1', 'TYPE', false, `string=${strType}, set=${setType}`);
+                failed++;
+            }
+            await testUtils.redisClient.del([sKey, setKey]);
+        } catch (error) {
+            testUtils.logTest('Lab 1', 'TYPE', false, error.message);
+            failed++;
+        }
+
     } catch (error) {
         testUtils.logTest('Lab 1', 'Lab execution', false, error.message);
         failed++;
@@ -232,6 +272,106 @@ async function testLab2() {
             passed++;
         } else {
             testUtils.logTest('Lab 2', 'Exercise 3: Profiler Commands', false);
+            failed++;
+        }
+
+        // Test 4: CLIENT SETNAME / CLIENT GETNAME
+        try {
+            const clientName = 'lab2-test-client';
+            await testUtils.redisClient.sendCommand(['CLIENT', 'SETNAME', clientName]);
+            const name = await testUtils.redisClient.sendCommand(['CLIENT', 'GETNAME']);
+            if (name === clientName) {
+                testUtils.logTest('Lab 2', 'CLIENT SETNAME / GETNAME', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 2', 'CLIENT SETNAME / GETNAME', false, `got ${name}`);
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 2', 'CLIENT SETNAME / GETNAME', false, error.message);
+            failed++;
+        }
+
+        // Test 5: CLIENT LIST — non-empty string with "id="
+        try {
+            const list = await testUtils.redisClient.sendCommand(['CLIENT', 'LIST']);
+            if (typeof list === 'string' && list.length > 0 && list.includes('id=')) {
+                testUtils.logTest('Lab 2', 'CLIENT LIST (contains "id=")', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 2', 'CLIENT LIST', false, `got type=${typeof list}`);
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 2', 'CLIENT LIST', false, error.message);
+            failed++;
+        }
+
+        // Test 6: HMSET (via hSet) — set 3 fields in one call, verify via HGET
+        try {
+            const key = 'lab2:hmset:policy';
+            await testUtils.redisClient.del(key);
+            await testUtils.redisClient.hSet(key, {
+                premium: '1200',
+                term: '12',
+                type: 'auto'
+            });
+            const premium = await testUtils.redisClient.hGet(key, 'premium');
+            const term = await testUtils.redisClient.hGet(key, 'term');
+            const type = await testUtils.redisClient.hGet(key, 'type');
+            if (premium === '1200' && term === '12' && type === 'auto') {
+                testUtils.logTest('Lab 2', 'HMSET (3 fields, verified via HGET)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 2', 'HMSET', false, `${premium}, ${term}, ${type}`);
+                failed++;
+            }
+            await testUtils.redisClient.del(key);
+        } catch (error) {
+            testUtils.logTest('Lab 2', 'HMSET', false, error.message);
+            failed++;
+        }
+
+        // Test 7: ZRANK / ZREVRANK
+        try {
+            const key = 'lab2:zrank:leaderboard';
+            await testUtils.redisClient.del(key);
+            await testUtils.redisClient.zAdd(key, [
+                { score: 10, value: 'low' },
+                { score: 50, value: 'mid' },
+                { score: 99, value: 'high' }
+            ]);
+            const rankLow = await testUtils.redisClient.zRank(key, 'low');
+            const rankMid = await testUtils.redisClient.zRank(key, 'mid');
+            const revRankHigh = await testUtils.redisClient.zRevRank(key, 'high');
+            if (rankLow === 0 && rankMid === 1 && revRankHigh === 0) {
+                testUtils.logTest('Lab 2', 'ZRANK / ZREVRANK', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 2', 'ZRANK / ZREVRANK', false,
+                    `rankLow=${rankLow}, rankMid=${rankMid}, revRankHigh=${revRankHigh}`);
+                failed++;
+            }
+            await testUtils.redisClient.del(key);
+        } catch (error) {
+            testUtils.logTest('Lab 2', 'ZRANK / ZREVRANK', false, error.message);
+            failed++;
+        }
+
+        // Test 8: SLOWLOG RESET + SLOWLOG LEN
+        try {
+            await testUtils.redisClient.sendCommand(['SLOWLOG', 'RESET']);
+            const len = await testUtils.redisClient.sendCommand(['SLOWLOG', 'LEN']);
+            const lenNum = typeof len === 'number' ? len : parseInt(len, 10);
+            if (lenNum === 0) {
+                testUtils.logTest('Lab 2', 'SLOWLOG RESET + LEN (len=0)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 2', 'SLOWLOG RESET + LEN', false, `len=${lenNum}`);
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 2', 'SLOWLOG RESET + LEN', false, error.message);
             failed++;
         }
 
@@ -387,6 +527,38 @@ async function testLab3() {
             failed++;
         }
 
+        // Test 5: SCAN — cursor-based iteration with MATCH pattern
+        try {
+            // Seed 5 keys
+            for (let i = 1; i <= 5; i++) {
+                await testUtils.redisClient.set(`test:scan:${i}`, `v${i}`);
+            }
+
+            const found = new Set();
+            for await (const key of testUtils.redisClient.scanIterator({ MATCH: 'test:scan:*', COUNT: 10 })) {
+                found.add(key);
+            }
+
+            if (found.size === 5 &&
+                found.has('test:scan:1') && found.has('test:scan:2') &&
+                found.has('test:scan:3') && found.has('test:scan:4') &&
+                found.has('test:scan:5')) {
+                testUtils.logTest('Lab 3', 'SCAN (MATCH test:scan:* finds 5 keys)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 3', 'SCAN', false, `Expected 5 keys, got ${found.size}`);
+                failed++;
+            }
+
+            // Cleanup
+            for (let i = 1; i <= 5; i++) {
+                await testUtils.redisClient.del(`test:scan:${i}`);
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 3', 'SCAN', false, error.message);
+            failed++;
+        }
+
     } catch (error) {
         testUtils.logTest('Lab 3', 'Lab execution', false, error.message);
         failed++;
@@ -520,6 +692,127 @@ async function testLab4() {
             failed++;
         }
 
+        // --- Part C: Advanced Key Operations ---
+
+        // Test 5: EXPIREAT — expire at an absolute Unix timestamp
+        try {
+            const key = 'lab4c:expireat:policy';
+            await testUtils.redisClient.set(key, 'active');
+            const futureTs = Math.floor(Date.now() / 1000) + 3600; // +1h
+            await testUtils.redisClient.expireAt(key, futureTs);
+            const ttlEA = await testUtils.redisClient.ttl(key);
+            if (ttlEA > 3500 && ttlEA <= 3600) {
+                testUtils.logTest('Lab 4', 'Part C: EXPIREAT (absolute Unix timestamp)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 4', 'Part C: EXPIREAT', false, `TTL=${ttlEA}, expected ~3600`);
+                failed++;
+            }
+            await testUtils.redisClient.del(key);
+        } catch (error) {
+            testUtils.logTest('Lab 4', 'Part C: EXPIREAT', false, error.message);
+            failed++;
+        }
+
+        // Test 6: PEXPIRE — millisecond TTL
+        try {
+            const key = 'lab4c:pexpire:quote';
+            await testUtils.redisClient.set(key, '{"premium":1142}');
+            await testUtils.redisClient.pExpire(key, 60000); // 60s in ms
+            const pttl = await testUtils.redisClient.pTTL(key);
+            if (pttl > 55000 && pttl <= 60000) {
+                testUtils.logTest('Lab 4', 'Part C: PEXPIRE + PTTL (millisecond TTL)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 4', 'Part C: PEXPIRE + PTTL', false, `PTTL=${pttl}`);
+                failed++;
+            }
+            await testUtils.redisClient.del(key);
+        } catch (error) {
+            testUtils.logTest('Lab 4', 'Part C: PEXPIRE + PTTL', false, error.message);
+            failed++;
+        }
+
+        // Test 7: PSETEX — atomic set with millisecond TTL
+        try {
+            const key = 'lab4c:psetex:fraud';
+            await testUtils.redisClient.sendCommand(['PSETEX', key, '30000', 'score:0.87']);
+            const pttl = await testUtils.redisClient.pTTL(key);
+            const val = await testUtils.redisClient.get(key);
+            if (pttl > 25000 && pttl <= 30000 && val === 'score:0.87') {
+                testUtils.logTest('Lab 4', 'Part C: PSETEX (atomic set + ms TTL)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 4', 'Part C: PSETEX', false, `PTTL=${pttl}, val=${val}`);
+                failed++;
+            }
+            await testUtils.redisClient.del(key);
+        } catch (error) {
+            testUtils.logTest('Lab 4', 'Part C: PSETEX', false, error.message);
+            failed++;
+        }
+
+        // Test 8: SCAN — cursor-based iteration
+        try {
+            // Seed some keys
+            for (let i = 1; i <= 20; i++) {
+                await testUtils.redisClient.set(`lab4c:scan:policy:${i}`, 'x');
+            }
+            const found = new Set();
+            for await (const key of testUtils.redisClient.scanIterator({ MATCH: 'lab4c:scan:policy:*', COUNT: 50 })) {
+                found.add(key);
+            }
+            if (found.size === 20) {
+                testUtils.logTest('Lab 4', 'Part C: SCAN (non-blocking iteration, 20 keys)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 4', 'Part C: SCAN', false, `Expected 20, got ${found.size}`);
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 4', 'Part C: SCAN', false, error.message);
+            failed++;
+        }
+
+        // Test 9: RENAME — atomic key rename with TTL preserved
+        try {
+            await testUtils.redisClient.setEx('lab4c:quote:Q501', 3600, '{"type":"auto"}');
+            await testUtils.redisClient.rename('lab4c:quote:Q501', 'lab4c:policy:auto:P501');
+            const exists = await testUtils.redisClient.exists('lab4c:quote:Q501');
+            const existsNew = await testUtils.redisClient.exists('lab4c:policy:auto:P501');
+            const ttlNew = await testUtils.redisClient.ttl('lab4c:policy:auto:P501');
+            if (exists === 0 && existsNew === 1 && ttlNew > 3000) {
+                testUtils.logTest('Lab 4', 'Part C: RENAME (atomic key move, TTL preserved)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 4', 'Part C: RENAME', false,
+                    `old exists=${exists}, new exists=${existsNew}, TTL=${ttlNew}`);
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 4', 'Part C: RENAME', false, error.message);
+            failed++;
+        }
+
+        // Test 10: RENAMENX — refuse to overwrite existing target
+        try {
+            await testUtils.redisClient.set('lab4c:quote:Q700', 'pending');
+            // Destination already exists from previous test
+            const result = await testUtils.redisClient.renameNX('lab4c:quote:Q700', 'lab4c:policy:auto:P501');
+            // renameNX returns false (or 0) if target existed
+            const srcStillExists = await testUtils.redisClient.exists('lab4c:quote:Q700');
+            if (!result && srcStillExists === 1) {
+                testUtils.logTest('Lab 4', 'Part C: RENAMENX (refuses to overwrite existing key)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 4', 'Part C: RENAMENX', false, `result=${result}, srcExists=${srcStillExists}`);
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 4', 'Part C: RENAMENX', false, error.message);
+            failed++;
+        }
+
     } catch (error) {
         testUtils.logTest('Lab 4', 'Lab execution', false, error.message);
         failed++;
@@ -614,6 +907,62 @@ async function testLab5() {
             passed++;
         } else {
             testUtils.logTest('Lab 5', 'Pipeline operations', false);
+            failed++;
+        }
+
+        // Test 6: CONFIG GET / SET round-trip (maxmemory-policy)
+        try {
+            const orig = await testUtils.redisClient.configGet('maxmemory-policy');
+            const origValue = orig['maxmemory-policy'];
+
+            await testUtils.redisClient.configSet('maxmemory-policy', 'allkeys-lru');
+            const changed = await testUtils.redisClient.configGet('maxmemory-policy');
+
+            // Restore original
+            await testUtils.redisClient.configSet('maxmemory-policy', origValue);
+            const restored = await testUtils.redisClient.configGet('maxmemory-policy');
+
+            if (changed['maxmemory-policy'] === 'allkeys-lru' &&
+                restored['maxmemory-policy'] === origValue) {
+                testUtils.logTest('Lab 5', 'CONFIG GET/SET round-trip (maxmemory-policy)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 5', 'CONFIG GET/SET round-trip', false,
+                    `changed=${changed['maxmemory-policy']}, restored=${restored['maxmemory-policy']}`);
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 5', 'CONFIG GET/SET round-trip', false, error.message);
+            failed++;
+        }
+
+        // Test 7: SLOWLOG GET returns an array
+        try {
+            const slowLog = await testUtils.redisClient.sendCommand(['SLOWLOG', 'GET', '10']);
+            if (Array.isArray(slowLog)) {
+                testUtils.logTest('Lab 5', 'SLOWLOG GET (returns array)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 5', 'SLOWLOG GET', false, `type=${typeof slowLog}`);
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 5', 'SLOWLOG GET', false, error.message);
+            failed++;
+        }
+
+        // Test 8: CLIENT LIST returns a non-empty string
+        try {
+            const list = await testUtils.redisClient.sendCommand(['CLIENT', 'LIST']);
+            if (typeof list === 'string' && list.length > 0) {
+                testUtils.logTest('Lab 5', 'CLIENT LIST (non-empty string)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 5', 'CLIENT LIST', false, `type=${typeof list}, len=${list && list.length}`);
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 5', 'CLIENT LIST', false, error.message);
             failed++;
         }
 

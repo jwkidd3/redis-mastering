@@ -154,28 +154,11 @@
             <!-- Title Slide -->
             <section>
                 <div class="title-block">
-                    <h1>Content 3: Core Data Structures</h1>
-                    <h2>String Operations & Key Management</h2>
-                    <p><strong>Duration:</strong> 45 minutes</p>
+                    <h1>Core Data Structures</h1>
+                    <h2>String Operations &amp; Key Management</h2>
+                    <p><strong>Duration:</strong> 30 minutes</p>
                     <p><strong>Focus:</strong> Redis String data type and operations</p>
                 </div>
-            </section>
-
-            <!-- Session Overview -->
-            <section>
-                <div class="session-header">
-                    <h2>Session Objectives</h2>
-                </div>
-                <ul>
-                    <li>Master Redis String data type fundamentals</li>
-                    <li>Implement basic operations for policy and customer data</li>
-                    <li>Execute numeric operations for calculations</li>
-                    <li>Apply string manipulation for document processing</li>
-                    <li>Utilize batch operations for bulk updates</li>
-                    <li>Design key naming conventions for entities</li>
-                    <li>Implement TTL strategies for temporary data</li>
-                    <li>Optimize memory usage for large databases</li>
-                </ul>
             </section>
 
             <!-- String Fundamentals -->
@@ -184,7 +167,7 @@
                     <h2>Redis String Data Type</h2>
                 </div>
                 <ul>
-                    <li><span class="highlight">Binary-safe</span> - can store any data type</li>
+                    <li><span class="highlight">Binary-safe</span> &mdash; can store any data type</li>
                     <li><span class="highlight">Maximum size:</span> 512 MB per string</li>
                     <li><span class="highlight">Most basic</span> Redis data type</li>
                     <li><span class="highlight">Versatile:</span> text, numbers, JSON, binary data</li>
@@ -194,31 +177,30 @@
                     SET policy:123456 "AUTO-2024-PREMIUM-1500"
                     SET customer:789012 "John Smith"
                     SET claim:amount:456 "2500.50"
-                    SET policy:doc:pdf "\x89PNG\r\n..."
                 </div>
             </section>
 
             <!-- Basic String Operations -->
             <section>
                 <div class="session-header">
-                    <h2>Basic String Operations - SET & GET</h2>
+                    <h2>Basic String Operations &mdash; SET &amp; GET</h2>
                 </div>
                 <ul>
-                    <li><span class="highlight">SET</span> - Store key-value pairs</li>
-                    <li><span class="highlight">GET</span> - Retrieve values by key</li>
-                    <li><span class="highlight">EXISTS</span> - Check if key exists</li>
-                    <li><span class="highlight">DEL</span> - Delete keys</li>
+                    <li><span class="highlight">SET</span> &mdash; Store key-value pairs</li>
+                    <li><span class="highlight">GET</span> &mdash; Retrieve values by key</li>
+                    <li><span class="highlight">EXISTS</span> &mdash; Check if key exists</li>
+                    <li><span class="highlight">DEL</span> &mdash; Delete keys</li>
                 </ul>
                 <div class="code-block">
                     # Store policy information
                     SET policy:123456 "AUTO-PREMIUM-1500-ACTIVE"
-                    
+
                     # Retrieve policy data
                     GET policy:123456
-                    
+
                     # Check existence
                     EXISTS policy:123456
-                    
+
                     # Delete policy
                     DEL policy:123456
                 </div>
@@ -230,23 +212,20 @@
                     <h2>SET Command Options</h2>
                 </div>
                 <ul>
-                    <li><span class="highlight">SET key value EX seconds</span> - Set with expiration</li>
-                    <li><span class="highlight">SET key value NX</span> - Set if not exists</li>
-                    <li><span class="highlight">SET key value XX</span> - Set if exists</li>
-                    <li><span class="highlight">SETNX</span> - Set if not exists (standalone)</li>
+                    <li><span class="highlight">SET key value EX seconds</span> &mdash; Set with expiration</li>
+                    <li><span class="highlight">SET key value NX</span> &mdash; Set if not exists</li>
+                    <li><span class="highlight">SET key value XX</span> &mdash; Set if exists</li>
+                    <li><span class="highlight">SETNX</span> &mdash; Set if not exists (standalone)</li>
                 </ul>
                 <div class="code-block">
-                    # Set with 1 hour expiration (quote timeout)
+                    # Set with 1 hour expiration
                     SET quote:temp:789 "QUOTE-DATA" EX 3600
-                    
+
                     # Set only if customer doesn't exist
                     SET customer:new:456 "New Customer" NX
-                    
+
                     # Update only if policy exists
                     SET policy:123456 "UPDATED-STATUS" XX
-                    
-                    # Alternative syntax
-                    SETNX session:user:789 "logged-in"
                 </div>
             </section>
 
@@ -256,20 +235,19 @@
                     <h2>Numeric Operations</h2>
                 </div>
                 <ul>
-                    <li><span class="highlight">INCR</span> - Increment by 1</li>
-                    <li><span class="highlight">DECR</span> - Decrement by 1</li>
-                    <li><span class="highlight">INCRBY</span> - Increment by specified amount</li>
-                    <li><span class="highlight">DECRBY</span> - Decrement by specified amount</li>
-                    <li><span class="highlight">INCRBYFLOAT</span> - Increment by float value</li>
+                    <li><span class="highlight">INCR</span> &mdash; Increment by 1</li>
+                    <li><span class="highlight">DECR</span> &mdash; Decrement by 1</li>
+                    <li><span class="highlight">INCRBY / DECRBY</span> &mdash; By specified amount</li>
+                    <li><span class="highlight">INCRBYFLOAT</span> &mdash; Increment by float value</li>
                 </ul>
                 <div class="code-block">
                     # Initialize claim counter
                     SET claim:counter 0
-                    
+
                     # Increment for new claims
                     INCR claim:counter          # Returns: 1
                     INCR claim:counter          # Returns: 2
-                    
+
                     # Add premium amount
                     SET premium:total 0
                     INCRBY premium:total 1500   # Add $1500
@@ -283,20 +261,20 @@
                     <h2>String Manipulation Commands</h2>
                 </div>
                 <ul>
-                    <li><span class="highlight">APPEND</span> - Append to existing string</li>
-                    <li><span class="highlight">STRLEN</span> - Get string length</li>
-                    <li><span class="highlight">GETRANGE</span> - Get substring</li>
-                    <li><span class="highlight">SETRANGE</span> - Overwrite part of string</li>
+                    <li><span class="highlight">APPEND</span> &mdash; Append to existing string</li>
+                    <li><span class="highlight">STRLEN</span> &mdash; Get string length</li>
+                    <li><span class="highlight">GETRANGE</span> &mdash; Get substring</li>
+                    <li><span class="highlight">SETRANGE</span> &mdash; Overwrite part of string</li>
                 </ul>
                 <div class="code-block">
                     # Build policy number incrementally
                     SET policy:temp "AUTO"
                     APPEND policy:temp "-2024"      # "AUTO-2024"
                     APPEND policy:temp "-PREMIUM"   # "AUTO-2024-PREMIUM"
-                    
+
                     # Get string length
                     STRLEN policy:temp              # Returns: 17
-                    
+
                     # Extract year from policy number
                     GETRANGE policy:temp 5 8        # Returns: "2024"
                 </div>
@@ -305,26 +283,22 @@
             <!-- Batch Operations -->
             <section>
                 <div class="session-header">
-                    <h2>Batch Operations - MSET & MGET</h2>
+                    <h2>Batch Operations &mdash; MSET &amp; MGET</h2>
                 </div>
                 <ul>
-                    <li><span class="highlight">MSET</span> - Set multiple keys atomically</li>
-                    <li><span class="highlight">MGET</span> - Get multiple values at once</li>
-                    <li><span class="highlight">MSETNX</span> - Set multiple if none exist</li>
-                    <li><span class="highlight">Performance benefit:</span> Reduced network round trips</li>
+                    <li><span class="highlight">MSET</span> &mdash; Set multiple keys atomically</li>
+                    <li><span class="highlight">MGET</span> &mdash; Get multiple values at once</li>
+                    <li><span class="highlight">MSETNX</span> &mdash; Set multiple if none exist</li>
+                    <li><span class="highlight">Benefit:</span> Reduced network round trips</li>
                 </ul>
                 <div class="code-block">
                     # Set multiple customer data points
                     MSET customer:123:name "John Smith" \
                          customer:123:email "john@email.com" \
-                         customer:123:phone "555-0123" \
                          customer:123:status "ACTIVE"
-                    
+
                     # Retrieve multiple values
                     MGET customer:123:name customer:123:email customer:123:status
-                    
-                    # Bulk policy initialization (all or nothing)
-                    MSETNX policy:1001 "NEW" policy:1002 "NEW" policy:1003 "NEW"
                 </div>
             </section>
 
@@ -343,15 +317,12 @@
                     # Entity-based naming patterns
                     policy:123456:premium           # Policy premium amount
                     policy:123456:status            # Policy status
-                    policy:123456:customer          # Associated customer ID
-                    
+
                     customer:789012:profile         # Customer profile data
                     customer:789012:policies        # Customer's policies
-                    customer:789012:claims          # Customer's claims
-                    
+
                     claim:456789:amount             # Claim amount
                     claim:456789:status             # Claim processing status
-                    claim:456789:adjuster           # Assigned adjuster
                 </div>
             </section>
 
@@ -361,91 +332,50 @@
                     <h2>TTL (Time To Live) Management</h2>
                 </div>
                 <ul>
-                    <li><span class="highlight">EXPIRE</span> - Set expiration in seconds</li>
-                    <li><span class="highlight">EXPIREAT</span> - Set expiration at Unix timestamp</li>
-                    <li><span class="highlight">TTL</span> - Check remaining time</li>
-                    <li><span class="highlight">PERSIST</span> - Remove expiration</li>
-                    <li><span class="highlight">PEXPIRE/PTTL</span> - Millisecond precision</li>
+                    <li><span class="highlight">EXPIRE</span> &mdash; Set expiration in seconds</li>
+                    <li><span class="highlight">EXPIREAT</span> &mdash; Set expiration at Unix timestamp</li>
+                    <li><span class="highlight">TTL</span> &mdash; Check remaining time</li>
+                    <li><span class="highlight">PERSIST</span> &mdash; Remove expiration</li>
+                    <li><span class="highlight">PEXPIRE/PTTL</span> &mdash; Millisecond precision</li>
                 </ul>
                 <div class="code-block">
                     # Set quote with 30-minute expiration
                     SET quote:temp:789 "QUOTE-DATA-HERE"
                     EXPIRE quote:temp:789 1800
-                    
+
                     # Check remaining time
                     TTL quote:temp:789              # Returns seconds remaining
-                    
-                    # Set session with precise expiration
-                    SET session:user:456 "ACTIVE"
-                    EXPIREAT session:user:456 1640995200  # Unix timestamp
-                    
+
                     # Remove expiration (make permanent)
                     PERSIST session:user:456
                 </div>
             </section>
 
-            <!-- SETEX and PSETEX -->
+            <!-- SETEX / Atomic SET with Expiration -->
             <section>
                 <div class="session-header">
-                    <h2>Atomic SET with Expiration</h2>
+                    <h2>Atomic SET with Expiration (SETEX)</h2>
                 </div>
                 <ul>
-                    <li><span class="highlight">SETEX</span> - Set value with expiration in seconds (atomic)</li>
-                    <li><span class="highlight">PSETEX</span> - Set value with expiration in milliseconds (atomic)</li>
-                    <li><span class="highlight">Advantage:</span> Single atomic operation vs SET + EXPIRE</li>
-                    <li><span class="highlight">Use cases:</span> Sessions, temporary tokens, rate limiting</li>
+                    <li><span class="highlight">SETEX</span> &mdash; Set value + TTL in seconds (atomic)</li>
+                    <li><span class="highlight">PSETEX</span> &mdash; Same, in milliseconds</li>
+                    <li><span class="highlight">SET key val EX sec</span> &mdash; Equivalent modern syntax</li>
+                    <li><span class="highlight">Use cases:</span> Sessions, tokens, rate limiting</li>
                 </ul>
                 <div class="code-block">
-                    # SETEX - Set with seconds TTL (atomic operation)
+                    # SETEX - Atomic set with seconds TTL
                     SETEX session:user:123 3600 "user-session-data"
-                    # Equivalent to: SET + EXPIRE but atomic
 
-                    # PSETEX - Set with milliseconds TTL (high precision)
-                    PSETEX ratelimit:api:user456 100 "1"
-                    # Perfect for rate limiting with ms precision
+                    # Equivalent modern syntax (can combine with NX)
+                    SET session:user:123 "user-session-data" EX 3600
+                    SET lock:resource "worker-1" EX 30 NX
 
-                    # Why atomic matters:
-                    # Wrong way (two commands, not atomic):
+                    # Wrong way - NOT atomic (crash between = no TTL!)
                     SET token:temp "TOKEN-VALUE"
                     EXPIRE token:temp 60
-                    # If crash occurs between commands, key has no expiration!
-
-                    # Right way (atomic):
-                    SETEX token:temp 60 "TOKEN-VALUE"
-                    # Guaranteed to have expiration
                 </div>
-                <div class="callout">
-                    <p><strong>Best Practice:</strong> Always use SETEX/PSETEX instead of SET + EXPIRE for temporary data. Atomicity prevents keys without expiration.</p>
-                </div>
-            </section>
-
-            <!-- SETEX vs SET EX -->
-            <section>
-                <div class="session-header">
-                    <h2>SETEX vs SET with EX Option</h2>
-                </div>
-                <div class="code-block">
-                    # These are equivalent (both atomic):
-                    SETEX session:123 3600 "data"
-                    SET session:123 "data" EX 3600
-
-                    # PSETEX for milliseconds:
-                    PSETEX session:123 3600000 "data"
-                    SET session:123 "data" PX 3600000
-
-                    # Choose based on preference:
-                    # SETEX/PSETEX: More explicit about expiration
-                    # SET EX/PX: Newer syntax, can combine with NX/XX
-                </div>
-                <ul>
-                    <li><span class="highlight">SETEX/PSETEX:</span> Traditional, explicit expiration commands</li>
-                    <li><span class="highlight">SET EX/PX:</span> Modern, can combine with NX (set if not exists)</li>
-                    <li><span class="highlight">Both atomic:</span> Either approach is safe</li>
-                </ul>
-                <div class="code-block">
-                    # Combine SET with EX and NX (only if key doesn't exist):
-                    SET lock:resource "worker-1" EX 30 NX
-                    # SETEX cannot be combined with NX
+                <div class="highlight">
+                    <strong>Best Practice:</strong> Always use atomic variants for temporary data.
                 </div>
             </section>
 
@@ -458,99 +388,44 @@
                     <li><span class="highlight">Key length:</span> Shorter keys save memory</li>
                     <li><span class="highlight">Value encoding:</span> Redis optimizes small integers/strings</li>
                     <li><span class="highlight">Expiration policies:</span> Automatic cleanup</li>
-                    <li><span class="highlight">Compression:</span> For large text values</li>
+                    <li><span class="highlight">Monitor with MEMORY USAGE:</span> Check per-key memory</li>
                 </ul>
                 <div class="code-block">
                     # Memory-efficient key naming
                     # Instead of: customer:profile:personal:full:name:first
                     # Use: cust:123:fname
-                    
-                    # Redis optimizes these automatically:
-                    SET counter:1 "123"           # Stored as integer
-                    SET short:key "hello"         # Optimized string encoding
-                    
-                    # For large data, consider JSON compression
-                    SET policy:large:data '{"compressed":"json","data":"here"}'
-                </div>
-            </section>
 
-            <!-- Practical Use Cases -->
-            <section>
-                <div class="session-header">
-                    <h2>Practical String Use Cases</h2>
-                </div>
-                <ul>
-                    <li><span class="highlight">Session storage:</span> User login tokens</li>
-                    <li><span class="highlight">Caching:</span> API responses and computed values</li>
-                    <li><span class="highlight">Counters:</span> Statistics and metrics</li>
-                    <li><span class="highlight">Configuration:</span> Application settings</li>
-                    <li><span class="highlight">Rate limiting:</span> API call counters</li>
-                    <li><span class="highlight">Feature flags:</span> Application feature toggles</li>
-                </ul>
-                <div class="code-block">
-                    # Session management
-                    SET session:abc123 "user:789|role:customer|exp:1640995200"
-                    
-                    # API response caching
-                    SET cache:policy:123456 '{"policy":"data","premium":1500}'
-                    EXPIRE cache:policy:123456 300  # 5-minute cache
-                    
-                    # Rate limiting counter
-                    SET rate:limit:user:789 "1"
-                    EXPIRE rate:limit:user:789 60   # Reset every minute
-                    INCR rate:limit:user:789        # Increment usage
-                </div>
-            </section>
-
-            <!-- Performance Considerations -->
-            <section>
-                <div class="session-header">
-                    <h2>Performance Best Practices</h2>
-                </div>
-                <ul>
-                    <li><span class="highlight">Atomic operations:</span> INCR/DECR are atomic and fast</li>
-                    <li><span class="highlight">Batch operations:</span> Use MGET/MSET for multiple keys</li>
-                    <li><span class="highlight">Pipeline commands:</span> Reduce network latency</li>
-                    <li><span class="highlight">Memory usage:</span> Monitor with MEMORY USAGE command</li>
-                    <li><span class="highlight">Key patterns:</span> Use consistent naming for easier management</li>
-                </ul>
-                <div class="code-block">
                     # Check memory usage of specific keys
                     MEMORY USAGE policy:123456
                     MEMORY USAGE customer:789012:profile
-                    
-                    # Efficient batch retrieval
-                    MGET policy:1001 policy:1002 policy:1003 policy:1004
-                    
-                    # Atomic increment for thread-safe counters
-                    INCR daily:claims:count         # Thread-safe increment
                 </div>
             </section>
 
-            <!-- Common Patterns -->
+            <!-- Practical Use Cases & Patterns -->
             <section>
                 <div class="session-header">
                     <h2>Common String Patterns</h2>
                 </div>
                 <ul>
-                    <li><span class="highlight">Unique ID generation:</span> INCR for sequential IDs</li>
+                    <li><span class="highlight">Session storage:</span> User login tokens</li>
+                    <li><span class="highlight">Caching:</span> API responses and computed values</li>
+                    <li><span class="highlight">Counters:</span> Unique ID generation with INCR</li>
                     <li><span class="highlight">Distributed locking:</span> SETNX for simple locks</li>
-                    <li><span class="highlight">Cache-aside pattern:</span> Check existence before DB query</li>
-                    <li><span class="highlight">Write-through caching:</span> Update cache and DB together</li>
+                    <li><span class="highlight">Rate limiting:</span> INCR with TTL</li>
                 </ul>
                 <div class="code-block">
-                    # Generate unique policy numbers
-                    INCR policy:id:generator        # Returns: 1, 2, 3, etc.
-                    SET policy:000001 "NEW-POLICY-DATA"
-                    
+                    # API response caching
+                    SET cache:policy:123456 '{"policy":"data","premium":1500}' EX 300
+
+                    # Rate limiting counter
+                    SET rate:limit:user:789 "1" EX 60
+                    INCR rate:limit:user:789        # Increment usage
+
+                    # Unique ID generation
+                    INCR policy:id:generator        # Returns: 1, 2, 3, ...
+
                     # Simple distributed lock
-                    SETNX lock:process:claims "worker-1"
-                    EXPIRE lock:process:claims 30   # Lock expires in 30 seconds
-                    
-                    # Cache-aside pattern
-                    GET cache:customer:789
-                    # If null, query database and cache result
-                    SET cache:customer:789 "database-result" EX 300
+                    SET lock:process:claims "worker-1" EX 30 NX
                 </div>
             </section>
 
@@ -560,9 +435,9 @@
                     <h2>Introduction to Sets for Tracking</h2>
                 </div>
                 <ul>
-                    <li><span class="highlight">Sets</span> - Collections of unique strings</li>
-                    <li><span class="highlight">SADD</span> - Add members to a set</li>
-                    <li><span class="highlight">Use case:</span> Track unique items (active sessions, processed IDs, etc.)</li>
+                    <li><span class="highlight">Sets</span> &mdash; Collections of unique strings</li>
+                    <li><span class="highlight">SADD</span> &mdash; Add members to a set</li>
+                    <li><span class="highlight">Use case:</span> Track unique items (active sessions, processed IDs)</li>
                     <li><span class="highlight">Coming in Day 2:</span> Full coverage of sets and sorted sets</li>
                 </ul>
                 <div class="code-block">
@@ -573,23 +448,21 @@
 
                     # Track active sessions
                     SADD sessions:active "session:123" "session:456"
-
-                    # Monitor script will use SADD to track metrics
                 </div>
                 <div class="highlight">
-                    <strong>Lab 5 Note:</strong> You'll use SADD in monitoring scripts to track unique events. We'll cover sets in detail in Day 2!
+                    <strong>Lab 5 Note:</strong> You'll use SADD in monitoring scripts to track unique events.
                 </div>
             </section>
 
             <!-- Persistence Monitoring -->
             <section>
                 <div class="session-header">
-                    <h2>Persistence & Backup Monitoring</h2>
+                    <h2>Persistence &amp; Backup Monitoring</h2>
                 </div>
                 <ul>
-                    <li><span class="highlight">LASTSAVE</span> - Get Unix timestamp of last successful RDB save</li>
-                    <li><span class="highlight">SAVE</span> - Synchronous save (blocks server)</li>
-                    <li><span class="highlight">BGSAVE</span> - Background save (non-blocking)</li>
+                    <li><span class="highlight">LASTSAVE</span> &mdash; Unix timestamp of last RDB save</li>
+                    <li><span class="highlight">BGSAVE</span> &mdash; Non-blocking background save</li>
+                    <li><span class="highlight">INFO persistence</span> &mdash; Full persistence status</li>
                     <li><span class="highlight">Use case:</span> Monitor backup freshness in production</li>
                 </ul>
                 <div class="code-block">
@@ -597,76 +470,30 @@
                     LASTSAVE
                     # Returns: 1699564800 (Unix timestamp)
 
-                    # Use in monitoring scripts:
-                    # current_time=$(date +%s)
-                    # last_save=$(redis-cli LASTSAVE)
-                    # age=$((current_time - last_save))
-                    # if [ $age -gt 3600 ]; then
-                    #     echo "WARNING: Last backup is over 1 hour old!"
-                    # fi
-                </div>
-                <div class="callout">
-                    <p><strong>Production Monitoring:</strong> Use LASTSAVE to verify backup automation is working. Critical for data protection!</p>
-                </div>
-            </section>
-
-            <!-- Production Persistence Best Practices -->
-            <section>
-                <div class="session-header">
-                    <h2>Persistence Best Practices</h2>
-                </div>
-                <ul>
-                    <li><span class="highlight">LASTSAVE monitoring:</span> Alert if backup is too old</li>
-                    <li><span class="highlight">BGSAVE frequency:</span> Balance durability vs performance</li>
-                    <li><span class="highlight">AOF + RDB:</span> Use both for maximum durability</li>
-                    <li><span class="highlight">Backup validation:</span> Regularly test restore process</li>
-                </ul>
-                <div class="code-block">
-                    # Check persistence status
-                    INFO persistence
-                    # Shows: rdb_last_save_time, rdb_changes_since_last_save, etc.
-
-                    # Get last save timestamp
-                    LASTSAVE
-                    # Returns Unix timestamp
-
                     # Trigger manual backup (non-blocking)
                     BGSAVE
 
-                    # Monitor backup progress
-                    INFO persistence | grep rdb_bgsave
-                    # Shows: rdb_bgsave_in_progress (0 or 1)
+                    # Full persistence details
+                    INFO persistence
+                    # Shows: rdb_last_save_time, rdb_bgsave_in_progress, etc.
                 </div>
                 <div class="highlight">
-                    <strong>Lab 5 Preview:</strong> You'll use LASTSAVE in monitoring scripts to track backup freshness and create automated alerts.
+                    <strong>Lab 5 Preview:</strong> Use LASTSAVE in monitoring scripts to alert on stale backups.
                 </div>
             </section>
 
             <!-- Lab Introduction -->
             <section>
                 <div class="lab-callout">
-                    <h2>Labs 4-5 Coming Next</h2>
-                    <p>Data Management & Monitoring</p>
-                    <p><strong>Duration:</strong> 90 minutes total</p>
-                    <p>Hands-on practice with string operations, key management, SETEX/PSETEX, and persistence monitoring with LASTSAVE</p>
+                    <h2>🧪 Lab 3: Data Operations with Strings</h2>
+                    <p><strong>Duration:</strong> 45 minutes</p>
+                    <p>Hands-on practice with SET, GET, INCR, MSET/MGET, TTL, and key naming conventions.</p>
+                    <p><strong>Coming after Lab 3:</strong></p>
+                    <ul style="display: inline-block; text-align: left; margin-top: 10px;">
+                        <li><strong>Lab 4:</strong> Key Management &amp; SETEX patterns</li>
+                        <li><strong>Lab 5:</strong> Persistence monitoring with LASTSAVE &amp; sets</li>
+                    </ul>
                 </div>
-            </section>
-
-            <!-- Summary -->
-            <section>
-                <div class="session-header">
-                    <h2>Session Summary</h2>
-                </div>
-                <ul>
-                    <li><span class="highlight">String fundamentals:</span> Binary-safe, versatile data type</li>
-                    <li><span class="highlight">Basic operations:</span> SET, GET, EXISTS, DEL with options</li>
-                    <li><span class="highlight">Numeric operations:</span> INCR, DECR for atomic calculations</li>
-                    <li><span class="highlight">String manipulation:</span> APPEND, GETRANGE, SETRANGE</li>
-                    <li><span class="highlight">Batch operations:</span> MSET, MGET for efficiency</li>
-                    <li><span class="highlight">Key conventions:</span> Hierarchical, consistent naming</li>
-                    <li><span class="highlight">TTL management:</span> Automatic expiration strategies</li>
-                    <li><span class="highlight">Performance:</span> Memory optimization and best practices</li>
-                </ul>
             </section>
 
         </div>

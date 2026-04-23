@@ -1,6 +1,6 @@
 # Lab 11: Customer Portal Session Management
 
-**Duration:** 45 minutes  
+**Duration:** 55 minutes  
 **Objective:** Implement Redis-based session management for customer portals with role-based access control and security monitoring
 
 ## 🎯 Learning Objectives
@@ -213,6 +213,71 @@ SCAN 0 MATCH security_log:* COUNT 100
 - Sessions expire automatically based on TTL
 - Redis handles memory optimization
 - Logs expire after 24 hours
+
+---
+
+## Part 6: Atomic Analytics & Audit Logging (10 min)
+
+Two Redis capabilities that make production session systems *observable* and *atomic*: server-side Lua (`EVAL`) for counters that must not race, and capped lists (`LPUSH` + `LTRIM`) for per-user audit logs.
+
+### Step 12 — `EVAL`: Atomic "Count Active Sessions per Role"
+
+A common dashboard metric is "how many admins / agents / customers are currently logged in." Doing this from the client requires multiple round-trips that can double-count during concurrent logins. A short Lua script runs on the server atomically — no race, single round-trip.
+
+**Insurance use case:** Operations dashboard shows "live admin count" — used to enforce a concurrency cap on privileged users.
+
+```redis
+// Seed some sessions with a userRole field
+HSET portal:session:s1 userRole admin
+HSET portal:session:s2 userRole agent
+HSET portal:session:s3 userRole agent
+HSET portal:session:s4 userRole customer
+
+// Atomic per-role session count
+EVAL "local keys = redis.call('KEYS', 'portal:session:*'); local counts = {}; for i=1,#keys do local r = redis.call('HGET', keys[i], 'userRole'); if r then counts[r] = (counts[r] or 0) + 1 end end; local out = {}; for r, n in pairs(counts) do table.insert(out, r); table.insert(out, tostring(n)) end; return out" 0
+```
+
+**Expected:** A flat array of alternating role/count pairs, e.g. `["admin","1","agent","2","customer","1"]`.
+
+> **Production tip:** Replace `KEYS` with `SCAN` inside the Lua for very large session sets. For learning, `KEYS` is fine.
+
+---
+
+### Step 13 — Per-User Audit Log with `LPUSH` + `LRANGE` + `LTRIM`
+
+Every sensitive action (login, password change, policy view) should append an audit entry to a capped list keyed per user. `LPUSH` is O(1), `LTRIM` caps memory, and `LRANGE` reads the latest N entries.
+
+**Insurance use case:** Regulator asks "what did customer CUST001 do in the portal last week?" — answer comes straight out of `audit:user:CUST001`.
+
+```redis
+// Append audit events (newest goes to the head)
+LPUSH audit:user:CUST001 "2026-04-23T10:00:00Z login ip=10.0.0.5"
+LPUSH audit:user:CUST001 "2026-04-23T10:03:22Z viewed policy:auto:P9001"
+LPUSH audit:user:CUST001 "2026-04-23T10:05:11Z downloaded claim:CLM-77"
+LPUSH audit:user:CUST001 "2026-04-23T10:07:40Z logout"
+
+// Cap the log to the most recent 100 entries (indexes 0..99)
+LTRIM audit:user:CUST001 0 99
+
+// Read the latest 20 audit events
+LRANGE audit:user:CUST001 0 19
+
+// Verify the cap
+LLEN audit:user:CUST001
+// Expected: <= 100
+```
+
+**Why cap with `LTRIM`?** Without it, a chatty user can grow the list unboundedly and break your memory budget. With it, each user's audit log has a deterministic upper memory cost.
+
+---
+
+### Part 6 Summary Table
+
+| Command / Pattern       | Purpose                                 | Insurance example                             |
+|-------------------------|-----------------------------------------|----------------------------------------------|
+| `EVAL` (short Lua)      | Atomic multi-step read on server        | Live session count by role                   |
+| `LPUSH` + `LRANGE`      | Append + read newest-first audit entries| "What did CUST001 do today?"                 |
+| `LTRIM`                 | Cap list to N most recent               | Bounded per-user audit log                   |
 
 ---
 

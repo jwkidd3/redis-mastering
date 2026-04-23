@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
+    <title>Content 9: Performance, Monitoring & Production Operations</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.css">
         <style>
@@ -83,6 +85,22 @@
             text-align: center;
         }
         .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            border: 2px solid #34495e;
+            border-radius: 5px;
+            padding: 0.5em;
+            font-family: 'Courier New', 'Monaco', monospace;
+            font-size: 0.6em;
+            margin: 0.3em 0;
+            line-height: 1.2;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .code-snippet {
             background: #2c3e50;
             color: #ecf0f1;
             border: 2px solid #34495e;
@@ -275,482 +293,214 @@
             <section data-background="#f8f9fa">
                 <div class="main-title">
                     <h1>Content 9</h1>
-                    <h2>Performance & Monitoring</h2>
+                    <h2>Monitoring &amp; Observability</h2>
                     <p>Optimizing Redis for Enterprise Workloads</p>
-                    <p><strong>Day 3 - Final Session</strong></p>
+                    <p><strong>Day 3 - Afternoon Session</strong></p>
                 </div>
             </section>
 
-            <!-- Session Overview -->
+            <!-- INFO Sections Overview -->
             <section>
                 <div class="session-header">
-                    <h2>Session Overview</h2>
+                    <h2>The INFO Command: Observability Foundation</h2>
                 </div>
-                <div class="bullet-point"><strong>Objective:</strong> Master performance optimization and comprehensive monitoring for production Redis systems</div>
-                <div class="bullet-point"><strong>Duration:</strong> 45 minutes presentation</div>
-                <div class="bullet-point"><strong>Focus:</strong> Enterprise-grade performance tuning, monitoring strategies, and microservices integration</div>
-                
-                <h3>Key Topics</h3>
-                <div class="bullet-point">Performance optimization for high-volume business applications</div>
-                <div class="bullet-point">Memory usage analysis and optimization for large datasets</div>
-                <div class="bullet-point">Redis Insight for production monitoring and alerting</div>
-                <div class="bullet-point">Capacity planning and scaling strategies for enterprise workloads</div>
-                <div class="bullet-point">Troubleshooting performance issues in production environments</div>
-                <div class="bullet-point">Microservices monitoring and distributed system observability</div>
-            </section>
-
-            <!-- Performance Fundamentals -->
-            <section>
-                <div class="session-header">
-                    <h2>Redis Performance Fundamentals</h2>
-                </div>
-                
-                <h3>Key Performance Characteristics</h3>
-                <div class="two-column">
-                    <div>
-                        <div class="metric-box">
-                            <h4>Throughput</h4>
-                            <p>100,000+ ops/sec typical</p>
-                        </div>
-                        <div class="metric-box">
-                            <h4>Latency</h4>
-                            <p>Sub-millisecond response</p>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="metric-box">
-                            <h4>Memory Efficiency</h4>
-                            <p>In-memory data structures</p>
-                        </div>
-                        <div class="metric-box">
-                            <h4>Concurrency</h4>
-                            <p>Single-threaded with I/O multiplexing</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <h3>Performance Factors for Business Applications</h3>
-                <div class="bullet-point"><strong>Data Structure Selection:</strong> Choose optimal structures for specific use cases</div>
-                <div class="bullet-point"><strong>Memory Optimization:</strong> Encoding settings and compression strategies</div>
-                <div class="bullet-point"><strong>Network Efficiency:</strong> Pipelining, batching, and connection pooling</div>
-                <div class="bullet-point"><strong>Persistence Impact:</strong> Balancing durability with performance requirements</div>
-                <div class="bullet-point"><strong>Client Configuration:</strong> Connection management and command optimization</div>
-                
-                <div class="performance-box">
-                    <strong>Enterprise Performance Target:</strong> Sub-millisecond latency with 99.9% uptime for business-critical operations.
-                </div>
-            </section>
-
-            <!-- Memory Optimization -->
-            <section>
-                <div class="session-header">
-                    <h2>Memory Optimization for Large Datasets</h2>
-                </div>
-                
-                <h3>Memory Analysis and Monitoring</h3>
                 <div class="code-snippet">
-# Memory analysis commands
-INFO memory                    # Overall memory statistics
-MEMORY USAGE key-name         # Memory usage for specific key
-MEMORY STATS                  # Detailed memory breakdown
-MEMORY DOCTOR                 # Memory optimization suggestions
-</div>
-                
-                <div class="two-column">
-                    <div>
-                        <h4>Memory Usage Patterns</h4>
-                        <div class="bullet-point">Active datasets vs archive data</div>
-                        <div class="bullet-point">Session data with TTL management</div>
-                        <div class="bullet-point">Cache hierarchies with eviction policies</div>
-                        <div class="bullet-point">Real-time analytics vs historical data</div>
-                        
-                        <h4>Optimization Techniques</h4>
-                        <div class="bullet-point">Use compressed data structures where appropriate</div>
-                        <div class="bullet-point">Implement proper TTL strategies</div>
-                        <div class="bullet-point">Choose efficient encoding for small objects</div>
-                        <div class="bullet-point">Monitor and prevent memory fragmentation</div>
-                    </div>
-                    <div>
-                        <h4>Memory Eviction Policies</h4>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Policy</th>
-                                    <th>Use Case</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><strong>allkeys-lru</strong></td>
-                                    <td>General caching</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>volatile-lru</strong></td>
-                                    <td>Mixed persistent/cache</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>allkeys-lfu</strong></td>
-                                    <td>Hot data optimization</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>volatile-ttl</strong></td>
-                                    <td>Time-based expiration</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        
-                        <div class="code-snippet">
-# Configure memory management
-CONFIG SET maxmemory 2gb
-CONFIG SET maxmemory-policy allkeys-lru
-CONFIG SET maxmemory-samples 5
-</div>
-                    </div>
+INFO               # all sections
+INFO server        # version, uptime
+INFO clients       # connected clients
+INFO memory        # memory usage
+INFO stats         # command statistics
+INFO replication   # replication status
+INFO persistence   # RDB/AOF status
+INFO keyspace      # database key counts
+INFO commandstats  # per-command latency
                 </div>
+                <div class="info"><strong>Insurance example:</strong> Claims-processing service polls <code>INFO stats</code> every 10s to feed dashboards correlating Redis throughput with claim intake rates.</div>
             </section>
 
-            <!-- Performance Monitoring Strategies -->
+            <!-- Memory Metrics -->
             <section>
                 <div class="session-header">
-                    <h2>Comprehensive Performance Monitoring</h2>
+                    <h2>Key Memory Metrics</h2>
                 </div>
-                
-                <h3>Essential Metrics for Business Applications</h3>
-                <div class="two-column">
-                    <div>
-                        <h4>Throughput Metrics</h4>
-                        <div class="bullet-point">Commands processed per second</div>
-                        <div class="bullet-point">Hit/miss ratios for cache performance</div>
-                        <div class="bullet-point">Network I/O throughput</div>
-                        <div class="bullet-point">Key eviction rates and patterns</div>
-                        
-                        <h4>Latency Metrics</h4>
-                        <div class="bullet-point">Average, P95, P99 response times</div>
-                        <div class="bullet-point">Slow query identification and analysis</div>
-                        <div class="bullet-point">Network round-trip time</div>
-                        <div class="bullet-point">Blocking operations duration</div>
-                    </div>
-                    <div>
-                        <h4>Resource Metrics</h4>
-                        <div class="bullet-point">Memory usage and fragmentation</div>
-                        <div class="bullet-point">CPU utilization patterns</div>
-                        <div class="bullet-point">Active client connections</div>
-                        <div class="bullet-point">Persistence operation impact</div>
-                        
-                        <h4>Business Metrics</h4>
-                        <div class="bullet-point">Session management effectiveness</div>
-                        <div class="bullet-point">API rate limiting performance</div>
-                        <div class="bullet-point">Cross-service cache coherence</div>
-                        <div class="bullet-point">Event processing latency</div>
-                    </div>
-                </div>
-                
+                <div class="bullet-point"><strong>used_memory:</strong> Total logical memory used</div>
+                <div class="bullet-point"><strong>used_memory_rss:</strong> OS-resident memory</div>
+                <div class="bullet-point"><strong>mem_fragmentation_ratio:</strong> RSS / used_memory (ideal 1.0-1.5)</div>
+                <div class="bullet-point"><strong>evicted_keys:</strong> Keys removed due to maxmemory</div>
                 <div class="code-snippet">
-# Key monitoring commands
-INFO stats                    # Server statistics and counters
-CLIENT LIST                   # Active client connections
-SLOWLOG GET 10               # Recent slow queries
-LATENCY LATEST               # Command latency statistics
-</div>
+INFO memory | grep used_memory
+INFO memory | grep fragmentation
+MEMORY USAGE key-name     # bytes for a specific key
+MEMORY STATS              # detailed breakdown
+MEMORY DOCTOR             # optimization suggestions
+                </div>
+                <div class="warning"><strong>Fragmentation:</strong> If <code>mem_fragmentation_ratio &gt; 1.5</code> consistently, enable active defragmentation or schedule a controlled restart.</div>
             </section>
 
-            <!-- Redis Insight for Production -->
+            <!-- Throughput & Latency Metrics -->
             <section>
                 <div class="session-header">
-                    <h2>Redis Insight for Production Monitoring</h2>
+                    <h2>Throughput &amp; Latency Metrics</h2>
                 </div>
-                
-                <h3>Enterprise Monitoring Features</h3>
-                <div class="bullet-point"><strong>Real-time Dashboards:</strong> Live metrics visualization for operations teams</div>
-                <div class="bullet-point"><strong>Memory Analysis:</strong> Key size distribution and usage patterns</div>
-                <div class="bullet-point"><strong>Performance Profiling:</strong> Command execution analysis and optimization</div>
-                <div class="bullet-point"><strong>Slow Query Analysis:</strong> Automated detection of performance bottlenecks</div>
-                
-                <div class="two-column">
-                    <div>
-                        <h4>Monitoring Capabilities</h4>
-                        <div class="bullet-point">Historical performance trends</div>
-                        <div class="bullet-point">Client connection monitoring</div>
-                        <div class="bullet-point">Memory usage breakdown by data type</div>
-                        <div class="bullet-point">Command frequency analysis</div>
-                        <div class="bullet-point">Database size and growth tracking</div>
-                    </div>
-                    <div>
-                        <h4>Business Intelligence</h4>
-                        <div class="bullet-point">Session pattern analysis</div>
-                        <div class="bullet-point">Cache effectiveness reporting</div>
-                        <div class="bullet-point">API usage statistics</div>
-                        <div class="bullet-point">Performance trend forecasting</div>
-                        <div class="bullet-point">Capacity planning insights</div>
-                    </div>
+                <div class="bullet-point"><strong>instantaneous_ops_per_sec:</strong> Current throughput</div>
+                <div class="bullet-point"><strong>total_commands_processed:</strong> Lifetime count</div>
+                <div class="bullet-point"><strong>keyspace_hits / keyspace_misses:</strong> Cache hit rate</div>
+                <div class="bullet-point"><strong>latency metrics:</strong> P95/P99 response times</div>
+                <div class="code-snippet">
+INFO stats | grep ops_per_sec
+INFO stats | grep keyspace
+
+# hit_rate = hits / (hits + misses) * 100
+
+LATENCY LATEST           # recent latency events
+INFO commandstats        # per-command avg latency
                 </div>
-                
-                <div class="dashboard-preview">
-                    <h4>Redis Insight Production Dashboard</h4>
-                    <p>Real-time metrics → Performance analysis → Trend forecasting → Alert management</p>
-                </div>
-                
-                <div class="highlight-box">
-                    <strong>Best Practice:</strong> Configure Redis Insight for continuous monitoring with automated alerts for critical thresholds.
-                </div>
+                <div class="success"><strong>Optimization:</strong> Identify the hottest commands in <code>commandstats</code> and apply pipelining, batching, or client-side caching.</div>
             </section>
 
-            <!-- Alerting and Threshold Management -->
+            <!-- SLOWLOG -->
             <section>
                 <div class="session-header">
-                    <h2>Alerting & Threshold Management</h2>
+                    <h2>Slowlog Analysis</h2>
                 </div>
-                
-                <h3>Critical Alert Thresholds for Business Applications</h3>
-                <table>
+                <div class="code-snippet">
+# Set threshold (10ms = 10000 microseconds)
+CONFIG SET slowlog-log-slower-than 10000
+CONFIG SET slowlog-max-len 128
+
+# View recent slow commands
+SLOWLOG GET 10
+
+# Entry fields: ID, timestamp, exec time (us),
+#               command + args, client info
+
+SLOWLOG RESET
+                </div>
+                <div class="success"><strong>Insurance example:</strong> A weekly slowlog review on the underwriting cluster caught an unbounded <code>KEYS policy:*</code> scan and replaced it with cursor-based <code>SCAN</code>, dropping P99 from 120ms to under 2ms.</div>
+                <div class="warning"><strong>Action required:</strong> Commands appearing repeatedly in slowlog must be optimized (better structures, pipelining) or cached client-side.</div>
+            </section>
+
+            <!-- CLIENT LIST -->
+            <section>
+                <div class="session-header">
+                    <h2>Client Connection Monitoring</h2>
+                </div>
+                <div class="code-snippet">
+# List all connected clients with details
+CLIENT LIST
+
+# Count connections
+INFO clients | grep connected_clients
+
+# Label your clients for traceability
+CLIENT SETNAME "quote-service-pod-3"
+
+# Inspect current client
+CLIENT INFO
+
+# Terminate a misbehaving connection
+CLIENT KILL ip:port
+
+# Diagnostic &mdash; use sparingly!
+MONITOR
+                </div>
+                <div class="warning"><strong>Careful:</strong> <code>MONITOR</code> ships every command to the client and can significantly reduce throughput. Use briefly for diagnosis only.</div>
+            </section>
+
+            <!-- Health Check Implementation -->
+            <section>
+                <div class="session-header">
+                    <h2>Health Check Endpoint</h2>
+                </div>
+                <div class="code-snippet">
+app.get('/health', async (req, res) => {
+    try {
+        await redis.ping();
+
+        const info = await redis.info();
+        const memoryUsed = parseInfo(info, 'used_memory');
+        const maxMemory  = parseInfo(info, 'maxmemory');
+        const clients    = parseInfo(info, 'connected_clients');
+
+        const memoryUtilization = memoryUsed / maxMemory;
+        const isHealthy = memoryUtilization < 0.9 && clients < 900;
+
+        res.status(isHealthy ? 200 : 503).json({
+            status: isHealthy ? 'healthy' : 'degraded',
+            uptime: parseInfo(info, 'uptime_in_seconds'),
+            memoryUtilization: `${(memoryUtilization * 100).toFixed(2)}%`,
+            connectedClients: clients,
+            opsPerSec: parseInfo(info, 'instantaneous_ops_per_sec')
+        });
+    } catch (error) {
+        res.status(503).json({ status: 'unhealthy', error: error.message });
+    }
+});
+                </div>
+                <div class="success"><strong>Insurance example:</strong> Policy-quote service exposes <code>/health</code> to the load balancer. When memory utilization crosses 90%, the instance is taken out of rotation while an operator investigates.</div>
+            </section>
+
+            <!-- Alerting Thresholds -->
+            <section>
+                <div class="session-header">
+                    <h2>Alert Thresholds</h2>
+                </div>
+                <table class="command-table">
                     <thead>
-                        <tr>
-                            <th>Metric</th>
-                            <th>Warning Threshold</th>
-                            <th>Critical Threshold</th>
-                            <th>Business Impact</th>
-                        </tr>
+                        <tr><th>Metric</th><th>Warning</th><th>Critical</th><th>Business Impact</th></tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Memory Usage</td>
-                            <td>>80%</td>
-                            <td>>90%</td>
-                            <td>Performance degradation</td>
-                        </tr>
-                        <tr>
-                            <td>Response Time</td>
-                            <td>>10ms P95</td>
-                            <td>>50ms P95</td>
-                            <td>User experience impact</td>
-                        </tr>
-                        <tr>
-                            <td>Connection Count</td>
-                            <td>>80% max</td>
-                            <td>>95% max</td>
-                            <td>Service availability risk</td>
-                        </tr>
-                        <tr>
-                            <td>Hit Ratio</td>
-                            <td><85%</td>
-                            <td><70%</td>
-                            <td>Cache effectiveness loss</td>
-                        </tr>
-                        <tr>
-                            <td>Slow Queries</td>
-                            <td>>5/minute</td>
-                            <td>>20/minute</td>
-                            <td>Performance bottlenecks</td>
-                        </tr>
+                        <tr><td>Memory Usage</td><td>&gt; 80% maxmemory</td><td>&gt; 90% maxmemory</td><td>Performance degradation</td></tr>
+                        <tr><td>Fragmentation Ratio</td><td>&gt; 1.5</td><td>&gt; 2.0</td><td>Wasted RAM, latency spikes</td></tr>
+                        <tr><td>Response Time (P95)</td><td>&gt; 10ms</td><td>&gt; 50ms</td><td>User experience impact</td></tr>
+                        <tr><td>Connection Count</td><td>&gt; 80% maxclients</td><td>&gt; 95% maxclients</td><td>Availability risk</td></tr>
+                        <tr><td>Hit Ratio</td><td>&lt; 85%</td><td>&lt; 70%</td><td>Cache ineffectiveness</td></tr>
+                        <tr><td>Evictions</td><td>&gt; 100/min</td><td>&gt; 1000/min</td><td>Working set too large</td></tr>
+                        <tr><td>Slow Queries</td><td>&gt; 5/min</td><td>&gt; 20/min</td><td>Performance bottleneck</td></tr>
+                        <tr><td>Replication Lag</td><td>&gt; 10 sec</td><td>&gt; 60 sec</td><td>Stale reads / RPO risk</td></tr>
                     </tbody>
                 </table>
-                
-                <h3>Automated Alerting Strategy</h3>
-                <div class="bullet-point"><strong>Escalation Levels:</strong> Info → Warning → Critical → Emergency</div>
-                <div class="bullet-point"><strong>Notification Channels:</strong> Email, Slack, PagerDuty, webhook integrations</div>
-                <div class="bullet-point"><strong>Alert Correlation:</strong> Group related alerts to prevent notification fatigue</div>
-                <div class="bullet-point"><strong>Automated Remediation:</strong> Self-healing actions for common issues</div>
-                
-                <div class="code-snippet">
-# Example monitoring script integration
-const thresholds = {
-  memoryUsage: { warning: 80, critical: 90 },
-  responseTime: { warning: 10, critical: 50 },
-  hitRatio: { warning: 85, critical: 70 }
-};
-
-// Automated threshold checking with JavaScript
-</div>
+                <div class="info"><strong>Strategy:</strong> Info &rarr; Warning &rarr; Critical escalation; route through Slack/PagerDuty; correlate related alerts to avoid fatigue.</div>
             </section>
 
-            <!-- Capacity Planning -->
-            <section>
-                <div class="session-header">
-                    <h2>Capacity Planning & Scaling</h2>
-                </div>
-                
-                <h3>Growth Analysis and Forecasting</h3>
-                <div class="two-column">
-                    <div>
-                        <h4>Data Growth Patterns</h4>
-                        <div class="bullet-point">User base expansion and seasonal trends</div>
-                        <div class="bullet-point">Data retention policies and archival strategies</div>
-                        <div class="bullet-point">Feature rollout impact on data volume</div>
-                        <div class="bullet-point">Cache size optimization based on usage patterns</div>
-                        
-                        <h4>Resource Planning</h4>
-                        <div class="bullet-point">Memory requirements for projected growth</div>
-                        <div class="bullet-point">Network bandwidth and latency considerations</div>
-                        <div class="bullet-point">Storage requirements for persistence</div>
-                        <div class="bullet-point">Backup and disaster recovery capacity</div>
-                    </div>
-                    <div>
-                        <h4>Scaling Strategies</h4>
-                        <div class="bullet-point"><strong>Vertical Scaling:</strong> Increasing server resources</div>
-                        <div class="bullet-point"><strong>Horizontal Scaling:</strong> Adding more Redis instances</div>
-                        <div class="bullet-point"><strong>Read Replicas:</strong> Distributing read workloads</div>
-                        <div class="bullet-point"><strong>Clustering:</strong> Data sharding across nodes</div>
-                        
-                        <h4>Performance Scaling</h4>
-                        <div class="bullet-point">Connection pooling optimization</div>
-                        <div class="bullet-point">Client-side caching strategies</div>
-                        <div class="bullet-point">CDN integration for global distribution</div>
-                        <div class="bullet-point">Load balancing across Redis instances</div>
-                    </div>
-                </div>
-                
-                <div class="warning-box">
-                    <strong>Planning Tip:</strong> Always plan for 2x current peak load to handle unexpected traffic spikes and growth.
-                </div>
-            </section>
-
-            <!-- Troubleshooting Performance Issues -->
-            <section>
-                <div class="session-header">
-                    <h2>Performance Troubleshooting</h2>
-                </div>
-                
-                <h3>Common Performance Issues & Solutions</h3>
-                <div class="two-column">
-                    <div>
-                        <h4>Memory-Related Issues</h4>
-                        <div class="bullet-point"><strong>Memory Fragmentation:</strong> Restart Redis or use active defragmentation</div>
-                        <div class="bullet-point"><strong>Memory Leaks:</strong> Audit TTL settings and key lifecycle management</div>
-                        <div class="bullet-point"><strong>Eviction Storms:</strong> Adjust memory limits and eviction policies</div>
-                        
-                        <h4>Network Issues</h4>
-                        <div class="bullet-point"><strong>High Latency:</strong> Check network configuration and Redis location</div>
-                        <div class="bullet-point"><strong>Connection Limits:</strong> Implement connection pooling</div>
-                        <div class="bullet-point"><strong>Bandwidth Saturation:</strong> Optimize data structures and payloads</div>
-                    </div>
-                    <div>
-                        <h4>Application Issues</h4>
-                        <div class="bullet-point"><strong>Slow Queries:</strong> Optimize command usage and data access patterns</div>
-                        <div class="bullet-point"><strong>Blocking Operations:</strong> Use non-blocking alternatives or timeouts</div>
-                        <div class="bullet-point"><strong>Cache Misses:</strong> Review caching strategy and TTL configuration</div>
-                        
-                        <h4>System Issues</h4>
-                        <div class="bullet-point"><strong>CPU Bottlenecks:</strong> Optimize Redis configuration and queries</div>
-                        <div class="bullet-point"><strong>Disk I/O Issues:</strong> Optimize persistence settings</div>
-                        <div class="bullet-point"><strong>OS Resource Limits:</strong> Configure ulimits and kernel parameters</div>
-                    </div>
-                </div>
-                
-                <div class="code-snippet">
-# Performance troubleshooting commands
-INFO commandstats              # Command usage statistics
-CONFIG GET timeout             # Connection timeout settings
-CLIENT LIST                    # Identify problematic clients
-MONITOR                        # Real-time command monitoring
-</div>
-            </section>
-
-            <!-- Microservices Monitoring -->
-            <section>
-                <div class="session-header">
-                    <h2>Microservices Performance & Monitoring</h2>
-                </div>
-                
-                <h3>Distributed System Observability</h3>
-                <div class="bullet-point"><strong>Service Discovery Monitoring:</strong> Track service registration and health status</div>
-                <div class="bullet-point"><strong>Cross-Service Cache Performance:</strong> Monitor cache coherence and invalidation patterns</div>
-                <div class="bullet-point"><strong>Event Processing Latency:</strong> Track pub/sub message processing times</div>
-                <div class="bullet-point"><strong>Circuit Breaker Metrics:</strong> Monitor fault tolerance and failover patterns</div>
-                
-                <div class="two-column">
-                    <div>
-                        <h4>Service-Level Metrics</h4>
-                        <div class="bullet-point">Individual service response times</div>
-                        <div class="bullet-point">Service dependency health</div>
-                        <div class="bullet-point">Cache hit ratios per service</div>
-                        <div class="bullet-point">Error rates and retry patterns</div>
-                        
-                        <h4>Integration Patterns</h4>
-                        <div class="bullet-point">Distributed tracing implementation</div>
-                        <div class="bullet-point">Correlation ID tracking</div>
-                        <div class="bullet-point">End-to-end latency monitoring</div>
-                        <div class="bullet-point">Business transaction tracking</div>
-                    </div>
-                    <div>
-                        <h4>Enterprise Monitoring Stack</h4>
-                        <div class="bullet-point">Redis Insight for Redis-specific metrics</div>
-                        <div class="bullet-point">Application monitoring (APM) integration</div>
-                        <div class="bullet-point">Infrastructure monitoring dashboards</div>
-                        <div class="bullet-point">Business metrics correlation</div>
-                        
-                        <div class="info-box">
-                            <strong>Microservices Best Practice:</strong> Implement comprehensive monitoring before production deployment to ensure system observability.
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Lab Callout - Lab 14 -->
+            <!-- Lab 14 + Lab 15 Callout -->
             <section data-background="#e8f5e8">
                 <div class="lab-callout">
                     <h2>🧪 Hands-On Practice</h2>
-                    <h3>Next: Lab 14</h3>
-                    <h3>Monitoring & Health Checks</h3>
+                    <h3>Next: Lab 14 - Production Monitoring &amp; Configuration</h3>
                     <p><strong>Duration: 45 minutes</strong></p>
                     <br>
                     <div style="font-size: 0.9em;">
-                        <p>• Set up Redis Insight for production monitoring</p>
-                        <p>• Implement comprehensive health check endpoints</p>
-                        <p>• Configure alerting and threshold management</p>
-                        <p>• Create performance monitoring dashboards</p>
-                        <p>• Practice capacity planning and analysis</p>
+                        <p>- Explore INFO sections and real-time metrics in Redis Insight</p>
+                        <p>- Configure slowlog thresholds and analyze captured entries</p>
+                        <p>- Build a Node.js health check endpoint against Redis</p>
+                        <p>- Apply persistence, memory, and security CONFIG SET changes</p>
+                        <p>- Define alert thresholds for an insurance workload</p>
                     </div>
                 </div>
-            </section>
-
-            <!-- Lab Callout - Lab 15 -->
-            <section data-background="#f3e5f5">
-                <div class="lab-callout" style="background: linear-gradient(135deg, #9c27b0, #7b1fa2);">
-                    <h2>🚀 Final Challenge</h2>
-                    <h3>Lab 15: Microservices Integration</h3>
-                    <p><strong>Duration: 45 minutes</strong></p>
-                    <br>
-                    <div style="font-size: 0.9em;">
-                        <p>• Build enterprise microservices architecture</p>
-                        <p>• Implement cross-service caching and events</p>
-                        <p>• Deploy distributed monitoring and health checks</p>
-                        <p>• Practice production-grade integration patterns</p>
-                        <p>• Complete comprehensive Redis mastery</p>
-                    </div>
+                <div class="highlight-box">
+                    <strong>Then:</strong> Cluster presentation (content 15) &rarr; <strong>Lab 15</strong> &mdash; microservices integration capstone with cross-service caching, distributed health checks, and chaos testing.
                 </div>
             </section>
 
             <!-- Session Summary -->
             <section>
                 <div class="session-header">
-                    <h2>Session Summary & Course Completion</h2>
+                    <h2>Session Summary</h2>
                 </div>
-                
-                <h3>Performance & Monitoring Mastery</h3>
-                <div class="bullet-point"><strong>Performance Optimization:</strong> Memory management, query optimization, and capacity planning</div>
-                <div class="bullet-point"><strong>Comprehensive Monitoring:</strong> Redis Insight, custom metrics, and automated alerting</div>
-                <div class="bullet-point"><strong>Troubleshooting:</strong> Systematic approach to identifying and resolving performance issues</div>
-                <div class="bullet-point"><strong>Microservices Ready:</strong> Distributed system monitoring and observability patterns</div>
-                
-                <h3>Redis Mastery Achievement</h3>
-                <div class="bullet-point">✅ Redis fundamentals and architecture mastery</div>
-                <div class="bullet-point">✅ Data structures and caching patterns expertise</div>
-                <div class="bullet-point">✅ Production deployment and security implementation</div>
-                <div class="bullet-point">✅ Performance optimization and monitoring skills</div>
-                <div class="bullet-point">✅ Enterprise microservices integration patterns</div>
-                
+                <div class="bullet-point"><strong>INFO sections:</strong> server, memory, stats, replication, persistence, commandstats, clients, keyspace</div>
+                <div class="bullet-point"><strong>Memory health:</strong> used_memory, RSS, fragmentation ratio, evictions</div>
+                <div class="bullet-point"><strong>Slowlog + commandstats:</strong> Find and fix the hottest slow commands first</div>
+                <div class="bullet-point"><strong>Health endpoints:</strong> PING + INFO + thresholds on every service</div>
+                <div class="bullet-point"><strong>Alert thresholds:</strong> Memory, latency, fragmentation, replication, persistence</div>
                 <div class="highlight-box">
-                    <strong>Congratulations!</strong> You now have comprehensive Redis expertise for building enterprise-grade applications. Complete Labs 14-15 to apply monitoring and microservices patterns in practice.
-                </div>
-                
-                <div class="performance-box">
-                    <strong>Next Steps:</strong> Apply your Redis mastery to real-world projects, contribute to the Redis community, and continue learning advanced Redis Enterprise features.
+                    <strong>Next:</strong> Cluster deep-dive, then Lab 15 to apply monitoring and microservices patterns end-to-end.
                 </div>
             </section>
 
         </div>
     </div>
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
     <script>
         Reveal.initialize({

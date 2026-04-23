@@ -107,7 +107,7 @@ function printHeader() {
     console.log('║                                                                            ║');
     console.log('║              REDIS MASTERING COURSE - INTEGRATION TEST SUITE              ║');
     console.log('║                                                                            ║');
-    console.log('║                            All 15 Labs (3 Days)                            ║');
+    console.log('║           13 Core Labs (3 Days) + Labs 10 & 13 runnable individually       ║');
     console.log('║                                                                            ║');
     console.log('╚════════════════════════════════════════════════════════════════════════════╝');
     console.log(`\n⏰ Test started: ${new Date().toLocaleString()}\n`);
@@ -219,7 +219,7 @@ async function runTests() {
         }
         // Run all tests
         else {
-            console.log('Running all tests for 3 days (15 labs)...\n');
+            console.log('Running all tests for 3 days (13 core labs)...\n');
 
             // Day 1 tests
             const day1Result = await day1Tests.runDay1Tests();

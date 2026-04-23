@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Advanced Caching Patterns & Event-Driven Architecture</title>
+    <title>Redis Streams, Events & Caching Patterns</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/monokai.css">
@@ -254,7 +254,6 @@
             border-radius: 8px;
             margin: 0.3em 0;
         }
-        /* Scrollbar styling */
         .reveal .slides section::-webkit-scrollbar {
             width: 8px;
         }
@@ -274,143 +273,35 @@
 <body>
     <div class="reveal">
         <div class="slides">
-            <!-- Title Slide -->
+            <!-- Slide 1: Title -->
             <section>
-                <h1>Advanced Caching Patterns & Event-Driven Architecture</h1>
-                <p style="text-align: center; font-size: 1.2em; color: #666; margin-top: 40px;">
-                    Modern Redis Patterns for Scalable Systems
-                </p>
-                <p style="text-align: center; font-size: 1em; color: #888; margin-top: 60px;">
-                    Day 2 - Session 1 | Duration: 45 minutes
-                </p>
+                <div class="title-block">
+                    <h1>Redis Streams, Events &amp; Caching Patterns</h1>
+                    <h2>Event-Driven Architecture for Insurance Systems</h2>
+                    <p><strong>Day 2 - PM Session | Duration: 30 minutes</strong></p>
+                </div>
             </section>
 
-            <!-- Session Objectives -->
+            <!-- Slide 2: Learning Objectives -->
             <section>
-                <h2>Learning Objectives</h2>
+                <div class="session-header">
+                    <h2>Learning Objectives</h2>
+                </div>
                 <ul>
-                    <li>Master advanced caching patterns for production systems</li>
-                    <li>Understand event-driven architecture with Redis Streams</li>
-                    <li>Implement cache invalidation strategies using events</li>
-                    <li>Design resilient caching for microservices</li>
-                    <li>Build real-time event processing systems</li>
-                    <li>Prepare for modern claims processing with event sourcing</li>
+                    <li>Understand Redis Streams as an immutable event log</li>
+                    <li>Apply event sourcing to claims and policy workflows</li>
+                    <li>Use consumer groups for parallel event processing</li>
+                    <li>Implement cache-aside and write-through patterns</li>
+                    <li>Design event-driven cache invalidation across services</li>
                 </ul>
             </section>
 
-            <!-- Caching Patterns Overview -->
+            <!-- Slide 3: Streams Intro -->
             <section>
-                <h2>Advanced Caching Patterns</h2>
-                <div class="three-column">
-                    <div class="pattern-box">
-                        <h4>Cache-Aside</h4>
-                        <p>Application manages cache explicitly. Read from cache, if miss then fetch from DB and populate cache.</p>
-                    </div>
-                    <div class="pattern-box">
-                        <h4>Write-Through</h4>
-                        <p>Write to cache and database simultaneously. Ensures data consistency but adds latency.</p>
-                    </div>
-                    <div class="pattern-box">
-                        <h4>Write-Behind</h4>
-                        <p>Write to cache immediately, database asynchronously. Better performance but risk of data loss.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Cache-Aside Implementation -->
-            <section>
-                <h2>Cache-Aside Pattern - JavaScript Implementation</h2>
-                <pre><code class="language-javascript">class CustomerCache {
-    constructor(redisClient, dbClient) {
-        this.redis = redisClient;
-        this.db = dbClient;
-    }
-    
-    async getCustomer(customerId) {
-        const cacheKey = `customer:${customerId}`;
-        
-        // Try cache first
-        let customer = await this.redis.get(cacheKey);
-        if (customer) {
-            return JSON.parse(customer);
-        }
-        
-        // Cache miss - fetch from database
-        customer = await this.db.getCustomer(customerId);
-        if (customer) {
-            // Cache for 1 hour
-            await this.redis.setex(cacheKey, 3600, JSON.stringify(customer));
-        }
-        
-        return customer;
-    }
-    
-    async updateCustomer(customerId, data) {
-        // Update database
-        await this.db.updateCustomer(customerId, data);
-        
-        // Invalidate cache
-        await this.redis.del(`customer:${customerId}`);
-    }
-}</code></pre>
-            </section>
-
-            <!-- Multi-Level Caching -->
-            <section>
-                <h2>Multi-Level Caching Strategy</h2>
-                <div class="two-column">
-                    <div>
-                        <h3>Architecture Layers</h3>
-                        <ul>
-                            <li><strong>L1:</strong> Application memory cache (fast, small)</li>
-                            <li><strong>L2:</strong> Redis cache (shared, persistent)</li>
-                            <li><strong>L3:</strong> Database cache (source of truth)</li>
-                        </ul>
-                        <h3>Benefits</h3>
-                        <ul>
-                            <li>Reduced latency at each level</li>
-                            <li>Better resource utilization</li>
-                            <li>Improved scalability</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <pre><code class="language-javascript">class MultiLevelCache {
-    constructor(redis, localCache) {
-        this.redis = redis;
-        this.local = localCache;
-    }
-    
-    async get(key) {
-        // L1: Check local cache
-        let value = this.local.get(key);
-        if (value) return value;
-        
-        // L2: Check Redis
-        value = await this.redis.get(key);
-        if (value) {
-            this.local.set(key, value, 300); // 5min local TTL
-            return value;
-        }
-        
-        return null;
-    }
-    
-    async set(key, value, ttl) {
-        // Write to both levels
-        await this.redis.setex(key, ttl, value);
-        this.local.set(key, value, Math.min(ttl, 300));
-    }
-}</code></pre>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Redis Streams Introduction -->
-            <section>
-                <h2>Redis Streams - Event-Driven Architecture</h2>
+                <h2>Redis Streams - Event-Driven Foundation</h2>
                 <div class="stream-feature">
-                    <h3>🚀 Modern Event Processing with Redis Streams</h3>
-                    <p>Redis Streams provide a powerful foundation for event-driven systems, offering immutable logs, consumer groups, and real-time processing capabilities.</p>
+                    <h3>&#128640; Modern Event Processing with Redis Streams</h3>
+                    <p>Streams provide an immutable, append-only log with built-in consumer groups and real-time processing - the backbone of event-driven insurance systems.</p>
                 </div>
                 <div class="two-column">
                     <div>
@@ -418,23 +309,23 @@
                         <ul>
                             <li><strong>Immutable log:</strong> Events stored permanently</li>
                             <li><strong>Consumer groups:</strong> Parallel processing</li>
-                            <li><strong>Message persistence:</strong> Reliability and replay</li>
-                            <li><strong>Time-based queries:</strong> Range operations</li>
+                            <li><strong>Persistence:</strong> Replay and recovery</li>
+                            <li><strong>Time-range queries:</strong> Historical analysis</li>
                         </ul>
                     </div>
                     <div>
-                        <h3>Use Cases</h3>
+                        <h3>Insurance Use Cases</h3>
                         <ul>
-                            <li>Event sourcing for audit trails</li>
-                            <li>Real-time analytics and monitoring</li>
-                            <li>Cache invalidation events</li>
-                            <li>Microservice communication</li>
+                            <li>Claims audit trails</li>
+                            <li>Policy lifecycle events</li>
+                            <li>Cache invalidation broadcasts</li>
+                            <li>Real-time fraud monitoring</li>
                         </ul>
                     </div>
                 </div>
             </section>
 
-            <!-- Streams Basic Operations -->
+            <!-- Slide 4: Streams Core Commands -->
             <section>
                 <h2>Redis Streams - Core Commands</h2>
                 <table class="command-table">
@@ -448,304 +339,294 @@
                     <tbody>
                         <tr>
                             <td><code>XADD</code></td>
-                            <td>Add entry to stream</td>
-                            <td><code>XADD events * action claim_submitted id 12345</code></td>
+                            <td>Append entry to stream</td>
+                            <td><code>XADD claims * action submitted id 12345</code></td>
                         </tr>
                         <tr>
                             <td><code>XREAD</code></td>
                             <td>Read from stream</td>
-                            <td><code>XREAD STREAMS events 0</code></td>
+                            <td><code>XREAD STREAMS claims 0</code></td>
                         </tr>
                         <tr>
                             <td><code>XGROUP CREATE</code></td>
                             <td>Create consumer group</td>
-                            <td><code>XGROUP CREATE events processors $</code></td>
+                            <td><code>XGROUP CREATE claims processors $</code></td>
                         </tr>
                         <tr>
                             <td><code>XREADGROUP</code></td>
                             <td>Read as consumer group</td>
-                            <td><code>XREADGROUP GROUP processors worker1 STREAMS events ></code></td>
+                            <td><code>XREADGROUP GROUP processors worker1 STREAMS claims &gt;</code></td>
                         </tr>
                         <tr>
                             <td><code>XACK</code></td>
-                            <td>Acknowledge message</td>
-                            <td><code>XACK events processors 1640000000000-0</code></td>
+                            <td>Acknowledge delivery</td>
+                            <td><code>XACK claims processors 1640000000000-0</code></td>
                         </tr>
                     </tbody>
                 </table>
             </section>
 
-            <!-- Event-Driven Cache Invalidation -->
+            <!-- Slide 5: Event Sourcing Concept -->
             <section>
-                <h2>Event-Driven Cache Invalidation</h2>
-                <div class="highlight-box">
-                    <strong>Challenge:</strong> Traditional cache invalidation is reactive and can lead to stale data. 
-                    Event-driven invalidation provides proactive, real-time cache management.
+                <h2>Event Sourcing with Redis Streams</h2>
+                <div class="two-column">
+                    <div>
+                        <h3>Why Event Sourcing?</h3>
+                        <ul>
+                            <li><strong>Audit Trail:</strong> Every state change recorded</li>
+                            <li><strong>Replay:</strong> Rebuild state from history</li>
+                            <li><strong>Analytics:</strong> Process events as they occur</li>
+                            <li><strong>Compliance:</strong> Immutable transaction log</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Claim Lifecycle</h3>
+                        <ul>
+                            <li>Claim submitted &rarr; event logged</li>
+                            <li>Claim reviewed &rarr; event logged</li>
+                            <li>Claim approved &rarr; event logged</li>
+                            <li>Payment issued &rarr; event logged</li>
+                        </ul>
+                        <p class="small-text">Each event is immutable and carries full context for replay.</p>
+                    </div>
                 </div>
-                <pre><code class="language-javascript">class EventDrivenCache {
-    constructor(redis) {
-        this.redis = redis;
-        this.setupEventProcessor();
+            </section>
+
+            <!-- Slide 6: XADD for Claim Events -->
+            <section>
+                <h2>Publishing Claim Events</h2>
+                <pre><code class="language-javascript">// Publish a claim submission event
+await redis.xadd('claims:events', '*',
+    'action', 'claim_submitted',
+    'claim_id', 'CLM-78921',
+    'policy_id', 'POL-12345',
+    'customer_id', 'CUS-456',
+    'amount', '4500.00',
+    'timestamp', Date.now().toString()
+);
+
+// Subsequent lifecycle events
+await redis.xadd('claims:events', '*',
+    'action', 'claim_reviewed',
+    'claim_id', 'CLM-78921',
+    'adjuster_id', 'ADJ-21',
+    'status', 'approved'
+);
+
+await redis.xadd('claims:events', '*',
+    'action', 'payment_issued',
+    'claim_id', 'CLM-78921',
+    'amount', '4500.00'
+);</code></pre>
+                <div class="info"><strong>Tip:</strong> The <code>*</code> ID lets Redis assign a monotonically increasing timestamp-based ID.</div>
+            </section>
+
+            <!-- Slide 7: Consumer Groups -->
+            <section>
+                <h2>Consumer Groups for Parallel Processing</h2>
+                <div class="two-column">
+                    <div>
+                        <h3>Why Consumer Groups?</h3>
+                        <ul>
+                            <li>Distribute work across workers</li>
+                            <li>Each message delivered to one consumer</li>
+                            <li>Automatic load balancing</li>
+                            <li>Pending list tracks unacknowledged work</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Insurance Workflow</h3>
+                        <ul>
+                            <li><strong>fraud-checkers:</strong> score each claim</li>
+                            <li><strong>notifiers:</strong> email customers</li>
+                            <li><strong>analytics:</strong> update dashboards</li>
+                            <li>All groups read every event independently</li>
+                        </ul>
+                    </div>
+                </div>
+                <pre><code class="language-javascript">// Create a consumer group starting from the tail
+await redis.xgroup('CREATE', 'claims:events', 'fraud-checkers', '$', 'MKSTREAM');
+
+// Worker reads and acknowledges
+const events = await redis.xreadgroup(
+    'GROUP', 'fraud-checkers', 'worker-1',
+    'COUNT', 10, 'BLOCK', 2000,
+    'STREAMS', 'claims:events', '&gt;'
+);
+for (const [stream, messages] of events) {
+    for (const [id, fields] of messages) {
+        await scoreClaim(fields);
+        await redis.xack('claims:events', 'fraud-checkers', id);
     }
-    
-    async setupEventProcessor() {
-        // Create consumer group for cache invalidation
-        try {
-            await this.redis.xgroup('CREATE', 'events', 'cache-invalidator', '$');
-        } catch (err) {
-            // Group already exists
+}</code></pre>
+            </section>
+
+            <!-- Slide 8: Lab 8 Callout -->
+            <section data-background-color="#1a1a2e">
+                <div class="lab-callout">
+                    <h3>&#129514; Lab 8: Claims Event Sourcing with Streams</h3>
+                    <p><strong>Build a complete event-driven claims processor</strong></p>
+                </div>
+                <div class="success">
+                    <h4>What You'll Build</h4>
+                    <ul>
+                        <li>Append claim lifecycle events with <code>XADD</code></li>
+                        <li>Process events in parallel with consumer groups</li>
+                        <li>Replay the stream to reconstruct claim state</li>
+                        <li>Produce real-time claim analytics</li>
+                    </ul>
+                </div>
+                <div class="info"><strong>Tools:</strong> Node.js, ioredis, Redis Insight Workbench</div>
+            </section>
+
+            <!-- Slide 9: Transition to Caching -->
+            <section>
+                <div class="section-header">
+                    <h2>Part 2: Caching Patterns</h2>
+                    <p>Events give us a durable log. Now let's use them to keep caches fresh and fast.</p>
+                </div>
+                <div class="info">
+                    <strong>The Performance Challenge:</strong> Database queries run in 10-100ms. Redis GET runs in &lt;1ms. A well-designed cache layer cuts DB load 70-90%.
+                </div>
+            </section>
+
+            <!-- Slide 10: Caching Patterns Overview -->
+            <section>
+                <h2>Core Caching Patterns</h2>
+                <div class="three-column">
+                    <div class="pattern-box">
+                        <h4>Cache-Aside</h4>
+                        <p>Application reads from cache; on miss, loads from DB and populates cache.</p>
+                        <div class="success">Best for: read-heavy policy lookups</div>
+                    </div>
+                    <div class="pattern-box">
+                        <h4>Write-Through</h4>
+                        <p>Writes go to cache and DB together. Strong consistency; extra latency.</p>
+                        <div class="success">Best for: premium billing data</div>
+                    </div>
+                    <div class="pattern-box">
+                        <h4>Write-Behind</h4>
+                        <p>Cache first, DB async. Fast writes but risk of loss.</p>
+                        <div class="warning">Risk: data loss on cache failure</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 11: Cache-Aside Implementation -->
+            <section>
+                <h2>Cache-Aside Pattern - Customer Lookup</h2>
+                <pre><code class="language-javascript">class CustomerCache {
+    constructor(redisClient, dbClient) {
+        this.redis = redisClient;
+        this.db = dbClient;
+    }
+
+    async getCustomer(customerId) {
+        const cacheKey = `customer:${customerId}`;
+
+        // Try cache first
+        let customer = await this.redis.get(cacheKey);
+        if (customer) return JSON.parse(customer);
+
+        // Cache miss - fetch from database
+        customer = await this.db.getCustomer(customerId);
+        if (customer) {
+            await this.redis.setex(cacheKey, 3600, JSON.stringify(customer));
         }
-        
+        return customer;
+    }
+
+    async updateCustomer(customerId, data) {
+        await this.db.updateCustomer(customerId, data);
+        await this.redis.del(`customer:${customerId}`); // invalidate
+    }
+}</code></pre>
+            </section>
+
+            <!-- Slide 12: Cache Invalidation Strategies -->
+            <section>
+                <h2>Cache Invalidation Strategies</h2>
+                <ul>
+                    <li><strong>Time-based (TTL):</strong> Automatic expiration - simplest, but can serve stale data</li>
+                    <li><strong>Event-driven:</strong> Invalidate on update events via Streams or Pub/Sub</li>
+                    <li><strong>Pattern-based:</strong> Delete by key pattern (<code>customer:*</code>)</li>
+                    <li><strong>Tag-based:</strong> Group related keys for bulk invalidation</li>
+                </ul>
+                <div class="warning">
+                    <strong>&quot;There are only two hard things in Computer Science: cache invalidation and naming things.&quot;</strong> - Phil Karlton
+                </div>
+                <div class="info">
+                    For distributed insurance services, prefer event-driven invalidation - it reuses the event log you built in Part 1.
+                </div>
+            </section>
+
+            <!-- Slide 13: Event-Driven Cache Invalidation -->
+            <section>
+                <h2>Event-Driven Cache Invalidation with Streams</h2>
+                <pre><code class="language-javascript">class EventDrivenCache {
+    async setupEventProcessor() {
+        try {
+            await this.redis.xgroup('CREATE', 'events',
+                'cache-invalidator', '$', 'MKSTREAM');
+        } catch (e) { /* group exists */ }
         this.processEvents();
     }
-    
+
     async processEvents() {
         while (true) {
             const events = await this.redis.xreadgroup(
                 'GROUP', 'cache-invalidator', 'worker-1',
-                'COUNT', 10,
-                'BLOCK', 1000,
-                'STREAMS', 'events', '>'
-            );
-            
-            for (const [stream, messages] of events) {
+                'COUNT', 10, 'BLOCK', 1000,
+                'STREAMS', 'events', '&gt;');
+            for (const [, messages] of events) {
                 for (const [id, fields] of messages) {
-                    await this.handleCacheEvent(fields);
+                    await this.handleEvent(fields);
                     await this.redis.xack('events', 'cache-invalidator', id);
                 }
             }
         }
     }
-    
-    async handleCacheEvent(fields) {
-        const action = fields[1]; // fields = ['action', 'claim_updated', 'id', '12345']
-        const entityId = fields[3];
-        
-        switch (action) {
-            case 'claim_updated':
-                await this.invalidateClaimCache(entityId);
-                break;
-            case 'customer_updated':
-                await this.invalidateCustomerCache(entityId);
-                break;
-        }
+
+    async handleEvent(fields) {
+        const action = fields[1], entityId = fields[3];
+        if (action === 'policy_updated')   await this.redis.del(`policy:${entityId}`);
+        if (action === 'customer_updated') await this.redis.del(`customer:${entityId}`);
     }
 }</code></pre>
             </section>
 
-            <!-- Stream-Based Cache Coherence -->
-            <section>
-                <h2>Stream-Based Cache Coherence</h2>
-                <div class="two-column">
-                    <div>
-                        <h3>Problem</h3>
-                        <ul>
-                            <li>Multiple services cache same data</li>
-                            <li>Updates in one service affect others</li>
-                            <li>Need coordinated invalidation</li>
-                            <li>Avoid cache stampedes</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3>Stream Solution</h3>
-                        <ul>
-                            <li>Central event stream for all updates</li>
-                            <li>Each service subscribes to relevant events</li>
-                            <li>Atomic event publication</li>
-                            <li>Guaranteed event delivery</li>
-                        </ul>
-                    </div>
-                </div>
-                <pre><code class="language-javascript">// Service A publishes an update event
-await redis.xadd('cache-events', '*', 
-    'service', 'policy-service',
-    'action', 'policy_updated',
-    'entity_type', 'policy',
-    'entity_id', 'POL-12345',
-    'tags', 'customer:456,agent:789'
-);
-
-// Services B and C automatically receive and process the event
-// Cache invalidation happens across all services simultaneously</code></pre>
-            </section>
-
-            <!-- Lab 10 Announcement -->
-            <section>
+            <!-- Slide 14: Lab 9 Callout + Lab 10 Optional -->
+            <section data-background-color="#1a1a2e">
                 <div class="lab-callout">
-                    <h2>🚀 Lab 10: Advanced Caching Patterns</h2>
-                    <p><strong>Hands-On Implementation of Production Caching Strategies</strong></p>
+                    <h3>&#128640; Lab 9: Set-Based Claims Analytics</h3>
+                    <p><strong>Use Redis Sets to segment customers and detect fraud patterns</strong></p>
                 </div>
                 <div class="success">
-                    <h3>What You'll Build:</h3>
+                    <h4>What You'll Build</h4>
                     <ul>
-                        <li>Cache-aside pattern with intelligent fallback</li>
-                        <li>Multi-level caching (Memory + Redis)</li>
-                        <li>Smart cache invalidation strategies</li>
-                        <li>Performance monitoring and optimization</li>
-                        <li>Cache warming for high-traffic scenarios</li>
+                        <li>Populate cohort Sets from the Lab 8 event stream</li>
+                        <li>Use <code>SINTER</code> / <code>SUNION</code> / <code>SDIFF</code> for analytics</li>
+                        <li>Detect suspicious claim patterns in real time</li>
                     </ul>
                 </div>
-                <div class="warning">
-                    <strong>Note:</strong> This lab uses JavaScript/Node.js with Redis Insight Workbench for
-                    monitoring cache performance and debugging cache behavior in real-time.
+                <div class="info">
+                    <strong>Optional Lab 10:</strong> Advanced caching patterns (cache-aside, multi-level, warming) - available for self-study if time allows.
                 </div>
             </section>
 
-            <!-- Event Sourcing Preview -->
-            <section>
-                <h2>Event Sourcing with Redis Streams</h2>
-                <div class="success">
-                    <strong>Next Lab Preview:</strong> In Lab 8, you'll implement a complete event sourcing system 
-                    for claims processing using Redis Streams, creating immutable audit trails and real-time analytics.
-                </div>
-                <div class="two-column">
-                    <div>
-                        <h3>Event Sourcing Benefits</h3>
-                        <ul>
-                            <li><strong>Audit Trail:</strong> Complete history of changes</li>
-                            <li><strong>Replay Capability:</strong> Rebuild state from events</li>
-                            <li><strong>Real-time Analytics:</strong> Process events as they occur</li>
-                            <li><strong>Compliance:</strong> Immutable transaction logs</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3>Claims Processing Example</h3>
-                        <ul>
-                            <li>Claim submitted → Event logged</li>
-                            <li>Claim reviewed → Event logged</li>
-                            <li>Claim approved → Event logged</li>
-                            <li>Payment issued → Event logged</li>
-                        </ul>
-                        <p style="font-size: 0.9em; margin-top: 20px;">
-                            Each event creates an immutable record, enabling complete audit trails and real-time processing.
-                        </p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Circuit Breaker Pattern -->
-            <section>
-                <h2>Circuit Breaker for Cache Resilience</h2>
-                <pre><code class="language-javascript">class CacheCircuitBreaker {
-    constructor(redis, options = {}) {
-        this.redis = redis;
-        this.failureThreshold = options.failureThreshold || 5;
-        this.resetTimeout = options.resetTimeout || 60000;
-        this.state = 'CLOSED'; // CLOSED, OPEN, HALF_OPEN
-        this.failureCount = 0;
-        this.lastFailureTime = null;
-    }
-    
-    async execute(operation) {
-        if (this.state === 'OPEN') {
-            if (Date.now() - this.lastFailureTime > this.resetTimeout) {
-                this.state = 'HALF_OPEN';
-            } else {
-                throw new Error('Circuit breaker is OPEN');
-            }
-        }
-        
-        try {
-            const result = await operation();
-            this.onSuccess();
-            return result;
-        } catch (error) {
-            this.onFailure();
-            throw error;
-        }
-    }
-    
-    onSuccess() {
-        this.failureCount = 0;
-        this.state = 'CLOSED';
-    }
-    
-    onFailure() {
-        this.failureCount++;
-        this.lastFailureTime = Date.now();
-        
-        if (this.failureCount >= this.failureThreshold) {
-            this.state = 'OPEN';
-        }
-    }
-}</code></pre>
-            </section>
-
-            <!-- Performance Optimization -->
-            <section>
-                <h2>Caching Performance Best Practices</h2>
-                <div class="three-column">
-                    <div>
-                        <h4>🎯 Key Design</h4>
-                        <ul>
-                            <li>Use consistent naming conventions</li>
-                            <li>Implement key expiration strategies</li>
-                            <li>Avoid hot keys with sharding</li>
-                            <li>Use compression for large values</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4>⚡ Operations</h4>
-                        <ul>
-                            <li>Batch operations with pipelines</li>
-                            <li>Use appropriate data structures</li>
-                            <li>Implement connection pooling</li>
-                            <li>Monitor cache hit ratios</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4>🛡️ Reliability</h4>
-                        <ul>
-                            <li>Handle cache failures gracefully</li>
-                            <li>Implement warming strategies</li>
-                            <li>Use cache stampede protection</li>
-                            <li>Plan for disaster recovery</li>
-                        </ul>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Anti-Patterns -->
-            <section>
-                <h2>Caching Anti-Patterns to Avoid</h2>
-                <div class="warning">
-                    <h3>❌ Common Mistakes</h3>
-                    <ul>
-                        <li><strong>Cache Everything:</strong> Not all data benefits from caching</li>
-                        <li><strong>No Expiration:</strong> Leads to stale data and memory bloat</li>
-                        <li><strong>Ignoring Cache Misses:</strong> Not monitoring cache effectiveness</li>
-                        <li><strong>Cache Dependence:</strong> Application breaks when cache is unavailable</li>
-                        <li><strong>Large Object Caching:</strong> Storing entire objects instead of computed results</li>
-                        <li><strong>No Invalidation Strategy:</strong> Inconsistent data across systems</li>
-                    </ul>
-                </div>
-            </section>
-
-            <!-- Lab 8 Announcement -->
-            <section>
-                <div class="callout">
-                    <h2>🚀 Next Lab: Event Sourcing in Action</h2>
-                    <p><strong>Lab 8: Claims Event Sourcing with Redis Streams</strong></p>
-                    <p>Duration: 45 minutes</p>
-                    <p>Build a complete event-driven claims processing system with immutable audit trails, 
-                    real-time analytics, and consumer group processing patterns</p>
-                </div>
-            </section>
-
-            <!-- Key Takeaways -->
+            <!-- Slide 15: Summary -->
             <section>
                 <h2>Key Takeaways</h2>
                 <ul>
-                    <li><strong>Advanced Patterns:</strong> Cache-aside, write-through, and write-behind for different scenarios</li>
-                    <li><strong>Multi-Level Caching:</strong> Optimize performance with strategic cache layers</li>
-                    <li><strong>Event-Driven Architecture:</strong> Redis Streams enable modern, scalable systems</li>
-                    <li><strong>Cache Invalidation:</strong> Events provide proactive, coordinated cache management</li>
-                    <li><strong>Resilience:</strong> Circuit breakers and graceful degradation ensure system stability</li>
-                    <li><strong>Event Sourcing:</strong> Immutable logs provide audit trails and real-time processing</li>
+                    <li><strong>Streams</strong> are the foundation of event-driven insurance systems</li>
+                    <li><strong>Event sourcing</strong> gives you immutable claim audit trails and replay</li>
+                    <li><strong>Consumer groups</strong> scale processing horizontally with at-least-once delivery</li>
+                    <li><strong>Cache-aside &amp; write-through</strong> address different consistency needs</li>
+                    <li><strong>Event-driven invalidation</strong> keeps distributed caches coherent</li>
                 </ul>
-                <div style="text-align: center; margin-top: 40px;">
+                <div style="text-align: center; margin-top: 30px;">
                     <p style="font-size: 1.1em; color: #e74c3c;">
-                        <strong>Ready to build modern, event-driven systems with Redis!</strong>
+                        <strong>Next up: Lab 8 - build the event-sourced claims pipeline.</strong>
                     </p>
                 </div>
             </section>

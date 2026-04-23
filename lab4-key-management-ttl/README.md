@@ -1,6 +1,6 @@
 # Lab 4: Key Management & TTL
 
-**Duration:** 45 minutes
+**Duration:** 50 minutes
 **Focus:** Key organization patterns and TTL strategies using Redis Insight
 **Prerequisites:** Lab 3 completed (String operations), Redis Insight connected
 
@@ -417,6 +417,140 @@ SET lock:process:batch-001 "worker-2" NX EX 30
 
 ---
 
+## Part C: Advanced Key Operations (10 min)
+
+These commands round out the TTL / key-management toolkit. Run every command in **Redis Insight Workbench** and watch the results in **Browser**.
+
+### C.1 — `EXPIREAT` — Expire a Key at a Specific Calendar Time
+
+`EXPIRE` takes a duration; `EXPIREAT` takes an absolute Unix timestamp (seconds since 1970-01-01 UTC). Use it when business rules dictate a specific calendar deadline rather than "N seconds from now."
+
+**Insurance use case:** An auto policy expires at midnight UTC on its renewal date regardless of when the key was written.
+
+```redis
+// Policy that must expire at 2026-12-31T23:59:59Z
+// 2026-12-31T23:59:59Z = 1798761599 (Unix seconds)
+SET policy:auto:P900001:status "active"
+EXPIREAT policy:auto:P900001:status 1798761599
+
+// Verify
+TTL policy:auto:P900001:status
+// Expected: large positive number of seconds until that date
+
+// Quick demo: expire at "now + 30 seconds" as a Unix timestamp
+SET demo:expireat "watch me vanish"
+EVAL "redis.call('EXPIREAT', KEYS[1], tonumber(ARGV[1])) return redis.call('TTL', KEYS[1])" 1 demo:expireat $(date -v+30S +%s 2>/dev/null || date -d '+30 seconds' +%s)
+```
+
+**Expected output for `TTL policy:auto:P900001:status`:** A positive integer equal to seconds remaining until the configured timestamp.
+
+---
+
+### C.2 — `PEXPIRE` and `PTTL` — Millisecond-Precision Expiration
+
+`EXPIRE`/`TTL` work in seconds. For sub-second precision (real-time pricing quotes, short-lived lock leases, fraud-detection windows), use `PEXPIRE` and `PTTL`.
+
+**Insurance use case:** A real-time quote page shows a "lock-in price" for the next **2500 ms** while the UI commits the selection. Anything longer risks a stale rate.
+
+```redis
+SET quote:realtime:R42 '{"premium":"1142.50"}'
+PEXPIRE quote:realtime:R42 2500
+
+// Check remaining milliseconds
+PTTL quote:realtime:R42
+// Expected: a number between 0 and 2500
+
+// Check seconds view of the same key
+TTL quote:realtime:R42
+// Expected: 2 or 3 (rounded from milliseconds)
+```
+
+---
+
+### C.3 — `PSETEX` — Atomic `SET` + Millisecond TTL
+
+Combines `SET` and `PEXPIRE` into one atomic command. Prefer this over the two-step version in production.
+
+**Insurance use case:** Fraud-scoring microservice caches the current risk score for **1500 ms** to absorb duplicate downstream calls without staleness.
+
+```redis
+PSETEX fraud:score:CUST001 1500 '{"score":0.87,"model":"v3"}'
+
+PTTL fraud:score:CUST001
+// Expected: <= 1500
+```
+
+---
+
+### C.4 — `SCAN` vs `KEYS` — Production-Safe Iteration
+
+`KEYS policy:*` blocks Redis for the entire scan — fatal on a large dataset. `SCAN` is cursor-based and non-blocking.
+
+**Insurance use case:** Nightly job that touches every `policy:*` key to refresh a derived cache — must not stall the live quote engine.
+
+```redis
+// Seed some policies
+MSET policy:auto:P1:status active policy:auto:P2:status active policy:home:P3:status active policy:life:P4:status active
+
+// Iterate non-blocking
+SCAN 0 MATCH policy:* COUNT 100
+// Returns: [next_cursor, [matching keys batch]]
+// Continue passing the returned cursor back until it returns 0
+
+// Compare: the blocking version (DO NOT use on prod)
+KEYS policy:*
+```
+
+**Expected behavior:** `SCAN` returns a cursor plus a *partial* batch. Keep re-running with the returned cursor until it is `0`. In Redis Insight Browser the key-tree filter uses `SCAN` under the hood — that's why it's always safe.
+
+---
+
+### C.5 — `RENAME` and `RENAMENX` — Moving Keys Without Data Copy
+
+`RENAME` atomically moves a key to a new name, overwriting the target if it exists. `RENAMENX` only renames if the target does **not** already exist.
+
+**Insurance use case:** A quote is accepted and becomes a policy — rename `quote:Q501` to `policy:auto:P501` in one atomic step rather than copying data and deleting.
+
+```redis
+// Quote created
+SETEX quote:Q501 86400 '{"type":"auto","premium":1180}'
+
+// Customer accepts → promote to policy
+RENAME quote:Q501 policy:auto:P501
+
+// Verify
+EXISTS quote:Q501
+// Expected: 0
+EXISTS policy:auto:P501
+// Expected: 1
+TTL policy:auto:P501
+// Expected: TTL is preserved from the original quote
+
+// RENAMENX example — refuse to overwrite an existing policy
+SET policy:auto:P501 "already exists"
+SET quote:Q502 "pending conversion"
+RENAMENX quote:Q502 policy:auto:P501
+// Expected: 0 (not renamed, target exists)
+```
+
+**Why `RENAMENX` matters:** Guards against accidentally clobbering an active policy with a stale quote during a race.
+
+---
+
+### Part C Summary Table
+
+| Command    | Purpose                                  | Insurance example                              |
+|------------|------------------------------------------|-----------------------------------------------|
+| `EXPIREAT` | Expire at absolute Unix timestamp        | Policy end-of-term calendar date              |
+| `PEXPIRE`  | Millisecond-precision TTL                | Real-time quote lock window                   |
+| `PTTL`     | Query TTL in milliseconds                | Inspect remaining quote-lock window           |
+| `PSETEX`   | Atomic SET + millisecond TTL             | Fraud-score cache (<2s)                       |
+| `SCAN`     | Non-blocking key iteration               | Nightly refresh over `policy:*`               |
+| `RENAME`   | Atomic key move (with TTL preserved)     | Quote → policy promotion                      |
+| `RENAMENX` | Rename only if target absent             | Safe quote→policy promotion without overwrite |
+
+---
+
 ## 🎓 Exercises
 
 Complete these exercises in **Redis Insight Workbench** and verify results in **Browser** tab:
@@ -738,7 +872,7 @@ TTL session:user:alice
 - [ ] Understood lazy expiration behavior
 - [ ] Completed all 4 exercises
 
-**Estimated time:** 45 minutes
+**Estimated time:** 50 minutes
 
 ---
 

@@ -383,6 +383,218 @@ async function testLab8() {
             failed++;
         }
 
+        // --- Part D: Inspection, Reliability, DLQ ---
+
+        // Test 10: XREAD (non-group) — tail latest claims
+        try {
+            const stream = 'test:lab8d:claims';
+            await testUtils.redisClient.xAdd(stream, '*', { event: 'claim_submitted', claim_id: 'CLM-D001' });
+            await testUtils.redisClient.xAdd(stream, '*', { event: 'claim_submitted', claim_id: 'CLM-D002' });
+
+            const result = await testUtils.redisClient.xRead(
+                [{ key: stream, id: '0' }],
+                { COUNT: 10 }
+            );
+            // result shape: [{ name: stream, messages: [{ id, message }] }]
+            if (result && result[0] && result[0].messages.length >= 2) {
+                testUtils.logTest('Lab 8', 'Part D: XREAD (non-group read)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 8', 'Part D: XREAD', false, 'Expected >= 2 messages');
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 8', 'Part D: XREAD', false, error.message);
+            failed++;
+        }
+
+        // Test 11: XINFO STREAM — inspect stream metadata
+        try {
+            const stream = 'test:lab8d:info-stream';
+            await testUtils.redisClient.xAdd(stream, '*', { a: '1' });
+            const info = await testUtils.redisClient.xInfoStream(stream);
+            if (info && typeof info.length === 'number' && info.length >= 1) {
+                testUtils.logTest('Lab 8', 'Part D: XINFO STREAM', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 8', 'Part D: XINFO STREAM', false, `info=${JSON.stringify(info)}`);
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 8', 'Part D: XINFO STREAM', false, error.message);
+            failed++;
+        }
+
+        // Test 12: XPENDING — after XREADGROUP without XACK, message should be pending
+        try {
+            const stream = 'test:lab8d:pending-stream';
+            const group = 'g-pending';
+            await testUtils.redisClient.xAdd(stream, '*', { claim_id: 'CLM-D100' });
+            try {
+                await testUtils.redisClient.xGroupCreate(stream, group, '0', { MKSTREAM: true });
+            } catch (e) { /* BUSYGROUP OK */ }
+            await testUtils.redisClient.xReadGroup(
+                group, 'worker-d1',
+                [{ key: stream, id: '>' }],
+                { COUNT: 10, BLOCK: 100 }
+            );
+            const pending = await testUtils.redisClient.xPending(stream, group);
+            // pending shape: { pending: n, firstId, lastId, consumers: [...] }
+            if (pending && pending.pending >= 1) {
+                testUtils.logTest('Lab 8', 'Part D: XPENDING (unacknowledged entries visible)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 8', 'Part D: XPENDING', false, `pending=${JSON.stringify(pending)}`);
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 8', 'Part D: XPENDING', false, error.message);
+            failed++;
+        }
+
+        // Test 13: XACK — acknowledge drains the PEL
+        try {
+            const stream = 'test:lab8d:ack-stream';
+            const group = 'g-ack';
+            await testUtils.redisClient.xAdd(stream, '*', { claim_id: 'CLM-D200' });
+            try {
+                await testUtils.redisClient.xGroupCreate(stream, group, '0', { MKSTREAM: true });
+            } catch (e) { /* BUSYGROUP OK */ }
+            const msgs = await testUtils.redisClient.xReadGroup(
+                group, 'worker-d2',
+                [{ key: stream, id: '>' }],
+                { COUNT: 10, BLOCK: 100 }
+            );
+            const id = msgs[0].messages[0].id;
+            const ackCount = await testUtils.redisClient.xAck(stream, group, id);
+            const pendingAfter = await testUtils.redisClient.xPending(stream, group);
+            if (ackCount === 1 && pendingAfter.pending === 0) {
+                testUtils.logTest('Lab 8', 'Part D: XACK (drains PEL)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 8', 'Part D: XACK', false,
+                    `ack=${ackCount}, pending=${pendingAfter.pending}`);
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 8', 'Part D: XACK', false, error.message);
+            failed++;
+        }
+
+        // Test 14: Dead-Letter Queue (DLQ) pattern — after N retries, move to claims:dlq
+        try {
+            const stream = 'test:lab8d:dlq-claims';
+            const dlq = 'test:lab8d:claims:dlq';
+            const group = 'g-dlq';
+
+            // Clean up any prior state
+            await testUtils.redisClient.del(stream);
+            await testUtils.redisClient.del(dlq);
+
+            const addedId = await testUtils.redisClient.xAdd(stream, '*', {
+                event: 'claim_submitted', claim_id: 'CLM-BAD', amount: 'NaN'
+            });
+            try {
+                await testUtils.redisClient.xGroupCreate(stream, group, '0', { MKSTREAM: true });
+            } catch (e) { /* BUSYGROUP OK */ }
+
+            // Read the event — pretend processing fails 3 times
+            await testUtils.redisClient.xReadGroup(
+                group, 'worker-d3',
+                [{ key: stream, id: '>' }],
+                { COUNT: 1, BLOCK: 100 }
+            );
+            const retryKey = 'test:lab8d:retries:CLM-BAD';
+            await testUtils.redisClient.incr(retryKey);
+            await testUtils.redisClient.incr(retryKey);
+            await testUtils.redisClient.incr(retryKey);
+            const retries = parseInt(await testUtils.redisClient.get(retryKey), 10);
+
+            if (retries >= 3) {
+                // Move to DLQ and ack off the main stream
+                await testUtils.redisClient.xAdd(dlq, '*', {
+                    original_id: addedId,
+                    reason: 'malformed_payload',
+                    claim_id: 'CLM-BAD'
+                });
+                await testUtils.redisClient.xAck(stream, group, addedId);
+                await testUtils.redisClient.del(retryKey);
+            }
+
+            const dlqLen = await testUtils.redisClient.xLen(dlq);
+            const mainPending = await testUtils.redisClient.xPending(stream, group);
+            if (dlqLen === 1 && mainPending.pending === 0) {
+                testUtils.logTest('Lab 8', 'Part D: DLQ pattern (moved after N retries, main acked)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 8', 'Part D: DLQ pattern', false,
+                    `dlqLen=${dlqLen}, mainPending=${mainPending.pending}`);
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 8', 'Part D: DLQ pattern', false, error.message);
+            failed++;
+        }
+
+        // Test 15: XCLAIM — reassign a pending entry from one consumer to another
+        try {
+            const stream = 'claims:test-xclaim';
+            const group = 'g-xclaim';
+
+            // Clean up any prior state
+            await testUtils.redisClient.del(stream);
+
+            const entryId = await testUtils.redisClient.xAdd(stream, '*', {
+                claim_id: 'CLM-XCLM-001', event: 'claim_submitted'
+            });
+
+            try {
+                await testUtils.redisClient.xGroupCreate(stream, group, '0', { MKSTREAM: true });
+            } catch (e) { /* BUSYGROUP OK */ }
+
+            // Consumer A reads — entry now in consumer A's pending list
+            await testUtils.redisClient.xReadGroup(
+                group, 'consumer-A',
+                [{ key: stream, id: '>' }],
+                { COUNT: 1, BLOCK: 100 }
+            );
+
+            // XCLAIM transfers ownership from consumer A to consumer B with min-idle-time=0
+            await testUtils.redisClient.sendCommand([
+                'XCLAIM', stream, group, 'consumer-B', '0', entryId
+            ]);
+
+            // Verify entry now belongs to consumer B via XPENDING
+            const detail = await testUtils.redisClient.sendCommand([
+                'XPENDING', stream, group, '-', '+', '10'
+            ]);
+            // detail is an array of [id, consumer, idle-ms, delivery-count]
+            let ownedByB = false;
+            if (Array.isArray(detail)) {
+                for (const entry of detail) {
+                    if (Array.isArray(entry) && entry[0] === entryId && entry[1] === 'consumer-B') {
+                        ownedByB = true;
+                        break;
+                    }
+                }
+            }
+
+            // Cleanup
+            await testUtils.redisClient.del(stream);
+
+            if (ownedByB) {
+                testUtils.logTest('Lab 8', 'XCLAIM (ownership transferred A -> B)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 8', 'XCLAIM', false,
+                    `detail=${JSON.stringify(detail)}`);
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 8', 'XCLAIM', false, error.message);
+            failed++;
+        }
+
     } catch (error) {
         testUtils.logTest('Lab 8', 'Lab execution', false, error.message);
         failed++;
@@ -547,6 +759,73 @@ async function testLab9() {
             passed++;
         } else {
             testUtils.logTest('Lab 9', 'ZINCRBY operation', false);
+            failed++;
+        }
+
+        // Test 14: SREM — remove a member and verify SCARD decreases
+        try {
+            const key = 'test:lab9:srem';
+            await testUtils.redisClient.del(key);
+            await testUtils.redisClient.sAdd(key, ['m1', 'm2', 'm3']);
+            await testUtils.redisClient.sRem(key, 'm2');
+            const card = await testUtils.redisClient.sCard(key);
+            if (card === 2) {
+                testUtils.logTest('Lab 9', 'SREM (SADD 3, SREM 1, SCARD == 2)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 9', 'SREM', false, `SCARD=${card}`);
+                failed++;
+            }
+            await testUtils.redisClient.del(key);
+        } catch (error) {
+            testUtils.logTest('Lab 9', 'SREM', false, error.message);
+            failed++;
+        }
+
+        // Test 15: ZREM — remove a member and verify ZCARD decreases
+        try {
+            const key = 'test:lab9:zrem';
+            await testUtils.redisClient.del(key);
+            await testUtils.redisClient.zAdd(key, [
+                { score: 1, value: 'a' },
+                { score: 2, value: 'b' },
+                { score: 3, value: 'c' }
+            ]);
+            await testUtils.redisClient.zRem(key, 'b');
+            const card = await testUtils.redisClient.zCard(key);
+            if (card === 2) {
+                testUtils.logTest('Lab 9', 'ZREM (ZADD 3, ZREM 1, ZCARD == 2)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 9', 'ZREM', false, `ZCARD=${card}`);
+                failed++;
+            }
+            await testUtils.redisClient.del(key);
+        } catch (error) {
+            testUtils.logTest('Lab 9', 'ZREM', false, error.message);
+            failed++;
+        }
+
+        // Test 16: ZRANK — middle member at rank 1 (ascending score order)
+        try {
+            const key = 'test:lab9:zrank';
+            await testUtils.redisClient.del(key);
+            await testUtils.redisClient.zAdd(key, [
+                { score: 10, value: 'low' },
+                { score: 50, value: 'mid' },
+                { score: 99, value: 'high' }
+            ]);
+            const rank = await testUtils.redisClient.zRank(key, 'mid');
+            if (rank === 1) {
+                testUtils.logTest('Lab 9', 'ZRANK (middle member rank = 1)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 9', 'ZRANK', false, `rank=${rank}`);
+                failed++;
+            }
+            await testUtils.redisClient.del(key);
+        } catch (error) {
+            testUtils.logTest('Lab 9', 'ZRANK', false, error.message);
             failed++;
         }
 
@@ -715,7 +994,7 @@ async function testLab10() {
 async function runDay2Tests() {
     console.log('\n╔════════════════════════════════════════════════════════════════════════════╗');
     console.log('║                          DAY 2 INTEGRATION TESTS                           ║');
-    console.log('║                    JavaScript Integration (Labs 6-10)                      ║');
+    console.log('║                     JavaScript Integration (Labs 6-9)                      ║');
     console.log('╚════════════════════════════════════════════════════════════════════════════╝\n');
 
     const results = {
@@ -724,7 +1003,7 @@ async function runDay2Tests() {
         labs: []
     };
 
-    // Run all Day 2 lab tests
+    // Run all Day 2 core lab tests (Lab 10 is optional/take-home; run with --lab=10)
     const lab6 = await testLab6();
     results.labs.push({ lab: 6, ...lab6 });
     results.totalPassed += lab6.passed;
@@ -744,11 +1023,6 @@ async function runDay2Tests() {
     results.labs.push({ lab: 9, ...lab9 });
     results.totalPassed += lab9.passed;
     results.totalFailed += lab9.failed;
-
-    const lab10 = await testLab10();
-    results.labs.push({ lab: 10, ...lab10 });
-    results.totalPassed += lab10.passed;
-    results.totalFailed += lab10.failed;
 
     return results;
 }

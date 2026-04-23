@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Redis Security: Auth, Sessions & Rate Limiting</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.css">
         <style>
@@ -55,15 +58,6 @@
             border-radius: 10px;
             text-align: center;
         }
-        .title-slide {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white !important;
-            padding: 1.5em;
-            text-align: center;
-        }
-        .title-slide h1, .title-slide h2 {
-            color: white !important;
-        }
         .session-header {
             background: #f8f9fa;
             color: #2c3e50 !important;
@@ -71,16 +65,9 @@
             border-left: 5px solid #3498db;
             margin-bottom: 0.5em;
         }
-        .session-header h3 {
+        .session-header h2 {
             margin: 0 !important;
-            font-size: 1.1em !important;
-        }
-        .section-header {
-            background: #f8f9fa;
-            color: #2c3e50 !important;
-            padding: 0.6em;
-            border: 2px solid #e9ecef;
-            text-align: center;
+            font-size: 1.3em !important;
         }
         .code-block {
             background: #2c3e50;
@@ -106,16 +93,6 @@
             font-size: 0.85em;
             font-family: 'Courier New', monospace;
         }
-        .reveal pre code {
-            background-color: #2d3748;
-            color: #e2e8f0;
-            padding: 0.5em;
-            border-radius: 8px;
-            font-size: 0.6em;
-            line-height: 1.3;
-            max-height: 300px;
-            overflow-y: auto;
-        }
         .callout {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white !important;
@@ -123,15 +100,6 @@
             border-radius: 10px;
             text-align: center;
             margin: 0.5em 0;
-        }
-        .callout h2 {
-            color: white !important;
-            margin: 0.2em 0 !important;
-            font-size: 1.3em !important;
-        }
-        .callout p {
-            font-size: 0.9em;
-            margin: 0.2em 0 !important;
         }
         .highlight {
             background: #ffffcc;
@@ -154,10 +122,9 @@
             font-size: 0.9em;
             margin: 0.5em 0;
         }
-        .lab-callout h3 {
+        .lab-callout h2, .lab-callout h3 {
             color: white !important;
             margin: 0.2em 0 !important;
-            font-size: 1.1em !important;
         }
         .bullet-point {
             margin: 0.2em 0;
@@ -172,52 +139,6 @@
         }
         .column {
             flex: 1;
-        }
-        .three-column {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 0.8em;
-            margin: 0.5em 0;
-        }
-        .command-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 0.3em 0;
-            font-size: 0.7em;
-        }
-        .command-table th,
-        .command-table td {
-            border: 1px solid #dee2e6;
-            padding: 0.4em;
-            text-align: left;
-        }
-        .command-table th {
-            background-color: #f8f9fa;
-            font-weight: bold;
-        }
-        .command-table tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
-        .small-text {
-            font-size: 0.75em;
-        }
-        .comparison-box {
-            background: #e8f5e9;
-            border: 2px solid #4caf50;
-            padding: 0.5em;
-            border-radius: 8px;
-            margin: 0.3em 0;
-        }
-        .pattern-box {
-            background: #f0f7ff;
-            border-left: 5px solid #2196f3;
-            padding: 0.5em;
-            margin: 0.3em 0;
-        }
-        .pattern-box h4 {
-            color: #3498db;
-            margin: 0.2em 0 !important;
-            font-size: 1em !important;
         }
         .warning {
             background: #fff3cd;
@@ -243,13 +164,6 @@
             margin: 0.3em 0;
             font-size: 0.75em;
         }
-        .stream-feature {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white !important;
-            padding: 0.5em;
-            border-radius: 8px;
-            margin: 0.3em 0;
-        }
         /* Scrollbar styling */
         .reveal .slides section::-webkit-scrollbar {
             width: 8px;
@@ -271,457 +185,431 @@
     <div class="reveal">
         <div class="slides">
 
-            <!-- Title Slide -->
+            <!-- Slide 1: Title -->
             <section data-background="#f8f9fa">
                 <div class="main-title">
-                    <h1>Content 7</h1>
-                    <h2>Production Deployment & Security</h2>
-                    <p>Enterprise-Grade Redis for Business Applications</p>
+                    <h1>Redis Security</h1>
+                    <h2>Auth, Sessions &amp; Rate Limiting</h2>
+                    <p>Securing Production Redis for Insurance Applications</p>
                     <p><strong>Day 3 - Morning Session</strong></p>
                 </div>
             </section>
 
-            <!-- Session Overview -->
+            <!-- Slide 2: Security Fundamentals -->
             <section>
                 <div class="session-header">
-                    <h2>Session Overview</h2>
+                    <h2>Redis Security Fundamentals</h2>
                 </div>
-                <div class="bullet-point"><strong>Objective:</strong> Deploy secure, production-ready Redis systems for enterprise applications</div>
-                <div class="bullet-point"><strong>Duration:</strong> 50 minutes presentation</div>
-                <div class="bullet-point"><strong>Focus:</strong> Security, compliance, and production best practices</div>
-                
-                <h3>Key Topics</h3>
-                <div class="bullet-point">Production deployment architecture and security considerations</div>
-                <div class="bullet-point">Authentication, authorization, and session management strategies</div>
-                <div class="bullet-point">Network security, encryption, and secure communications</div>
-                <div class="bullet-point">Memory sizing, capacity planning, and performance optimization</div>
-                <div class="bullet-point">Compliance requirements and enterprise governance</div>
-                <div class="bullet-point">Monitoring, alerting, and production operations</div>
-            </section>
-
-            <!-- Production Architecture -->
-            <section>
-                <div class="session-header">
-                    <h2>Production Architecture Considerations</h2>
-                </div>
-                
-                <div class="two-column">
-                    <div>
-                        <h3>Infrastructure Planning</h3>
-                        <div class="bullet-point">Hardware requirements and sizing guidelines</div>
-                        <div class="bullet-point">Network topology and connectivity patterns</div>
-                        <div class="bullet-point">Load balancing and traffic distribution</div>
-                        <div class="bullet-point">Multi-region deployment strategies</div>
-                        
-                        <h3>Environment Strategy</h3>
-                        <div class="bullet-point">Development, staging, and production environments</div>
-                        <div class="bullet-point">Container orchestration with Docker</div>
-                        <div class="bullet-point">Cloud deployment patterns and considerations</div>
-                    </div>
-                    <div>
-                        <h3>Scalability Planning</h3>
-                        <div class="bullet-point">Vertical vs horizontal scaling decisions</div>
-                        <div class="bullet-point">Data partitioning and sharding strategies</div>
-                        <div class="bullet-point">Connection pooling and client configuration</div>
-                        <div class="bullet-point">Resource allocation and capacity planning</div>
-                        
-                        <div class="architecture-diagram">
-                            <h4>Production Architecture</h4>
-                            <p>Load Balancer → App Servers → Redis Cluster</p>
-                            <p>↓</p>
-                            <p>Monitoring & Alerting Systems</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Security Fundamentals -->
-            <section>
-                <div class="session-header">
-                    <h2>Security Fundamentals</h2>
-                </div>
-                
-                <h3>Authentication & Authorization</h3>
-                <div class="bullet-point">Redis AUTH command and password-based authentication</div>
-                <div class="bullet-point">Access Control Lists (ACLs) for user management</div>
-                <div class="bullet-point">Role-based access control (RBAC) implementation</div>
-                <div class="bullet-point">Integration with enterprise identity systems</div>
-                
-                <h3>Network Security</h3>
-                <div class="bullet-point">Firewall configuration and port management</div>
-                <div class="bullet-point">VPN and private network connectivity</div>
-                <div class="bullet-point">IP whitelisting and network segmentation</div>
-                <div class="bullet-point">Protected mode and bind address configuration</div>
-                
-                <div class="security-box">
-                    <strong>Security Best Practice:</strong> Never expose Redis directly to the internet. Always use authentication, encryption, and network security controls.
-                </div>
-            </section>
-
-            <!-- Session Management -->
-            <section>
-                <div class="session-header">
-                    <h2>Session Management & User Authentication</h2>
-                </div>
-                
-                <h3>Session Storage Patterns</h3>
-                <div class="bullet-point">Session token storage and retrieval strategies</div>
-                <div class="bullet-point">Session TTL configuration and automatic cleanup</div>
-                <div class="bullet-point">Multi-device session management</div>
-                <div class="bullet-point">Session data encryption and sensitive information handling</div>
-                
-                <div class="two-column">
-                    <div>
-                        <h3>Authentication Strategies</h3>
-                        <div class="bullet-point">Token-based authentication patterns</div>
-                        <div class="bullet-point">Single sign-on (SSO) integration</div>
-                        <div class="bullet-point">Session validation and renewal</div>
-                        <div class="bullet-point">Logout and session termination</div>
-                    </div>
-                    <div>
-                        <h3>Access Control Implementation</h3>
-                        <div class="bullet-point">Role-based permissions (customer vs agent)</div>
-                        <div class="bullet-point">Feature-level access controls</div>
-                        <div class="bullet-point">Data access restrictions</div>
-                        <div class="bullet-point">Audit trails and access logging</div>
-                    </div>
-                </div>
-                
-                <div class="code-snippet">
-// Example: Session storage pattern
-const sessionKey = `session:${userId}:${deviceId}`;
-await redis.setex(sessionKey, 3600, JSON.stringify(sessionData));
-                </div>
-            </section>
-
-            <!-- Rate Limiting & API Protection -->
-            <section>
-                <div class="session-header">
-                    <h2>Rate Limiting & API Protection</h2>
-                </div>
-                
-                <h3>Rate Limiting Strategies</h3>
-                <div class="bullet-point">Token bucket algorithm implementation</div>
-                <div class="bullet-point">Sliding window rate limiting</div>
-                <div class="bullet-point">Per-user and per-IP rate limits</div>
-                <div class="bullet-point">Dynamic rate limiting based on load</div>
-                
-                <div class="two-column">
-                    <div>
-                        <h3>API Quota Management</h3>
-                        <div class="bullet-point">Daily, weekly, and monthly quotas</div>
-                        <div class="bullet-point">Quota reset and rollover policies</div>
-                        <div class="bullet-point">Premium tier quota management</div>
-                        <div class="bullet-point">Quota violation handling</div>
-                    </div>
-                    <div>
-                        <h3>Abuse Detection</h3>
-                        <div class="bullet-point">Failed authentication monitoring</div>
-                        <div class="bullet-point">Suspicious activity pattern detection</div>
-                        <div class="bullet-point">Automated blocking and alerting</div>
-                        <div class="bullet-point">Manual review and override systems</div>
-                    </div>
-                </div>
-                
-                <div class="code-snippet">
-// Example: Rate limiting with Redis
-const key = `rate_limit:${userId}:${endpoint}`;
-const current = await redis.incr(key);
-if (current === 1) await redis.expire(key, 3600);
-if (current > limit) throw new Error('Rate limit exceeded');
-                </div>
-            </section>
-
-            <!-- Data Encryption & Privacy -->
-            <section>
-                <div class="session-header">
-                    <h2>Data Encryption & Privacy</h2>
-                </div>
-                
-                <h3>Encryption at Rest</h3>
-                <div class="bullet-point">File system encryption for Redis data files</div>
-                <div class="bullet-point">Encrypted backup storage and rotation</div>
-                <div class="bullet-point">Key management and rotation policies</div>
-                <div class="bullet-point">Compliance with data protection regulations</div>
-                
-                <h3>Encryption in Transit</h3>
-                <div class="bullet-point">TLS/SSL configuration for client connections</div>
-                <div class="bullet-point">Certificate management and renewal</div>
-                <div class="bullet-point">Perfect Forward Secrecy (PFS) implementation</div>
-                <div class="bullet-point">Secure communication between Redis nodes</div>
-                
-                <div class="warning-box">
-                    <strong>Privacy Considerations:</strong> Implement data anonymization, pseudonymization, and right-to-be-forgotten processes for regulatory compliance.
-                </div>
-                
-                <div class="code-snippet">
-// Example: TLS configuration
-redis-server --tls-port 6380 --port 0 \
-  --tls-cert-file /path/to/server.crt \
-  --tls-key-file /path/to/server.key \
-  --tls-ca-cert-file /path/to/ca.crt
-                </div>
-            </section>
-
-            <!-- Memory & Performance -->
-            <section>
-                <div class="session-header">
-                    <h2>Memory Management & Performance</h2>
-                </div>
-                
-                <div class="two-column">
-                    <div>
-                        <h3>Memory Sizing</h3>
-                        <div class="bullet-point">Capacity planning based on data growth</div>
-                        <div class="bullet-point">Memory overhead calculations</div>
-                        <div class="bullet-point">Fragmentation monitoring and management</div>
-                        <div class="bullet-point">Memory usage optimization techniques</div>
-                        
-                        <h3>Eviction Policies</h3>
-                        <div class="bullet-point">maxmemory configuration strategies</div>
-                        <div class="bullet-point">LRU, LFU, and TTL-based eviction</div>
-                        <div class="bullet-point">Application-specific eviction choices</div>
-                        <div class="bullet-point">Monitoring eviction rates and patterns</div>
-                    </div>
-                    <div>
-                        <h3>Performance Optimization</h3>
-                        <div class="bullet-point">Connection pooling and reuse strategies</div>
-                        <div class="bullet-point">Pipeline and bulk operation optimization</div>
-                        <div class="bullet-point">Data structure selection for performance</div>
-                        <div class="bullet-point">Latency reduction techniques</div>
-                        
-                        <h3>Capacity Planning</h3>
-                        <div class="bullet-point">Growth projection and scaling triggers</div>
-                        <div class="bullet-point">Peak load handling strategies</div>
-                        <div class="bullet-point">Resource allocation and reservation</div>
-                        <div class="bullet-point">Cost optimization and efficiency metrics</div>
-                    </div>
-                </div>
-                
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Memory Size</th>
-                            <th>Expected Load</th>
-                            <th>Recommended Config</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>8GB</td>
-                            <td>Low to Medium</td>
-                            <td>maxmemory 6GB, allkeys-lru</td>
-                        </tr>
-                        <tr>
-                            <td>32GB</td>
-                            <td>Medium to High</td>
-                            <td>maxmemory 24GB, volatile-lru</td>
-                        </tr>
-                        <tr>
-                            <td>128GB</td>
-                            <td>High Volume</td>
-                            <td>maxmemory 96GB, allkeys-lfu</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
-
-            <!-- Persistence & Backup -->
-            <section>
-                <div class="session-header">
-                    <h2>Persistence & Backup Strategies</h2>
-                </div>
-                
-                <h3>Persistence Configuration</h3>
-                <div class="bullet-point">RDB snapshots for point-in-time recovery</div>
-                <div class="bullet-point">AOF logging for transaction-level durability</div>
-                <div class="bullet-point">Hybrid persistence strategies</div>
-                <div class="bullet-point">Performance impact and optimization</div>
-                
-                <div class="two-column">
-                    <div>
-                        <h3>Backup Procedures</h3>
-                        <div class="bullet-point">Automated backup scheduling</div>
-                        <div class="bullet-point">Incremental and full backup strategies</div>
-                        <div class="bullet-point">Cross-region backup replication</div>
-                        <div class="bullet-point">Backup verification and testing</div>
-                    </div>
-                    <div>
-                        <h3>Recovery Planning</h3>
-                        <div class="bullet-point">Recovery time objectives (RTO)</div>
-                        <div class="bullet-point">Recovery point objectives (RPO)</div>
-                        <div class="bullet-point">Disaster recovery procedures</div>
-                        <div class="bullet-point">Business continuity planning</div>
-                    </div>
-                </div>
-                
-                <div class="code-snippet">
-# Production persistence configuration
-save 900 1      # Save if at least 1 key changed in 900 seconds
-save 300 10     # Save if at least 10 keys changed in 300 seconds
-save 60 10000   # Save if at least 10000 keys changed in 60 seconds
-appendonly yes
-appendfsync everysec
-                </div>
-            </section>
-
-            <!-- Monitoring & Alerting -->
-            <section>
-                <div class="session-header">
-                    <h2>Monitoring & Alerting</h2>
-                </div>
-                
-                <h3>Key Metrics to Monitor</h3>
-                <div class="bullet-point">Memory usage and fragmentation levels</div>
-                <div class="bullet-point">Connection counts and client statistics</div>
-                <div class="bullet-point">Command latency and throughput metrics</div>
-                <div class="bullet-point">Network I/O and bandwidth utilization</div>
-                
-                <div class="two-column">
-                    <div>
-                        <h3>Redis Insight Integration</h3>
-                        <div class="bullet-point">Real-time performance dashboards</div>
-                        <div class="bullet-point">Memory analysis and optimization</div>
-                        <div class="bullet-point">Slow query identification</div>
-                        <div class="bullet-point">Custom metric collection</div>
-                    </div>
-                    <div>
-                        <h3>Alerting Strategy</h3>
-                        <div class="bullet-point">Critical threshold definitions</div>
-                        <div class="bullet-point">Escalation procedures and contacts</div>
-                        <div class="bullet-point">Alert fatigue prevention</div>
-                        <div class="bullet-point">Automated remediation triggers</div>
-                    </div>
-                </div>
-                
+                <h3>Three Pillars</h3>
+                <div class="bullet-point"><strong>Authentication:</strong> AUTH command, ACL users, strong credentials</div>
+                <div class="bullet-point"><strong>Network Security:</strong> Bind address, protected mode, firewalls, VPN</div>
+                <div class="bullet-point"><strong>Encryption:</strong> TLS in transit, disk encryption at rest</div>
                 <div class="highlight-box">
-                    <strong>Pro Tip:</strong> Set up monitoring before going to production. Monitor memory usage, connection counts, slow queries, and error rates as primary indicators.
+                    <strong>Golden Rule:</strong> Never expose Redis directly to the internet. Always combine authentication, network segmentation, and encryption.
                 </div>
+                <div class="bullet-point"><strong>Insurance context:</strong> PII, policy data, and claims details require defense-in-depth to satisfy HIPAA, PCI-DSS, and state insurance regulators.</div>
             </section>
 
-            <!-- Compliance & Governance -->
+            <!-- Slide 3: AUTH and ACLs -->
             <section>
                 <div class="session-header">
-                    <h2>Compliance & Governance</h2>
+                    <h2>Authentication: AUTH &amp; ACLs</h2>
                 </div>
-                
-                <h3>Enterprise Compliance Requirements</h3>
-                <div class="bullet-point">Data protection and privacy regulations (GDPR, CCPA)</div>
-                <div class="bullet-point">Industry-specific compliance (HIPAA, SOX, PCI-DSS)</div>
-                <div class="bullet-point">Audit trail and logging requirements</div>
-                <div class="bullet-point">Data retention and disposal policies</div>
-                
                 <div class="two-column">
                     <div>
-                        <h3>Data Governance</h3>
-                        <div class="bullet-point">Data classification and labeling</div>
-                        <div class="bullet-point">Access control and authorization</div>
-                        <div class="bullet-point">Data lifecycle management</div>
-                        <div class="bullet-point">Cross-border data transfer controls</div>
+                        <h3>Legacy AUTH</h3>
+                        <div class="code-block">
+# redis.conf
+requirepass "StrongP@ssw0rd!"
+
+# Client connects
+AUTH StrongP@ssw0rd!
+                        </div>
+                        <div class="warning">Single shared password. Use only for internal, low-risk setups.</div>
                     </div>
                     <div>
-                        <h3>Operational Governance</h3>
-                        <div class="bullet-point">Change management procedures</div>
-                        <div class="bullet-point">Incident response and reporting</div>
-                        <div class="bullet-point">Security assessment and auditing</div>
-                        <div class="bullet-point">Vendor risk management</div>
+                        <h3>ACLs (Redis 6+)</h3>
+                        <div class="code-block">
+# Define per-user access
+ACL SETUSER claims_agent on \
+  &gt;ClaimsP@ss \
+  ~policy:* ~claim:* \
+  +@read +hset +hget
+
+ACL SETUSER readonly on \
+  &gt;ReadOnlyP@ss \
+  ~* +@read
+                        </div>
+                        <div class="success">Per-user creds, key pattern ACLs, command allow/deny lists.</div>
                     </div>
-                </div>
-                
-                <div class="warning-box">
-                    <strong>Compliance Note:</strong> Ensure data residency requirements are met, especially for international deployments. Implement proper consent management and data subject rights handling.
                 </div>
             </section>
 
-            <!-- Quick Review: Production Commands -->
+            <!-- Slide 4: Why Redis for Sessions -->
             <section>
                 <div class="session-header">
-                    <h2>Essential Commands Review</h2>
+                    <h2>Why Redis for Session Management?</h2>
                 </div>
-
-                <h3>Commands for Production Use Cases</h3>
-                <p style="font-size: 0.9em; margin-bottom: 20px;">Quick refresher on key commands you learned in Day 2 that we'll use in production scenarios:</p>
-
-                <div class="two-column">
-                    <div>
-                        <h4>Session Management (Lab 11)</h4>
-                        <div class="code-block" style="font-size: 0.7em;">
-# Track active sessions (Set operations)
-SADD sessions:active "session:123"
-SMEMBERS sessions:active
-# Returns all active session IDs
-
-# Covered in Day 2, Content 5
-                        </div>
-                        <div class="bullet-point"><strong>SMEMBERS</strong> - Get all members of a set</div>
-                        <div class="bullet-point">Use case: List all active sessions</div>
-                    </div>
-
-                    <div>
-                        <h4>Rate Limiting (Lab 12)</h4>
-                        <div class="code-block" style="font-size: 0.7em;">
-# Track API requests with timestamps
-ZADD ratelimit:user:123 [timestamp] "req_id"
-ZRANGE ratelimit:user:123 0 -1
-# Returns all request IDs in order
-
-# Covered in Day 2, Content 5
-                        </div>
-                        <div class="bullet-point"><strong>ZRANGE</strong> - Get sorted set range by index</div>
-                        <div class="bullet-point">Use case: Query recent API requests</div>
-                    </div>
-                </div>
-
-                <div class="highlight-box">
-                    <strong>Reminder:</strong> These commands were introduced in Day 2. We're now applying them to real-world production scenarios in Labs 11-14.
+                <h3>Traditional Approaches Fall Short</h3>
+                <div class="bullet-point"><strong>In-memory (Node.js):</strong> lost on restart, not shared across servers</div>
+                <div class="bullet-point"><strong>Database:</strong> too slow for every request</div>
+                <div class="bullet-point"><strong>File system:</strong> breaks horizontal scaling</div>
+                <div class="success">
+                    <h4>Redis Advantages</h4>
+                    <ul>
+                        <li>Sub-millisecond reads at scale</li>
+                        <li>Automatic expiration via TTL</li>
+                        <li>Shared across every app server</li>
+                        <li>Native data structures (Hashes, Sets, Sorted Sets)</li>
+                    </ul>
                 </div>
             </section>
 
-            <!-- Lab Callout -->
+            <!-- Slide 5: Session Storage Pattern -->
+            <section>
+                <div class="session-header">
+                    <h2>Session Storage: Hash Pattern</h2>
+                </div>
+                <div class="code-block">
+HSET session:abc123 \
+  userId "user_456" \
+  role "agent" \
+  email "jane@insurer.com" \
+  loginTime "2026-04-23T09:00:00Z" \
+  lastActivity "2026-04-23T09:15:00Z"
+
+EXPIRE session:abc123 1800
+
+HGET session:abc123 role
+HGETALL session:abc123
+                </div>
+                <div class="success">Hash-based storage allows field-level reads/updates without deserializing JSON. TTL + <code>EXPIRE</code> on every access gives you sliding sessions.</div>
+            </section>
+
+            <!-- Slide 6: Session Manager Implementation -->
+            <section>
+                <div class="session-header">
+                    <h2>Session Manager Implementation</h2>
+                </div>
+                <div class="code-block">
+class SessionManager {
+    constructor(redis) {
+        this.redis = redis;
+        this.SESSION_TTL = 1800; // 30 minutes
+    }
+
+    async createSession(userId, userData) {
+        const sessionId = crypto.randomUUID();
+        const key = `session:${sessionId}`;
+
+        await this.redis.hSet(key, {
+            userId,
+            role: userData.role,
+            email: userData.email,
+            loginTime: new Date().toISOString(),
+            lastActivity: new Date().toISOString()
+        });
+        await this.redis.expire(key, this.SESSION_TTL);
+
+        // Track user's active sessions for multi-device
+        await this.redis.sAdd(`user:${userId}:sessions`, sessionId);
+        return sessionId;
+    }
+
+    async getSession(sessionId) {
+        const key = `session:${sessionId}`;
+        const session = await this.redis.hGetAll(key);
+        if (!session || Object.keys(session).length === 0) return null;
+
+        await this.redis.hSet(key, 'lastActivity', new Date().toISOString());
+        await this.redis.expire(key, this.SESSION_TTL); // sliding TTL
+        return session;
+    }
+
+    async destroySession(sessionId) {
+        const session = await this.getSession(sessionId);
+        if (!session) return;
+        await this.redis.sRem(`user:${session.userId}:sessions`, sessionId);
+        await this.redis.del(`session:${sessionId}`);
+    }
+}
+                </div>
+            </section>
+
+            <!-- Slide 7: Multi-Device Sessions -->
+            <section>
+                <div class="session-header">
+                    <h2>Multi-Device Session Tracking</h2>
+                </div>
+                <div class="code-block">
+# User logs in from laptop
+SADD user:456:sessions "session:laptop_abc123"
+
+# Then from mobile
+SADD user:456:sessions "session:phone_xyz789"
+
+# List all active sessions for user 456
+SMEMBERS user:456:sessions
+
+# "Log out of all devices" security feature
+SMEMBERS user:456:sessions      # get all
+DEL session:laptop_abc123 session:phone_xyz789
+DEL user:456:sessions
+                </div>
+                <div class="info"><strong>Insurance use case:</strong> An agent reports a lost phone &mdash; one call triggers "logout everywhere" to revoke every active session across devices.</div>
+            </section>
+
+            <!-- Slide 8: RBAC Implementation -->
+            <section>
+                <div class="session-header">
+                    <h2>Role-Based Access Control (RBAC)</h2>
+                </div>
+                <div class="bullet-point"><strong>Customer:</strong> view own policies, submit claims</div>
+                <div class="bullet-point"><strong>Agent:</strong> view customer data, process claims, update policies</div>
+                <div class="bullet-point"><strong>Admin:</strong> full access, user management, audits</div>
+                <div class="code-block">
+class RBACManager {
+    constructor(redis) {
+        this.redis = redis;
+        this.permissions = {
+            customer: ['view_own_policy', 'submit_claim', 'view_own_claims'],
+            agent:    ['view_customer_data', 'process_claims', 'update_policy'],
+            admin:    ['*']
+        };
+    }
+
+    async hasPermission(sessionId, permission) {
+        const session = await this.redis.hGetAll(`session:${sessionId}`);
+        if (!session || !session.role) return false;
+        const perms = this.permissions[session.role] || [];
+        return perms.includes('*') || perms.includes(permission);
+    }
+}
+
+// Express endpoint
+app.get('/api/customer/:id', async (req, res) => {
+    if (!(await rbac.hasPermission(req.sessionId, 'view_customer_data')))
+        return res.status(403).json({ error: 'Forbidden' });
+    // ... process request
+});
+                </div>
+            </section>
+
+            <!-- Slide 9: Security Monitoring -->
+            <section>
+                <div class="session-header">
+                    <h2>Security Monitoring: Failed Logins</h2>
+                </div>
+                <div class="code-block">
+class SecurityMonitor {
+    constructor(redis) {
+        this.redis = redis;
+        this.MAX_ATTEMPTS = 5;
+        this.LOCKOUT = 900; // 15 min
+    }
+
+    async recordFailedLogin(userId, ip) {
+        const key = `failed_login:${userId}`;
+        const attempts = await this.redis.incr(key);
+        if (attempts === 1) await this.redis.expire(key, 300);
+
+        if (attempts &gt;= this.MAX_ATTEMPTS) {
+            await this.redis.set(`account_locked:${userId}`, 'true',
+                'EX', this.LOCKOUT);
+        }
+        return attempts;
+    }
+
+    async isLocked(userId) {
+        return (await this.redis.get(`account_locked:${userId}`)) === 'true';
+    }
+}
+                </div>
+                <div class="info"><strong>Pattern:</strong> counter + TTL for attempts, lock key + TTL for lockouts, sorted set for the audit trail.</div>
+            </section>
+
+            <!-- Slide 10: Lab 11 Callout -->
             <section data-background="#e8f5e8">
                 <div class="lab-callout">
                     <h2>🧪 Hands-On Practice</h2>
-                    <h3>Next: Lab 11</h3>
-                    <h3>Session Management & Security</h3>
+                    <h3>Next: Lab 11 &mdash; Session Management &amp; Security</h3>
                     <p><strong>Duration: 45 minutes</strong></p>
-                    <br>
-                    <div style="font-size: 0.9em;">
-                        <p>• Implement secure session management using SMEMBERS and Sets</p>
-                        <p>• Configure user authentication and role-based access control</p>
-                        <p>• Set up session monitoring and security alerting</p>
-                        <p>• Practice production security patterns with Redis Insight</p>
-                    </div>
+                </div>
+                <h3>🛠️ What You'll Build</h3>
+                <ul>
+                    <li>Complete session manager with hash-based storage and sliding TTL</li>
+                    <li>Multi-device tracking with Sets and "logout everywhere"</li>
+                    <li>RBAC for customer / agent / admin roles</li>
+                    <li>Failed-login monitoring and account lockout</li>
+                    <li>Session analytics in Redis Insight Workbench</li>
+                </ul>
+            </section>
+
+            <!-- Slide 11: Why Rate Limiting -->
+            <section>
+                <div class="session-header">
+                    <h2>Why Rate Limiting Matters</h2>
+                </div>
+                <div class="bullet-point"><strong>Brute force:</strong> attackers cycle thousands of passwords per second</div>
+                <div class="bullet-point"><strong>API abuse:</strong> one greedy client degrades service for everyone</div>
+                <div class="bullet-point"><strong>DDoS:</strong> flood of requests overwhelms app and database</div>
+                <div class="bullet-point"><strong>Cost overruns:</strong> runaway API calls spike cloud bills</div>
+                <div class="bullet-point"><strong>Data scraping:</strong> competitors extract policy/pricing data</div>
+                <div class="warning"><strong>Real scenario:</strong> A single abusive client at 10,000 req/min can easily cost $1000+ per day in cloud infrastructure.</div>
+            </section>
+
+            <!-- Slide 12: Sliding Window Algorithm -->
+            <section>
+                <div class="session-header">
+                    <h2>Sliding Window with Sorted Sets</h2>
+                </div>
+                <div class="code-block">
+# Sorted set of request timestamps
+ZADD requests:u123 {ts1} "req1"
+ZADD requests:u123 {ts2} "req2"
+
+# Count requests in last 60s
+ZCOUNT requests:u123 (now-60000) now
+
+# Drop old entries
+ZREMRANGEBYSCORE requests:u123 0 (now-60000)
+                </div>
+                <div class="success">Sliding window beats fixed window: no burst exploit at bucket boundaries. Smooth enforcement, per-user limits.</div>
+                <div class="warning"><strong>Fixed-window burst problem:</strong> 100 calls at 0:59 + 100 at 1:00 = 200 calls in 2 seconds &mdash; bypasses a naive per-minute counter.</div>
+            </section>
+
+            <!-- Slide 13: Sliding Window Implementation -->
+            <section>
+                <div class="session-header">
+                    <h2>Sliding Window Rate Limiter</h2>
+                </div>
+                <div class="code-block">
+class RateLimiter {
+    constructor(redis, { limit, window }) {
+        this.redis = redis;
+        this.limit = limit;         // max requests
+        this.window = window;       // seconds
+    }
+
+    async checkLimit(userId) {
+        const key = `ratelimit:${userId}`;
+        const now = Date.now();
+        const windowStart = now - this.window * 1000;
+
+        const pipeline = this.redis.pipeline();
+        pipeline.zRemRangeByScore(key, 0, windowStart); // drop old
+        pipeline.zCard(key);                            // current count
+        pipeline.zAdd(key, { score: now, value: `${now}` });
+        pipeline.expire(key, this.window);              // prevent leak
+
+        const results = await pipeline.exec();
+        const count = results[1][1];
+
+        if (count &gt;= this.limit) {
+            await this.redis.zRem(key, `${now}`); // roll back the add
+            return { allowed: false, retryAfter: this.window };
+        }
+        return { allowed: true, remaining: this.limit - count - 1 };
+    }
+}
+                </div>
+                <div class="info">Pipelining makes the four operations effectively atomic per request.</div>
+            </section>
+
+            <!-- Slide 14: Tier-Based Limits -->
+            <section>
+                <div class="session-header">
+                    <h2>Tier-Based Rate Limits</h2>
+                </div>
+                <div class="code-block">
+const RATE_LIMITS = {
+    trial:      { limit: 20,    window: 60 },
+    basic:      { limit: 50,    window: 60 },
+    standard:   { limit: 100,   window: 60 },
+    premium:    { limit: 500,   window: 60 },
+    enterprise: { limit: 10000, window: 60 }
+};
+
+app.post('/api/quote', async (req, res) =&gt; {
+    const user = await getUser(req.userId);
+    const limiter = new RateLimiter(redis, RATE_LIMITS[user.tier]);
+    const result = await limiter.checkLimit(req.userId);
+
+    if (!result.allowed) {
+        return res.status(429).json({
+            error: 'Too many requests',
+            retryAfter: result.retryAfter
+        });
+    }
+    // ... generate insurance quote
+});
+                </div>
+                <div class="info"><strong>Insurance use case:</strong> Trial customers get 20 quotes/min; enterprise integrators (call centers, partner portals) get 10,000/min.</div>
+            </section>
+
+            <!-- Slide 15: Abuse Detection & DDoS -->
+            <section>
+                <div class="session-header">
+                    <h2>Abuse Detection &amp; DDoS Defense</h2>
+                </div>
+                <h3>Layered Defense</h3>
+                <div class="bullet-point"><strong>Edge / CDN:</strong> Cloudflare, AWS Shield absorb volumetric floods</div>
+                <div class="bullet-point"><strong>Per-IP limits:</strong> rate-limit by client IP before user auth</div>
+                <div class="bullet-point"><strong>Per-user tiers:</strong> enforce plan-based limits after auth</div>
+                <div class="bullet-point"><strong>Auto-block lists:</strong> <code>SET blocked:&lt;ip&gt; 1 EX 86400</code> checked in middleware</div>
+                <div class="code-block">
+async detectAbuse(userId) {
+    const now = Date.now();
+    const rapid = await redis.zCount(`requests:${userId}`, now-10000, now);
+    const totalReq  = +(await redis.get(`total:${userId}`))  || 1;
+    const failedReq = +(await redis.get(`failed:${userId}`)) || 0;
+
+    let score = 0;
+    if (rapid &gt; 100)                score += 40;   // burst
+    if (failedReq / totalReq &gt; 0.5) score += 30;   // error rate
+    if (await ipAnomaly(userId))    score += 35;   // many IPs
+
+    if (score &gt; 80) await redis.set(`blocked:${userId}`, 'ABUSE','EX',86400);
+    return score;
+}
                 </div>
             </section>
 
-            <!-- Session Summary -->
+            <!-- Slide 16: Lab 12 Callout -->
+            <section data-background="#e8f5e8">
+                <div class="lab-callout">
+                    <h2>🧪 Hands-On Practice</h2>
+                    <h3>Next: Lab 12 &mdash; Rate Limiting &amp; API Protection</h3>
+                    <p><strong>Duration: 45 minutes</strong></p>
+                </div>
+                <h3>🛠️ What You'll Build</h3>
+                <ul>
+                    <li>Sliding-window rate limiter backed by Redis sorted sets</li>
+                    <li>Tier-based limits (trial / basic / premium / enterprise)</li>
+                    <li>Endpoint-specific limits for quotes, policies, claims</li>
+                    <li>Abuse-score detection and auto-block</li>
+                    <li>Express.js middleware + monitoring in Redis Insight</li>
+                </ul>
+            </section>
+
+            <!-- Slide 17: Summary -->
             <section>
                 <div class="session-header">
                     <h2>Session Summary</h2>
                 </div>
-                
-                <h3>Key Takeaways</h3>
-                <div class="bullet-point"><strong>Security First:</strong> Authentication, encryption, and access control are non-negotiable for production systems</div>
-                <div class="bullet-point"><strong>Plan for Scale:</strong> Start with proper architecture and grow systematically with monitoring and capacity planning</div>
-                <div class="bullet-point"><strong>Monitor Everything:</strong> Comprehensive monitoring enables proactive issue resolution and performance optimization</div>
-                <div class="bullet-point"><strong>Test Recovery:</strong> Backup and disaster recovery plans must be regularly tested and validated</div>
-                <div class="bullet-point"><strong>Compliance Matters:</strong> Understand and implement industry-specific requirements from day one</div>
-                
-                <h3>Production Readiness Checklist</h3>
-                <div class="bullet-point">✅ Authentication and authorization configured</div>
-                <div class="bullet-point">✅ Network security and encryption enabled</div>
-                <div class="bullet-point">✅ Monitoring and alerting systems operational</div>
-                <div class="bullet-point">✅ Backup and recovery procedures tested</div>
-                <div class="bullet-point">✅ Capacity planning and scaling strategies defined</div>
-                
+                <div class="bullet-point"><strong>Security first:</strong> AUTH + ACLs + TLS + network segmentation, always</div>
+                <div class="bullet-point"><strong>Sessions belong in Redis:</strong> hashes + sliding TTL + Sets for multi-device</div>
+                <div class="bullet-point"><strong>RBAC at the app layer:</strong> store role in session, check per sensitive call</div>
+                <div class="bullet-point"><strong>Sliding window beats fixed window</strong> for rate limiting &mdash; no burst exploit</div>
+                <div class="bullet-point"><strong>Layer your defenses:</strong> per-IP + per-user + per-endpoint + abuse scoring</div>
                 <div class="highlight-box">
-                    <strong>Next Steps:</strong> Apply these production concepts in Lab 11 where you'll implement secure session management with authentication, access control, and monitoring using JavaScript and Redis Insight.
+                    <strong>Next:</strong> Lab 11 (Session Management) then Lab 12 (Rate Limiting). Both use Redis Insight Workbench to watch your data structures in real time.
                 </div>
             </section>
 
         </div>
     </div>
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
     <script>
         Reveal.initialize({

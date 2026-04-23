@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Content 4: JavaScript Redis Integration</title>
+    <title>Content 4: JavaScript Redis Client Fundamentals</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.min.css">
     <style>
@@ -127,7 +127,6 @@
             margin: 0.3em 0;
             font-size: 0.75em;
         }
-        /* Scrollbar styling */
         .reveal .slides section::-webkit-scrollbar {
             width: 8px;
         }
@@ -147,1145 +146,314 @@
 <body>
     <div class="reveal">
         <div class="slides">
-            <!-- Title Slide -->
+            <!-- Slide 1: Title -->
             <section>
                 <div class="main-title">
-                    <h1>Content 4: JavaScript Redis Integration</h1>
-                    <h2>Building Applications with Node.js & Redis</h2>
-                    <p><strong>Focus:</strong> JavaScript client libraries and application development</p>
+                    <h1>Content 4: JavaScript Redis Client Fundamentals</h1>
+                    <h2>Connecting Node.js Applications to Redis</h2>
+                    <p><strong>Duration:</strong> 30 minutes</p>
                 </div>
             </section>
 
-            <!-- Session Overview -->
+            <!-- Slide 2: Learning Objectives -->
             <section>
                 <div class="session-header">
-                    <h2>Session Objectives</h2>
+                    <h2>Learning Objectives</h2>
                 </div>
                 <ul>
-                    <li class="bullet-point">Set up and configure Node.js Redis client</li>
-                    <li class="bullet-point">Implement asynchronous Redis operations</li>
-                    <li class="bullet-point">Build data management applications</li>
-                    <li class="bullet-point">Handle connections and error management</li>
-                    <li class="bullet-point">Create customer and policy data workflows</li>
+                    <li class="bullet-point">Set up the official Node.js Redis client</li>
+                    <li class="bullet-point">Apply async/await to Redis operations</li>
+                    <li class="bullet-point">Store and retrieve insurance data (customers, policies, claims)</li>
+                    <li class="bullet-point">Use connection pooling for production workloads</li>
+                    <li class="bullet-point">Handle errors so the application degrades gracefully</li>
                 </ul>
             </section>
 
-            <!-- Node.js Redis Client Setup -->
+            <!-- Slide 3: Why Redis from Node.js -->
             <section>
                 <div class="session-header">
-                    <h3>Node.js Redis Client Setup</h3>
+                    <h2>Why Redis from Node.js?</h2>
                 </div>
-                <h4>Installing the Redis Client</h4>
-                <p>The official Redis client for Node.js provides comprehensive support for all Redis features with modern async/await syntax.</p>
-                
-                <h4>Connection Overview</h4>
-                <ul>
-                    <li class="bullet-point">Install the official Redis client package</li>
-                    <li class="bullet-point">Configure connection to remote Redis instance</li>
-                    <li class="bullet-point">Set up proper error handling and event listeners</li>
-                    <li class="bullet-point">Implement connection monitoring and recovery</li>
-                </ul>
-                
-                <div class="info">
-                    <strong>Important:</strong> Always handle connection events to monitor Redis connectivity status in your application.
+                <div class="two-column">
+                    <div class="column">
+                        <h4>Natural Fit</h4>
+                        <ul>
+                            <li class="bullet-point">Both are event-driven and non-blocking</li>
+                            <li class="bullet-point">JSON-friendly data model</li>
+                            <li class="bullet-point">Single-threaded event loop pairs well with single-threaded Redis</li>
+                            <li class="bullet-point">Modern async/await API in the official client</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h4>Insurance Use Cases</h4>
+                        <ul>
+                            <li class="bullet-point">Customer portals with sub-ms reads</li>
+                            <li class="bullet-point">Policy and claims caching</li>
+                            <li class="bullet-point">Session state for agent dashboards</li>
+                            <li class="bullet-point">Real-time rate lookups</li>
+                        </ul>
+                    </div>
                 </div>
+                <div class="info"><strong>Result:</strong> Reduce database load 70-90% and cut typical response times from ~100ms to &lt;5ms.</div>
             </section>
 
-            <!-- Node.js Setup Code Examples -->
+            <!-- Slide 4: Client Library Overview -->
             <section>
                 <div class="session-header">
-                    <h3>Node.js Redis Setup - Code Examples</h3>
+                    <h3>The Official Node.js Redis Client</h3>
                 </div>
-                <h4>Package Installation</h4>
+                <ul>
+                    <li class="bullet-point"><strong>Package:</strong> <code>redis</code> (node-redis v4+)</li>
+                    <li class="bullet-point"><strong>API style:</strong> Promise-based, camelCase commands (<code>hGetAll</code>, <code>zAdd</code>)</li>
+                    <li class="bullet-point"><strong>Features:</strong> Auto-reconnect, TLS, cluster support, Pub/Sub, Streams</li>
+                    <li class="bullet-point"><strong>Alternatives:</strong> <code>ioredis</code> - similar API, preferred for Redis Cluster</li>
+                </ul>
+                <div class="info"><strong>Course standard:</strong> We use <code>redis</code> for Labs 6-9. Syntax in labs matches this presentation.</div>
+            </section>
+
+            <!-- Slide 5: Installing and Connecting -->
+            <section>
+                <div class="session-header">
+                    <h3>Installing and Connecting</h3>
+                </div>
+                <p>Install the official <code>redis</code> client and open a connection with event handlers.</p>
                 <div class="code-block">
 npm install redis
 </div>
-                <h4>Basic Connection Setup</h4>
                 <div class="code-block">
 const redis = require('redis');
 
 const client = redis.createClient({
-    host: 'your-redis-host',
-    port: 6379,
-    password: 'your-password'
+    url: 'redis://your-redis-host:6379'
 });
 
-client.on('error', (err) => {
-    console.log('Redis Client Error', err);
-});
-
-client.on('connect', () => {
-    console.log('Connected to Redis successfully');
-});
+client.on('error', (err) =&gt; console.log('Redis Client Error', err));
+client.on('connect', () =&gt; console.log('Connected to Redis'));
 
 await client.connect();
 </div>
+                <div class="info"><strong>Always</strong> attach an <code>error</code> listener before <code>connect()</code> to avoid unhandled exceptions.</div>
             </section>
 
-            <!-- Connection Configuration -->
+            <!-- Slide 6: Key Naming Conventions -->
             <section>
                 <div class="session-header">
-                    <h3>Connection Configuration Options</h3>
+                    <h3>Insurance Key Naming Conventions</h3>
                 </div>
-                <h4>Production-Ready Connection Settings</h4>
-                <p>Configure robust connection handling with retry logic and timeout management for production environments.</p>
-                
-                <h4>Key Configuration Areas</h4>
+                <p>Use colon-delimited, predictable keys so you can reason about data ownership and invalidate cleanly.</p>
                 <ul>
-                    <li class="bullet-point"><strong>Retry Strategy:</strong> Implement exponential backoff for reconnection attempts</li>
-                    <li class="bullet-point"><strong>Timeout Management:</strong> Set appropriate connection and command timeouts</li>
-                    <li class="bullet-point"><strong>Error Handling:</strong> Handle different types of connection errors gracefully</li>
-                    <li class="bullet-point"><strong>Security:</strong> Configure authentication and SSL/TLS when required</li>
+                    <li class="bullet-point"><code>customer:1001</code> - hash of customer fields</li>
+                    <li class="bullet-point"><code>customer:1001:claims</code> - list of claim IDs</li>
+                    <li class="bullet-point"><code>policy:POL-001</code> - policy record (hash or JSON)</li>
+                    <li class="bullet-point"><code>claims:queue:auto</code> - processing queue</li>
+                    <li class="bullet-point"><code>leaderboard:agents:q1</code> - sorted set</li>
                 </ul>
-                
-                <div class="warning">
-                    <strong>Best Practice:</strong> Implement exponential backoff for reconnection attempts to avoid overwhelming the Redis server during outages.
-                </div>
+                <div class="success"><strong>Benefit:</strong> Consistent patterns let you target invalidation, run <code>SCAN</code> safely, and debug in Redis Insight.</div>
             </section>
 
-            <!-- Connection Configuration Code -->
+            <!-- Slide 7: Async/Await with Insurance Data -->
             <section>
                 <div class="session-header">
-                    <h3>Connection Configuration - Code Example</h3>
+                    <h3>Async/Await - Customer & Policy Operations</h3>
                 </div>
-                <h4>Advanced Connection Setup</h4>
+                <p>Modern Redis operations return promises. Use <code>await</code> for clean, readable code.</p>
                 <div class="code-block">
-const client = redis.createClient({
-    url: 'redis://your-redis-host:6379',
-    socket: {
-        reconnectStrategy: (retries) => 
-            Math.min(retries * 50, 500)
-    },
-    retry_strategy: (options) => {
-        if (options.error && 
-            options.error.code === 'ECONNREFUSED') {
-            return new Error('Redis server refused connection');
-        }
-        if (options.total_retry_time > 1000 * 60 * 60) {
-            return new Error('Retry time exhausted');
-        }
-        return Math.min(options.attempt * 100, 3000);
-    }
-});
-</div>
-            </section>
-
-            <!-- Basic Operations Concepts -->
-            <section>
-                <div class="session-header">
-                    <h3>Fundamental Redis Operations in JavaScript</h3>
-                </div>
-                <h4>String Operations - Core Data Storage</h4>
-                <p>String operations form the foundation of Redis data manipulation. These operations are atomic and provide excellent performance for simple key-value storage.</p>
-                
-                <h4>Key String Operation Types</h4>
-                <ul>
-                    <li class="bullet-point"><strong>SET/GET:</strong> Basic key-value storage and retrieval</li>
-                    <li class="bullet-point"><strong>MSET/MGET:</strong> Batch operations for multiple keys</li>
-                    <li class="bullet-point"><strong>SETEX:</strong> Set with automatic expiration (TTL)</li>
-                    <li class="bullet-point"><strong>INCR/DECR:</strong> Atomic numeric operations</li>
-                </ul>
-                
-                <div class="info">
-                    <strong>Performance Tip:</strong> Use mSet and mGet for batch operations to reduce network round trips and improve application performance.
-                </div>
-            </section>
-
-            <!-- Basic Operations Code -->
-            <section>
-                <div class="session-header">
-                    <h3>String Operations - Code Examples</h3>
-                </div>
-                <div class="code-block">
-// Set a single value
-await client.set('customer:1001:name', 'John Doe');
-
-// Retrieve the stored value
-const customerName = await client.get('customer:1001:name');
-console.log('Customer Name:', customerName);
-
-// Set value with expiration (TTL in seconds)
-await client.setEx('session:abc123', 3600, 
-    'active_user_session');
-
-// Set multiple key-value pairs
-await client.mSet({
-    'customer:1001:email': 'john.doe@email.com',
-    'customer:1001:status': 'active',
-    'customer:1002:name': 'Jane Smith'
-});
-
-// Retrieve multiple values efficiently
-const customerData = await client.mGet([
-    'customer:1001:name', 
-    'customer:1001:email'
-]);
-</div>
-            </section>
-
-            <!-- Working with JSON Data Concepts -->
-            <section>
-                <div class="session-header">
-                    <h3>Working with Complex JSON Data</h3>
-                </div>
-                <h4>Storing and Retrieving JavaScript Objects</h4>
-                <p>Redis stores data as strings, so JavaScript objects must be serialized. JSON serialization provides a simple way to store complex data structures.</p>
-                
-                <h4>JSON Storage Considerations</h4>
-                <ul>
-                    <li class="bullet-point"><strong>Serialization:</strong> Convert objects to JSON strings for storage</li>
-                    <li class="bullet-point"><strong>Deserialization:</strong> Parse JSON strings back to objects</li>
-                    <li class="bullet-point"><strong>Performance:</strong> Good for read-heavy workloads</li>
-                    <li class="bullet-point"><strong>Limitations:</strong> Requires full object rewrite for updates</li>
-                </ul>
-                
-                <div class="warning">
-                    <strong>Consideration:</strong> JSON serialization works well for read-heavy workloads, but consider Redis hashes for frequently updated fields to avoid full object rewrites.
-                </div>
-            </section>
-
-            <!-- JSON Data Code Examples -->
-            <section>
-                <div class="session-header">
-                    <h3>JSON Data - Code Examples</h3>
-                </div>
-                <div class="code-block">
-const customerData = {
-    id: 1001,
+// Store a customer profile
+await client.hSet('customer:1001', {
     name: 'John Doe',
-    email: 'john.doe@email.com',
-    policies: [
-        { id: 'POL001', type: 'auto', premium: 1200 },
-        { id: 'POL002', type: 'home', premium: 800 }
-    ],
-    preferences: { notifications: true, paperless: true },
-    lastLogin: new Date().toISOString(),
-    loyaltyPoints: 2500
+    email: 'john.doe@example.com',
+    tier: 'premium'
+});
+
+// Store a policy as JSON
+const policy = {
+    id: 'POL-001', type: 'auto',
+    premium: 1200.50, status: 'active'
 };
+await client.set('policy:POL-001', JSON.stringify(policy));
 
-// Store complex object as JSON string
-await client.set('customer:1001:profile', 
-    JSON.stringify(customerData));
-
-// Retrieve and deserialize
-const storedData = await client.get('customer:1001:profile');
-const customer = JSON.parse(storedData);
-
-console.log('Customer policies:', customer.policies.length);
-console.log('Total premium:', 
-    customer.policies.reduce((sum, policy) => 
-        sum + policy.premium, 0));
+// Retrieve data
+const customer = await client.hGetAll('customer:1001');
+const rawPolicy = await client.get('policy:POL-001');
+console.log(customer.name, JSON.parse(rawPolicy).premium);
 </div>
             </section>
 
-            <!-- Hash Operations Concepts -->
+            <!-- Slide 8: Parallel Operations -->
             <section>
                 <div class="session-header">
-                    <h3>Redis Hash Operations - Structured Data</h3>
+                    <h3>Parallel Operations with Promise.all</h3>
                 </div>
-                <h4>Efficient Field-Level Data Management</h4>
-                <p>Redis hashes provide an efficient way to store objects with multiple fields, allowing atomic updates to individual properties without affecting the entire record.</p>
-                
-                <h4>Hash Operation Benefits</h4>
-                <ul>
-                    <li class="bullet-point"><strong>Partial Updates:</strong> Modify individual fields without rewriting entire objects</li>
-                    <li class="bullet-point"><strong>Memory Efficient:</strong> Optimized storage for small to medium-sized objects</li>
-                    <li class="bullet-point"><strong>Atomic Operations:</strong> Field-level operations are atomic</li>
-                    <li class="bullet-point"><strong>Type Flexibility:</strong> Store different data types in the same hash</li>
-                </ul>
-                
-                <div class="success">
-                    <strong>Use Case:</strong> Hashes are perfect for customer profiles, configuration settings, and any data where you need to update individual fields frequently.
-                </div>
-            </section>
-
-            <!-- Hash Operations Code Part 1 -->
-            <section>
-                <div class="session-header">
-                    <h3>Hash Operations - Basic Examples</h3>
-                </div>
+                <p>When operations are independent, run them in parallel to cut total latency.</p>
                 <div class="code-block">
-// Set multiple hash fields atomically
-await client.hSet('customer:1001:details', {
-    'name': 'John Doe',
-    'email': 'john.doe@email.com',
-    'phone': '+1-555-0123',
-    'status': 'active',
-    'premium_member': 'true',
-    'join_date': '2020-01-15',
-    'last_contact': new Date().toISOString()
-});
-
-// Retrieve specific field
-const customerName = await client.hGet(
-    'customer:1001:details', 'name');
-const isPremium = await client.hGet(
-    'customer:1001:details', 'premium_member');
-
-// Get all customer fields as object
-const customerDetails = await client.hGetAll(
-    'customer:1001:details');
-console.log('Complete customer record:', customerDetails);
-
-// Atomically increment numeric fields
-await client.hIncrBy('customer:1001:stats', 'login_count', 1);
-await client.hIncrByFloat('customer:1001:stats', 
-    'total_premium', 150.75);
-</div>
-            </section>
-
-            <!-- Hash Operations Part 2 -->
-            <section>
-                <div class="session-header">
-                    <h3>Advanced Hash Operations</h3>
-                </div>
-                <h4>Selective Updates and Field Management</h4>
-                <p>Hash operations excel at partial updates and field-specific operations, making them ideal for frequently changing data.</p>
-                
-                <h4>Advanced Hash Features</h4>
-                <ul>
-                    <li class="bullet-point"><strong>Selective Updates:</strong> Update only specific fields as needed</li>
-                    <li class="bullet-point"><strong>Field Existence:</strong> Check if fields exist before operations</li>
-                    <li class="bullet-point"><strong>Field Management:</strong> Add, remove, and count fields dynamically</li>
-                    <li class="bullet-point"><strong>Batch Retrieval:</strong> Get multiple fields in single operation</li>
-                </ul>
-            </section>
-
-            <!-- Hash Operations Code Part 2 -->
-            <section>
-                <div class="session-header">
-                    <h3>Advanced Hash Operations - Code Examples</h3>
-                </div>
-                <div class="code-block">
-// Update only specific fields
-await client.hSet('customer:1001:details', {
-    'last_login': new Date().toISOString(),
-    'status': 'active'
-});
-
-// Get multiple specific fields efficiently
-const contactInfo = await client.hmGet(
-    'customer:1001:details', ['name', 'email', 'phone']);
-
-// Get all field names (keys) in the hash
-const fieldNames = await client.hKeys('customer:1001:details');
-console.log('Available fields:', fieldNames);
-
-// Count total fields in customer record
-const fieldCount = await client.hLen('customer:1001:details');
-
-// Delete specific fields
-await client.hDel('customer:1001:details', 'temporary_note');
-
-// Check if specific field exists
-const hasPhone = await client.hExists(
-    'customer:1001:details', 'phone');
-</div>
-            </section>
-
-            <!-- List Operations Concepts -->
-            <section>
-                <div class="session-header">
-                    <h3>Redis List Operations - Ordered Collections</h3>
-                </div>
-                <h4>Managing Sequential and Time-Ordered Data</h4>
-                <p>Redis lists maintain insertion order and provide efficient operations at both ends, making them perfect for activity logs, queues, and chronological data.</p>
-                
-                <h4>List Operation Categories</h4>
-                <ul>
-                    <li class="bullet-point"><strong>Push/Pop Operations:</strong> Add and remove items from either end</li>
-                    <li class="bullet-point"><strong>Range Operations:</strong> Retrieve specific ranges of items</li>
-                    <li class="bullet-point"><strong>Index Operations:</strong> Access items by position</li>
-                    <li class="bullet-point"><strong>Blocking Operations:</strong> Wait for items in real-time processing</li>
-                </ul>
-                
-                <div class="info">
-                    <strong>Queue Pattern:</strong> Use LPUSH + BRPOP for FIFO queues, or RPUSH + BLPOP for LIFO stacks. Blocking operations enable real-time task processing.
-                </div>
-            </section>
-
-            <!-- List Operations Code Part 1 -->
-            <section>
-                <div class="session-header">
-                    <h3>List Operations - Basic Examples</h3>
-                </div>
-                <div class="code-block">
-// Add new items to the beginning (left) of list
-await client.lPush('customer:1001:claims', 'CLM003_2024');
-await client.lPush('customer:1001:claims', 'CLM004_2024');
-
-// Add items to the end (right) of the list
-await client.rPush('customer:1001:activities', 
-    JSON.stringify({
-        action: 'policy_update',
-        timestamp: Date.now(),
-        details: 'Updated contact information'
-    })
-);
-
-// Retrieve range of items (0 = first, -1 = last)
-const recentClaims = await client.lRange(
-    'customer:1001:claims', 0, 4);
-console.log('Last 5 claims:', recentClaims);
-
-// Get specific item by index (0-based)
-const latestClaim = await client.lIndex(
-    'customer:1001:claims', 0);
-
-// Remove and return items from either end
-const processedClaim = await client.lPop('customer:1001:claims');
-const oldestActivity = await client.rPop('customer:1001:activities');
-</div>
-            </section>
-
-            <!-- List Operations Part 2 -->
-            <section>
-                <div class="session-header">
-                    <h3>Advanced List Operations</h3>
-                </div>
-                <h4>List Manipulation and Queue Operations</h4>
-                <p>Lists support advanced operations for queue management, data cleaning, and complex list manipulations.</p>
-                
-                <h4>Advanced List Features</h4>
-                <ul>
-                    <li class="bullet-point"><strong>List Trimming:</strong> Keep only recent items for log rotation</li>
-                    <li class="bullet-point"><strong>Item Insertion:</strong> Insert items at specific positions</li>
-                    <li class="bullet-point"><strong>Value Removal:</strong> Remove specific values from lists</li>
-                    <li class="bullet-point"><strong>Blocking Operations:</strong> Real-time queue processing</li>
-                </ul>
-            </section>
-
-            <!-- List Operations Code Part 2 -->
-            <section>
-                <div class="session-header">
-                    <h3>Advanced List Operations - Code Examples</h3>
-                </div>
-                <div class="code-block">
-// Get list length for pagination or validation
-const claimCount = await client.lLen('customer:1001:claims');
-console.log(`Customer has ${claimCount} claims on record`);
-
-// Trim list to keep only recent items (useful for logs)
-await client.lTrim('customer:1001:activities', 0, 99); // Keep last 100
-
-// Insert item before or after existing element
-await client.lInsert('customer:1001:claims', 'BEFORE', 
-    'CLM003_2024', 'CLM002_2024');
-
-// Remove specific items by value (count: positive = from head)
-await client.lRem('customer:1001:claims', 1, 'CLM001_CANCELLED');
-
-// Set value at specific index
-await client.lSet('customer:1001:claims', 0, 'CLM004_UPDATED');
-
-// Blocking operations for real-time processing
-// Note: Use separate connection for blocking operations
-const blockingClient = client.duplicate();
-const nextItem = await blockingClient.blPop('work_queue', 30); // 30 sec timeout
-</div>
-            </section>
-
-            <!-- Set Operations Concepts -->
-            <section>
-                <div class="session-header">
-                    <h3>Redis Set Operations - Unique Collections</h3>
-                </div>
-                <h4>Managing Unique Values and Set Mathematics</h4>
-                <p>Redis sets automatically ensure uniqueness and provide powerful set operations for data analysis and relationship management.</p>
-                
-                <h4>Set Operation Categories</h4>
-                <ul>
-                    <li class="bullet-point"><strong>Membership Operations:</strong> Add, remove, and check set membership</li>
-                    <li class="bullet-point"><strong>Set Mathematics:</strong> Union, intersection, and difference operations</li>
-                    <li class="bullet-point"><strong>Random Operations:</strong> Get random members for sampling</li>
-                    <li class="bullet-point"><strong>Cardinality:</strong> Count unique elements efficiently</li>
-                </ul>
-                
-                <div class="success">
-                    <strong>Analytics Use Case:</strong> Set operations are perfect for customer segmentation, A/B testing groups, and feature flag management.
-                </div>
-            </section>
-
-            <!-- Set Operations Code Part 1 -->
-            <section>
-                <div class="session-header">
-                    <h3>Set Operations - Basic Examples</h3>
-                </div>
-                <div class="code-block">
-// Add multiple unique tags to a customer
-await client.sAdd('customer:1001:tags', 'premium', 'loyal', 'high-value');
-await client.sAdd('customer:1001:tags', 'premium'); // Duplicate ignored
-
-// Check if customer has specific tag
-const isPremium = await client.sIsMember('customer:1001:tags', 'premium');
-console.log('Customer is premium:', isPremium); // true
-
-// Get all tags for customer
-const customerTags = await client.sMembers('customer:1001:tags');
-console.log('Customer tags:', customerTags);
-
-// Count unique tags
-const tagCount = await client.sCard('customer:1001:tags');
-
-// Remove tags
-await client.sRem('customer:1001:tags', 'temporary-tag');
-
-// Get and remove random tag
-const randomTag = await client.sPop('customer:1001:tags');
-</div>
-            </section>
-
-            <!-- Set Operations Part 2 -->
-            <section>
-                <div class="session-header">
-                    <h3>Advanced Set Operations</h3>
-                </div>
-                <h4>Set Mathematics for Customer Analytics</h4>
-                <p>Use set operations to analyze customer segments and find relationships between different groups:</p>
-                <div class="code-block">
-// Create customer groups
-await client.sAdd('group:premium', '1001', '1002', '1003', '1004');
-await client.sAdd('group:loyal', '1001', '1004', '1005', '1006');
-await client.sAdd('group:young', '1002', '1005', '1007', '1008');
-
-// Find customers who are both premium AND loyal
-const premiumLoyal = await client.sInter('group:premium', 'group:loyal');
-console.log('Premium + Loyal customers:', premiumLoyal); // ['1001', '1004']
-
-// Find all premium OR loyal customers
-const premiumOrLoyal = await client.sUnion('group:premium', 'group:loyal');
-
-// Find premium customers who are NOT loyal
-const premiumNotLoyal = await client.sDiff('group:premium', 'group:loyal');
-
-// Store intersection result for later use
-await client.sInterStore('group:premium_loyal', 'group:premium', 'group:loyal');
-</div>
-                <div class="success">
-                    <strong>Analytics Use Case:</strong> Set operations are perfect for customer segmentation, A/B testing groups, and feature flag management.
-                </div>
-            </section>
-
-            <!-- Sorted Sets Part 1 -->
-            <section>
-                <div class="session-header">
-                    <h3>Redis Sorted Sets - Ranked Data</h3>
-                </div>
-                <h4>Score-Based Ordering and Rankings</h4>
-                <p>Sorted sets combine the uniqueness of sets with automatic ordering by score, perfect for leaderboards and rankings:</p>
-                <div class="code-block">
-// Add customers with their premium amounts as scores
-await client.zAdd('leaderboard:premium_value', [
-    { score: 1500.50, value: 'customer:1001' },
-    { score: 1200.75, value: 'customer:1002' },
-    { score: 1800.25, value: 'customer:1003' },
-    { score: 950.00, value: 'customer:1004' }
-]);
-
-// Get top customers by premium value (highest first)
-const topCustomers = await client.zRevRange(
-    'leaderboard:premium_value', 0, 2, { WITHSCORES: true }
-);
-console.log('Top 3 premium customers:', topCustomers);
-
-// Get customer's rank (0-based, highest score = rank 0)
-const customerRank = await client.zRevRank(
-    'leaderboard:premium_value', 'customer:1001'
-);
-console.log('Customer 1001 rank:', customerRank + 1);
-</div>
-            </section>
-
-            <!-- Sorted Sets Part 2 -->
-            <section>
-                <div class="session-header">
-                    <h3>Advanced Sorted Set Operations</h3>
-                </div>
-                <h4>Range Queries and Score-Based Analytics</h4>
-                <p>Sorted sets excel at range queries and score-based filtering for business analytics:</p>
-                <div class="code-block">
-// Find customers with premium value above $1400
-const highValueCustomers = await client.zRangeByScore(
-    'leaderboard:premium_value', 1400, '+inf', { WITHSCORES: true }
-);
-
-// Count customers in specific premium range
-const midTierCount = await client.zCount(
-    'leaderboard:premium_value', 1000, 1500
-);
-
-// Get customer's current score
-const customerScore = await client.zScore(
-    'leaderboard:premium_value', 'customer:1001'
-);
-
-// Update customer's score (increment by amount)
-await client.zIncrBy('leaderboard:premium_value', 200.50, 'customer:1001');
-
-// Remove customers below minimum threshold
-await client.zRemRangeByScore('leaderboard:premium_value', 0, 500);
-
-// Get customers within rank range
-const middleRanked = await client.zRange(
-    'leaderboard:premium_value', 5, 10, { WITHSCORES: true }
-);
-</div>
-                <div class="info">
-                    <strong>Business Use:</strong> Perfect for premium tiers, loyalty points, credit scores, and any ranking system where order matters.
-                </div>
-            </section>
-
-            <!-- Lab Introduction -->
-            <section>
-                <div class="lab-callout">
-                    <h3>🛠️ Lab 4: JavaScript Redis Integration</h3>
-                    <p><strong>Duration:</strong> 45 minutes</p>
-                    <p>Build a customer data management application using Node.js and Redis</p>
-                </div>
-            </section>
-
-            <!-- Error Handling Part 1 -->
-            <section>
-                <div class="session-header">
-                    <h3>Error Handling Strategies</h3>
-                </div>
-                <h4>Robust Error Management Patterns</h4>
-                <p>Implement comprehensive error handling to ensure application stability and provide meaningful feedback:</p>
-                <div class="code-block">
-async function safeRedisOperation(key, operation) {
-    try {
-        const result = await operation();
-        return { success: true, data: result };
-    } catch (error) {
-        console.error(`Redis operation failed for key ${key}:`, error);
-        
-        // Handle specific error types
-        if (error.code === 'ECONNREFUSED') {
-            console.log('Redis connection refused - server down?');
-            // Trigger reconnection logic or fallback
-        } else if (error.code === 'ENOTFOUND') {
-            console.log('Redis host not found - check configuration');
-        }
-        
-        return { success: false, error: error.message };
-    }
-}
-</div>
-            </section>
-
-            <!-- Error Handling Part 2 -->
-            <section>
-                <div class="session-header">
-                    <h3>Advanced Error Handling</h3>
-                </div>
-                <h4>Circuit Breaker and Fallback Patterns</h4>
-                <p>Implement circuit breaker patterns to handle Redis outages gracefully and maintain application availability:</p>
-                <div class="code-block">
-class RedisCircuitBreaker {
-    constructor(threshold = 5, timeout = 60000) {
-        this.failureCount = 0;
-        this.threshold = threshold;
-        this.timeout = timeout;
-        this.state = 'CLOSED'; // CLOSED, OPEN, HALF_OPEN
-        this.nextAttempt = Date.now();
-    }
-    
-    async execute(operation) {
-        if (this.state === 'OPEN') {
-            if (Date.now() < this.nextAttempt) {
-                throw new Error('Circuit breaker is OPEN');
-            }
-            this.state = 'HALF_OPEN';
-        }
-        
-        try {
-            const result = await operation();
-            this.onSuccess();
-            return result;
-        } catch (error) {
-            this.onFailure();
-            throw error;
-        }
-    }
-    
-    onSuccess() {
-        this.failureCount = 0;
-        this.state = 'CLOSED';
-    }
-    
-    onFailure() {
-        this.failureCount++;
-        if (this.failureCount >= this.threshold) {
-            this.state = 'OPEN';
-            this.nextAttempt = Date.now() + this.timeout;
-        }
-    }
-}
-</div>
-            </section>
-
-            <!-- Connection Management Part 1 -->
-            <section>
-                <div class="session-header">
-                    <h3>Connection Lifecycle Management</h3>
-                </div>
-                <h4>Professional Connection Handling</h4>
-                <p>Implement proper connection management with monitoring and automatic recovery for production applications:</p>
-                <div class="code-block">
-class RedisConnectionManager {
-    constructor(config) {
-        this.config = config;
-        this.client = null;
-        this.isConnecting = false;
-        this.reconnectAttempts = 0;
-        this.maxReconnectAttempts = 10;
-    }
-    
-    async connect() {
-        if (this.client && this.client.isOpen) {
-            return this.client;
-        }
-        
-        if (this.isConnecting) {
-            // Wait for existing connection attempt
-            while (this.isConnecting) {
-                await new Promise(resolve => setTimeout(resolve, 100));
-            }
-            return this.client;
-        }
-        
-        this.isConnecting = true;
-        
-        try {
-            this.client = redis.createClient(this.config);
-            this.setupEventHandlers();
-            await this.client.connect();
-            this.reconnectAttempts = 0;
-            this.isConnecting = false;
-            return this.client;
-        } catch (error) {
-            this.isConnecting = false;
-            throw error;
-        }
-    }
-</div>
-            </section>
-
-            <!-- Connection Management Part 2 -->
-            <section>
-                <div class="session-header">
-                    <h3>Advanced Connection Features</h3>
-                </div>
-                <h4>Event Handling and Monitoring</h4>
-                <p>Set up comprehensive event monitoring to track connection health and performance:</p>
-                <div class="code-block">
-    setupEventHandlers() {
-        this.client.on('connect', () => {
-            console.log('✅ Redis connected successfully');
-            this.reconnectAttempts = 0;
-        });
-        
-        this.client.on('ready', () => {
-            console.log('🚀 Redis client ready for operations');
-        });
-        
-        this.client.on('error', (err) => {
-            console.error('❌ Redis connection error:', err.message);
-            this.handleConnectionError(err);
-        });
-        
-        this.client.on('end', () => {
-            console.log('🔌 Redis connection ended');
-        });
-        
-        this.client.on('reconnecting', () => {
-            this.reconnectAttempts++;
-            console.log(`🔄 Reconnecting to Redis (attempt ${this.reconnectAttempts})`);
-        });
-    }
-    
-    async disconnect() {
-        if (this.client) {
-            await this.client.disconnect();
-            this.client = null;
-            console.log('👋 Redis disconnected cleanly');
-        }
-    }
-    
-    isHealthy() {
-        return this.client && this.client.isOpen;
-    }
-}
-</div>
-            </section>
-
-            <!-- Async/Await Patterns Part 1 -->
-            <section>
-                <div class="session-header">
-                    <h3>Modern JavaScript Patterns</h3>
-                </div>
-                <h4>Async/Await with Redis Operations</h4>
-                <p>Leverage modern JavaScript async patterns for clean, readable Redis code with proper error handling:</p>
-                <div class="code-block">
-async function processCustomerData(customerId) {
-    try {
-        // Sequential operations when data depends on previous results
-        const customerExists = await client.exists(`customer:${customerId}`);
-        if (!customerExists) {
-            throw new Error(`Customer ${customerId} not found`);
-        }
-        
-        const customerInfo = await client.hGetAll(`customer:${customerId}:profile`);
-        
-        // Use customer data to determine what other data to fetch
-        const dataPromises = [
-            client.lRange(`customer:${customerId}:claims`, 0, -1),
-            client.sMembers(`customer:${customerId}:preferences`)
-        ];
-        
-        // Add policy data if customer is premium
-        if (customerInfo.premium === 'true') {
-            dataPromises.push(
-                client.zRange(`customer:${customerId}:policies`, 0, -1, 
-                    { WITHSCORES: true })
-            );
-        }
-        
-        const results = await Promise.all(dataPromises);
-        return this.formatCustomerResponse(customerInfo, results);
-        
-    } catch (error) {
-        console.error('Failed to process customer data:', error);
-        throw new CustomerDataError(`Cannot process customer ${customerId}`, error);
-    }
-}
-</div>
-            </section>
-
-            <!-- Async/Await Patterns Part 2 -->
-            <section>
-                <div class="session-header">
-                    <h3>Performance Optimization Patterns</h3>
-                </div>
-                <h4>Parallel Operations and Batch Processing</h4>
-                <p>Optimize performance by running independent Redis operations in parallel and batching related operations:</p>
-                <div class="code-block">
-async function getCustomerDashboardData(customerId) {
-    // Run all independent operations in parallel
-    const [
-        customerProfile,
-        recentClaims,
-        policyData,
-        activityLog,
-        preferences,
-        loyaltyPoints
-    ] = await Promise.all([
-        client.hGetAll(`customer:${customerId}:profile`),
-        client.lRange(`customer:${customerId}:claims`, 0, 4),
-        client.zRevRange(`customer:${customerId}:policies`, 0, -1, 
-            { WITHSCORES: true }),
-        client.lRange(`customer:${customerId}:activities`, 0, 9),
-        client.sMembers(`customer:${customerId}:preferences`),
-        client.zScore('loyalty_leaderboard', customerId)
+async function getCustomerDashboard(customerId) {
+    const [profile, claims, policies] = await Promise.all([
+        client.hGetAll(`customer:${customerId}`),
+        client.lRange(`customer:${customerId}:claims`, 0, 9),
+        client.sMembers(`customer:${customerId}:policies`)
     ]);
-    
+
     return {
-        profile: customerProfile,
-        recentClaims: recentClaims.map(claim => JSON.parse(claim)),
-        policies: this.formatPolicyData(policyData),
-        activities: activityLog.map(activity => JSON.parse(activity)),
-        preferences: preferences,
-        loyaltyPoints: loyaltyPoints || 0,
-        timestamp: new Date().toISOString()
+        profile,
+        recentClaims: claims,
+        activePolicies: policies
     };
 }
-
-// Handle Promise.all failures gracefully
-async function safeParallelOperations(operations) {
-    const results = await Promise.allSettled(operations);
-    return results.map((result, index) => {
-        if (result.status === 'fulfilled') {
-            return result.value;
-        } else {
-            console.error(`Operation ${index} failed:`, result.reason);
-            return null; // or appropriate default value
-        }
-    });
-}
 </div>
+                <div class="info"><strong>Rule of thumb:</strong> Use <code>Promise.all</code> when later calls don't depend on earlier results. Use sequential <code>await</code> when they do.</div>
             </section>
 
-            <!-- Pipeline Operations Part 1 -->
+            <!-- Slide 9: Connection Pooling -->
             <section>
                 <div class="session-header">
-                    <h3>Pipeline Operations for Performance</h3>
+                    <h3>Connection Pooling for Production</h3>
                 </div>
-                <h4>Batch Operations with Redis Multi/Pipeline</h4>
-                <p>Use pipelines to send multiple commands in a single network round trip, dramatically improving performance for batch operations:</p>
+                <p>Node.js apps typically share a single client across the process. For high-throughput services, use a pool so independent requests don't serialize on one socket.</p>
                 <div class="code-block">
-async function batchUpdateCustomers(customers) {
-    const pipeline = client.multi();
-    
-    // Queue multiple operations without waiting for responses
-    customers.forEach(customer => {
-        // Update customer profile
-        pipeline.hSet(`customer:${customer.id}:profile`, {
-            name: customer.name,
-            email: customer.email,
-            last_updated: new Date().toISOString()
-        });
-        
-        // Add to active customers set
-        pipeline.sAdd('active_customers', customer.id);
-        
-        // Update customer score in leaderboard
-        pipeline.zAdd('customer_value_leaderboard', {
-            score: customer.totalValue,
-            value: customer.id
-        });
-        
-        // Log the update activity
-        pipeline.lPush(`customer:${customer.id}:activities`, 
-            JSON.stringify({
-                action: 'profile_update',
-                timestamp: Date.now()
-            })
-        );
-    });
-    
-    // Execute all operations atomically
-    const results = await pipeline.exec();
-    console.log(`Batch update completed: ${results.length} operations executed`);
-    return results;
-}
-</div>
-            </section>
+const { createPool } = require('generic-pool');
+const redis = require('redis');
 
-            <!-- Pipeline Operations Part 2 -->
-            <section>
-                <div class="session-header">
-                    <h3>Advanced Pipeline Techniques</h3>
-                </div>
-                <h4>Transaction Safety and Error Handling</h4>
-                <p>Handle pipeline results and implement transaction-like behavior with proper error management:</p>
-                <div class="code-block">
-async function safeCustomerTransaction(customerId, updates) {
-    const pipeline = client.multi();
-    
+const pool = createPool({
+    create: async () =&gt; {
+        const client = redis.createClient({
+            url: 'redis://your-redis-host:6379'
+        });
+        await client.connect();
+        return client;
+    },
+    destroy: async (client) =&gt; client.quit()
+}, { min: 2, max: 20 });
+
+async function getCustomer(id) {
+    const client = await pool.acquire();
     try {
-        // Watch key for changes (optimistic locking)
-        await client.watch(`customer:${customerId}:profile`);
-        
-        // Verify customer exists before updates
-        const exists = await client.exists(`customer:${customerId}:profile`);
-        if (!exists) {
-            await client.unwatch();
-            throw new Error(`Customer ${customerId} does not exist`);
-        }
-        
-        // Queue conditional updates
-        Object.entries(updates).forEach(([field, value]) => {
-            pipeline.hSet(`customer:${customerId}:profile`, field, value);
-        });
-        
-        // Add audit trail
-        pipeline.lPush(`customer:${customerId}:audit`, JSON.stringify({
-            action: 'profile_update',
-            changes: updates,
-            timestamp: new Date().toISOString(),
-            user: 'system'
-        }));
-        
-        const results = await pipeline.exec();
-        
-        if (!results) {
-            throw new Error('Transaction failed - key was modified during execution');
-        }
-        
-        console.log('Customer update transaction completed successfully');
-        return results;
-        
+        return await client.hGetAll(`customer:${id}`);
+    } finally {
+        pool.release(client);
+    }
+}
+</div>
+                <div class="info"><strong>Guideline:</strong> Pool size should match expected concurrent Redis operations, not total requests.</div>
+            </section>
+
+            <!-- Slide 10: Error Handling -->
+            <section>
+                <div class="session-header">
+                    <h3>Error Handling Pattern</h3>
+                </div>
+                <p>Wrap Redis calls so transient failures degrade gracefully instead of crashing requests.</p>
+                <div class="code-block">
+async function safeGetPolicy(policyId) {
+    try {
+        const raw = await client.get(`policy:${policyId}`);
+        return raw ? JSON.parse(raw) : null;
     } catch (error) {
-        await client.unwatch(); // Clean up watch
-        console.error('Customer transaction failed:', error);
+        console.error(`Redis error for policy ${policyId}:`, error.message);
+
+        if (error.code === 'ECONNREFUSED') {
+            // Redis is down - fall back to the primary database
+            return await db.getPolicy(policyId);
+        }
         throw error;
     }
 }
 </div>
-                <div class="warning">
-                    <strong>Important:</strong> Pipeline operations are atomic but not transactional. Use WATCH/MULTI/EXEC for true transactional behavior.
-                </div>
+                <div class="warning"><strong>Principle:</strong> Treat the cache as an optimization, not a source of truth. Your app must still work if Redis is unreachable.</div>
             </section>
 
-            <!-- Redis Streams -->
+            <!-- Slide 11: TTL and Expiration -->
             <section>
                 <div class="session-header">
-                    <h3>Working with Redis Streams</h3>
+                    <h3>TTL for Ephemeral Insurance Data</h3>
                 </div>
-                <h4>Event Streaming for Customer Activities</h4>
+                <p>Set expirations on cached reads and session data so stale entries clean themselves up.</p>
                 <div class="code-block">
-// Add to stream
-async function logCustomerActivity(customerId, activity) {
-    const streamKey = `customer:${customerId}:activities`;
-    
-    await client.xAdd(streamKey, '*', {
-        action: activity.action,
-        timestamp: Date.now(),
-        details: JSON.stringify(activity.details)
-    });
-}
+// Cache a policy lookup for 1 hour
+await client.setEx(
+    `policy:${policyId}`,
+    3600,
+    JSON.stringify(policyData)
+);
 
-// Read from stream
-async function getCustomerActivities(customerId, count = 10) {
-    const streamKey = `customer:${customerId}:activities`;
-    
-    const activities = await client.xRevRange(streamKey, '+', '-', {
-        COUNT: count
-    });
-    
-    return activities.map(activity => ({
-        id: activity.id,
-        ...activity.message
-    }));
-}
+// Session token - 30 minutes, sliding window
+await client.setEx(`session:${token}`, 1800, userId);
+
+// Rate-limit counter - resets every 60 seconds
+await client.incr(`ratelimit:${userId}`);
+await client.expire(`ratelimit:${userId}`, 60);
 </div>
+                <div class="info"><strong>Tip:</strong> <code>SETEX</code> is atomic - it sets the value and TTL in one round trip.</div>
             </section>
 
-            <!-- Pub/Sub Operations -->
+            <!-- Slide 12: Graceful Shutdown -->
             <section>
                 <div class="session-header">
-                    <h3>Pub/Sub for Real-time Updates</h3>
+                    <h3>Graceful Shutdown</h3>
                 </div>
-                <h4>Real-time Customer Notifications</h4>
+                <p>Close Redis connections cleanly on process exit so in-flight commands aren't dropped.</p>
                 <div class="code-block">
-// Publisher
-async function notifyPolicyUpdate(customerId, policyId) {
-    const message = JSON.stringify({
-        customerId,
-        policyId,
-        timestamp: Date.now(),
-        event: 'policy_updated'
-    });
-    
-    await client.publish('policy_updates', message);
-}
-
-// Subscriber
-async function setupPolicyUpdateListener() {
-    const subscriber = client.duplicate();
-    await subscriber.connect();
-    
-    await subscriber.subscribe('policy_updates', (message) => {
-        const update = JSON.parse(message);
-        console.log('Policy update received:', update);
-        // Process the update
-    });
-}
-</div>
-            </section>
-
-            <!-- Testing Redis Operations -->
-            <section>
-                <div class="session-header">
-                    <h3>Testing Redis Operations</h3>
-                </div>
-                <h4>Unit Testing with Jest</h4>
-                <div class="code-block">
-const redis = require('redis-mock');
-
-describe('Customer Service', () => {
-    let client;
-    
-    beforeEach(() => {
-        client = redis.createClient();
-    });
-    
-    afterEach(() => {
-        client.flushall();
-    });
-    
-    test('should store customer data', async () => {
-        await client.hSet('customer:1001', 'name', 'John Doe');
-        const name = await client.hGet('customer:1001', 'name');
-        expect(name).toBe('John Doe');
-    });
+process.on('SIGTERM', async () =&gt; {
+    console.log('Shutting down...');
+    try {
+        await client.quit();     // finishes pending commands
+        console.log('Redis connection closed');
+    } catch (err) {
+        await client.disconnect(); // force close
+    }
+    process.exit(0);
 });
 </div>
-                <div class="info">
-                    <strong>Testing Tip:</strong> Use redis-mock for unit tests to avoid dependencies on actual Redis instances.
-                </div>
+                <div class="success"><strong>Difference:</strong> <code>quit()</code> waits for pending replies. <code>disconnect()</code> terminates immediately - use only if <code>quit()</code> fails.</div>
             </section>
 
-            <!-- Monitoring and Debugging -->
+            <!-- Slide 13: Lab 6 Teaching Lead-In -->
             <section>
                 <div class="session-header">
-                    <h3>Monitoring and Debugging</h3>
+                    <h3>What You'll Practice in Lab 6</h3>
                 </div>
-                <h4>Debugging Redis Operations</h4>
-                <div class="code-block">
-// Enable command logging
-client.on('ready', () => {
-    console.log('Redis client ready');
-});
-
-client.on('error', (err) => {
-    console.error('Redis error:', err);
-});
-
-// Monitor commands (development only)
-if (process.env.NODE_ENV === 'development') {
-    client.monitor((err, res) => {
-        console.log('Entering monitoring mode.');
-    });
-    
-    client.on('monitor', (time, args) => {
-        console.log('Redis command:', args);
-    });
-}
-</div>
+                <ul>
+                    <li class="bullet-point">Install <code>redis</code> and scaffold a Node.js project</li>
+                    <li class="bullet-point">Connect to the shared course Redis instance</li>
+                    <li class="bullet-point">Create functions to store and fetch customer profiles</li>
+                    <li class="bullet-point">Add policy JSON records with TTL</li>
+                    <li class="bullet-point">Wire up error handling and graceful shutdown</li>
+                    <li class="bullet-point">Verify keys in Redis Insight</li>
+                </ul>
+                <div class="info"><strong>Prep:</strong> Confirm you can reach the course Redis host before starting the lab.</div>
             </section>
 
-            <!-- Production Considerations -->
-            <section>
-                <div class="session-header">
-                    <h3>Production Considerations</h3>
+            <!-- Slide 14: Lab 6 Callout -->
+            <section data-background-color="#1a1a2e">
+                <div class="lab-callout">
+                    <h3>&#128736;&#65039; Lab 6: JavaScript Redis Client Setup</h3>
+                    <p><strong>Duration:</strong> 45 minutes</p>
+                    <p>Build a customer data management application using Node.js and Redis.</p>
                 </div>
-                <div class="two-column">
-                    <div class="column">
-                        <h4>Performance Optimization</h4>
-                        <ul>
-                            <li class="bullet-point">Use connection pooling</li>
-                            <li class="bullet-point">Implement proper error handling</li>
-                            <li class="bullet-point">Use pipelines for batch operations</li>
-                            <li class="bullet-point">Monitor memory usage</li>
-                        </ul>
-                    </div>
-                    <div class="column">
-                        <h4>Security Best Practices</h4>
-                        <ul>
-                            <li class="bullet-point">Use authentication</li>
-                            <li class="bullet-point">Enable SSL/TLS</li>
-                            <li class="bullet-point">Validate input data</li>
-                            <li class="bullet-point">Implement rate limiting</li>
-                        </ul>
-                    </div>
+                <div class="success">
+                    <h4>What You'll Build</h4>
+                    <ul>
+                        <li class="bullet-point">Connect a Node.js app to a remote Redis instance</li>
+                        <li class="bullet-point">Store and retrieve customer profiles and policies</li>
+                        <li class="bullet-point">Apply async/await patterns with proper error handling</li>
+                        <li class="bullet-point">Validate data round-trips via Redis Insight</li>
+                    </ul>
                 </div>
             </section>
 
-            <!-- Session Summary -->
+            <!-- Slide 15: Summary -->
             <section>
                 <div class="session-header">
                     <h2>Session Summary</h2>
                 </div>
                 <ul>
-                    <li class="bullet-point">Successfully configured Node.js Redis client</li>
-                    <li class="bullet-point">Implemented all major Redis data types in JavaScript</li>
-                    <li class="bullet-point">Applied error handling and connection management</li>
-                    <li class="bullet-point">Built data management workflows</li>
-                    <li class="bullet-point">Explored advanced features like streams and pub/sub</li>
+                    <li class="bullet-point">The official <code>redis</code> Node.js client is async/await native</li>
+                    <li class="bullet-point">Open one connection per process (or a small pool) and attach event handlers before <code>connect()</code></li>
+                    <li class="bullet-point">Use <code>Promise.all</code> for independent operations to cut latency</li>
+                    <li class="bullet-point">Wrap Redis calls so the app degrades gracefully on failure</li>
+                    <li class="bullet-point">Insurance workloads (customers, policies, claims) map cleanly to Redis keys</li>
                 </ul>
                 <div class="success">
-                    <strong>Next:</strong> We'll explore Set and Sorted Set applications for analytics and reporting.
+                    <strong>Next:</strong> Content 5 dives into Hashes, Lists, Sets, and Sorted Sets for insurance data modeling.
                 </div>
             </section>
         </div>

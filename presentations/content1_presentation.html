@@ -176,7 +176,7 @@
 <body>
     <div class="reveal">
         <div class="slides">
-            
+
             <!-- Title Slide -->
             <section>
                 <div class="title-block">
@@ -187,20 +187,7 @@
                 </div>
             </section>
 
-            <!-- Learning Objectives -->
-            <section>
-                <div class="session-header">
-                    <h2>Learning Objectives</h2>
-                </div>
-                <ul>
-                    <li>Understand what Redis is and its core purpose</li>
-                    <li>Learn Redis architecture and key features</li>
-                    <li>Compare Redis with traditional databases</li>
-                    <li>Explore Redis in modern application stacks</li>
-                </ul>
-            </section>
-
-            <!-- What is Redis? -->
+            <!-- What is Redis? + Objectives -->
             <section>
                 <div class="session-header">
                     <h2>What is Redis?</h2>
@@ -214,6 +201,7 @@
                     <li>Supports multiple data structures</li>
                     <li>Network accessible via TCP protocol</li>
                 </ul>
+                <p><strong>Today's focus:</strong> Redis architecture, data structures, and how Redis fits into modern application stacks.</p>
             </section>
 
             <!-- Redis Key Characteristics -->
@@ -271,29 +259,13 @@
                 </div>
                 <div class="architecture-diagram">
                     <h4>Single-Threaded Event Loop</h4>
-                    <p><strong>Client → Network → Event Loop → Memory → Response</strong></p>
+                    <p><strong>Client &rarr; Network &rarr; Event Loop &rarr; Memory &rarr; Response</strong></p>
                 </div>
                 <ul>
                     <li>Single process handles all operations</li>
                     <li>Event-driven, non-blocking I/O</li>
-                    <li>Commands processed sequentially</li>
-                    <li>No concurrency issues within Redis</li>
-                </ul>
-            </section>
-
-            <!-- Memory Management -->
-            <section>
-                <div class="session-header">
-                    <h2>Memory Management</h2>
-                </div>
-                <div class="highlight-box">
-                    <p><strong>All data stored in RAM for maximum performance</strong></p>
-                </div>
-                <ul>
-                    <li><strong>Volatile Memory:</strong> Data lost on restart (default)</li>
-                    <li><strong>Persistence Options:</strong> RDB snapshots, AOF logs</li>
-                    <li><strong>Memory Policies:</strong> Eviction when memory full</li>
-                    <li><strong>Compression:</strong> Automatic data structure optimization</li>
+                    <li>Commands processed sequentially &mdash; no concurrency issues</li>
+                    <li>All data in RAM; optional RDB/AOF persistence to disk</li>
                 </ul>
             </section>
 
@@ -318,13 +290,13 @@
                     <h2>Performance Characteristics</h2>
                 </div>
                 <div class="highlight-box">
-                    <p><strong>Typical Performance:</strong> 100,000+ operations/second</p>
+                    <p><strong>Typical Performance:</strong> 100,000+ operations/second, sub-millisecond latency</p>
                 </div>
                 <ul>
                     <li><strong>Read Operations:</strong> O(1) for most commands</li>
                     <li><strong>Write Operations:</strong> Atomic and immediate</li>
-                    <li><strong>Network Latency:</strong> Main bottleneck</li>
-                    <li><strong>Memory Access:</strong> Direct RAM access</li>
+                    <li><strong>Network Latency:</strong> Main bottleneck, not Redis itself</li>
+                    <li><strong>Memory Access:</strong> Direct RAM access, no disk I/O</li>
                 </ul>
             </section>
 
@@ -335,7 +307,7 @@
                 </div>
                 <div class="architecture-diagram">
                     <h4>Typical Architecture</h4>
-                    <p><strong>Application ← → Redis ← → Database</strong></p>
+                    <p><strong>Application &harr; Redis &harr; Database</strong></p>
                     <p style="font-size: 0.9em; margin-top: 15px;">
                         <strong>Cache Layer:</strong> Reduces database load<br>
                         <strong>Session Store:</strong> User session management<br>
@@ -351,85 +323,37 @@
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.8em;">
                     <div>
-                        <h4 style="color: #2c3e50; margin-bottom: 10px;">Caching</h4>
+                        <h4 style="color: #2c3e50; margin-bottom: 10px;">Caching &amp; Sessions</h4>
                         <ul style="margin: 0; padding-left: 15px;">
                             <li>Database query results</li>
                             <li>API responses</li>
-                            <li>Computed values</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 style="color: #2c3e50; margin-bottom: 10px;">Session Management</h4>
-                        <ul style="margin: 0; padding-left: 15px;">
-                            <li>User sessions</li>
-                            <li>Shopping carts</li>
+                            <li>User sessions, shopping carts</li>
                             <li>Authentication tokens</li>
                         </ul>
                     </div>
-                </div>
-            </section>
-
-            <!-- More Use Cases -->
-            <section>
-                <div class="session-header">
-                    <h2>More Redis Use Cases</h2>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.8em;">
                     <div>
-                        <h4 style="color: #2c3e50; margin-bottom: 10px;">Real-time Analytics</h4>
+                        <h4 style="color: #2c3e50; margin-bottom: 10px;">Analytics &amp; Messaging</h4>
                         <ul style="margin: 0; padding-left: 15px;">
-                            <li>Counters and metrics</li>
-                            <li>Leaderboards</li>
+                            <li>Counters, leaderboards</li>
                             <li>Time-series data</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 style="color: #2c3e50; margin-bottom: 10px;">Message Queues</h4>
-                        <ul style="margin: 0; padding-left: 15px;">
                             <li>Background jobs</li>
-                            <li>Event streaming</li>
                             <li>Pub/Sub messaging</li>
                         </ul>
                     </div>
                 </div>
             </section>
 
-            <!-- Installation Overview -->
-            <section>
-                <div class="session-header">
-                    <h2>Installation & Environment</h2>
-                </div>
-                <div class="highlight-box">
-                    <p><strong>Course Environment: Docker + Node.js + Redis Insight</strong></p>
-                </div>
-                <ul>
-                    <li><strong>Docker:</strong> Consistent Redis environment</li>
-                    <li><strong>Redis Insight:</strong> GUI tool for visualization</li>
-                    <li><strong>Node.js:</strong> JavaScript client applications</li>
-                    <li><strong>VS Code:</strong> Development environment</li>
-                </ul>
-            </section>
-
-            <!-- Redis Clients Overview -->
+            <!-- Redis Clients -->
             <section>
                 <div class="session-header">
                     <h2>Redis Clients</h2>
                 </div>
-                <div style="font-size: 0.8em;">
+                <div style="font-size: 0.85em;">
                     <div class="highlight-box">
                         <h4 style="margin-bottom: 10px;">Command Line Interface (CLI)</h4>
                         <div class="code-block" style="font-size: 0.9em;">redis-cli -h hostname -p 6379</div>
                         <p style="margin: 8px 0;">Direct command execution and scripting</p>
                     </div>
-                </div>
-            </section>
-
-            <!-- More Redis Clients -->
-            <section>
-                <div class="session-header">
-                    <h2>More Redis Clients</h2>
-                </div>
-                <div style="font-size: 0.8em;">
                     <div class="highlight-box">
                         <h4 style="margin-bottom: 10px;">Redis Insight GUI</h4>
                         <p style="margin: 8px 0;">Visual interface, memory analysis, monitoring</p>
@@ -469,55 +393,19 @@ PING
             <!-- Connection and Configuration -->
             <section>
                 <div class="session-header">
-                    <h2>Connection & Configuration</h2>
+                    <h2>Connection &amp; Configuration</h2>
                 </div>
                 <div style="font-size: 0.9em;">
-                    <h4>Default Configuration</h4>
                     <ul>
-                        <li><strong>Port:</strong> 6379</li>
-                        <li><strong>Host:</strong> Remote server (not localhost)</li>
+                        <li><strong>Port:</strong> 6379 (default)</li>
+                        <li><strong>Host:</strong> Remote server (not localhost in this course)</li>
                         <li><strong>Database:</strong> 16 databases (0-15), default is 0</li>
                         <li><strong>Authentication:</strong> Optional password</li>
                     </ul>
-                    
-                    <h4>Course Environment</h4>
                     <div class="code-block" style="font-size: 0.8em;">
-# Connection details will be provided
+# Course environment
 redis-cli -h [remote-host] -p 6379
                     </div>
-                </div>
-            </section>
-
-            <!-- Security Basics -->
-            <section>
-                <div class="session-header">
-                    <h2>Security Basics</h2>
-                </div>
-                <div class="warning-box">
-                    <p><strong>Important:</strong> Redis is designed for trusted environments</p>
-                </div>
-                <ul>
-                    <li><strong>Network Security:</strong> Firewall protection</li>
-                    <li><strong>Authentication:</strong> Password protection</li>
-                    <li><strong>Authorization:</strong> Command restrictions</li>
-                    <li><strong>Encryption:</strong> SSL/TLS for data in transit</li>
-                </ul>
-            </section>
-
-            <!-- Why Redis is Fast -->
-            <section>
-                <div class="session-header">
-                    <h2>Why Redis is So Fast</h2>
-                </div>
-                <ul>
-                    <li><strong>In-Memory Storage:</strong> No disk I/O for reads</li>
-                    <li><strong>Simple Data Structures:</strong> Optimized algorithms</li>
-                    <li><strong>Single-Threaded:</strong> No context switching</li>
-                    <li><strong>Efficient Protocols:</strong> Minimal overhead</li>
-                    <li><strong>Pipelining:</strong> Batch command execution</li>
-                </ul>
-                <div class="highlight-box">
-                    <p><strong>Result:</strong> Sub-millisecond response times</p>
                 </div>
             </section>
 
@@ -539,16 +427,13 @@ SET session:12345 "user-session-data"
 EXPIRE session:12345 3600
 # Two commands = not atomic!
                     </div>
-
-                    <h4>Why Atomic Matters</h4>
                     <ul style="font-size: 0.95em;">
                         <li><strong>Safety:</strong> Prevents keys without expiration if crash occurs</li>
                         <li><strong>Efficiency:</strong> Single network round-trip vs two</li>
                         <li><strong>Common use:</strong> Sessions, temporary tokens, rate limiting</li>
                     </ul>
-
                     <div class="highlight-box">
-                        <p><strong>Lab 1 Note:</strong> You'll use SETEX when testing basic CLI operations to see how temporary data works in Redis.</p>
+                        <p><strong>Lab 1 Note:</strong> You'll use SETEX when testing basic CLI operations.</p>
                     </div>
                 </div>
             </section>
@@ -556,7 +441,7 @@ EXPIRE session:12345 3600
             <!-- Lab Introduction -->
             <section>
                 <div class="lab-callout">
-                    <h2>🧪 Lab 1: Redis Environment & CLI Basics</h2>
+                    <h2>🧪 Lab 1: Redis Environment &amp; CLI Basics</h2>
                     <p><strong>Duration: 45 minutes</strong></p>
                     <p>Next, we'll set up our Redis environment and explore basic CLI operations including SETEX with real data.</p>
                     <ul style="font-size: 0.9em; margin-top: 15px;">

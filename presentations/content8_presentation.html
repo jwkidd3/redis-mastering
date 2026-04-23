@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
+    <title>Content 8: Persistence, High Availability & Production Configuration</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/white.css">
         <style>
@@ -83,6 +85,22 @@
             text-align: center;
         }
         .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            border: 2px solid #34495e;
+            border-radius: 5px;
+            padding: 0.5em;
+            font-family: 'Courier New', 'Monaco', monospace;
+            font-size: 0.6em;
+            margin: 0.3em 0;
+            line-height: 1.2;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .code-snippet {
             background: #2c3e50;
             color: #ecf0f1;
             border: 2px solid #34495e;
@@ -275,429 +293,147 @@
             <section data-background="#f8f9fa">
                 <div class="main-title">
                     <h1>Content 8</h1>
-                    <h2>Persistence & High Availability</h2>
-                    <p>Data Protection & Business Continuity for Enterprise Applications</p>
-                    <p><strong>Day 3 - Mid-Morning Session</strong></p>
+                    <h2>Persistence &amp; Production Configuration</h2>
+                    <p>Data Protection, Memory, and Security Hardening</p>
+                    <p><strong>Day 3 - Afternoon Session</strong></p>
                 </div>
             </section>
 
-            <!-- Session Overview -->
+            <!-- RDB Basics + Command -->
             <section>
                 <div class="session-header">
-                    <h2>Session Overview</h2>
+                    <h2>RDB Snapshots</h2>
                 </div>
-                <div class="bullet-point"><strong>Objective:</strong> Master data persistence and high availability strategies for enterprise Redis deployments</div>
-                <div class="bullet-point"><strong>Duration:</strong> 45 minutes presentation</div>
-                <div class="bullet-point"><strong>Focus:</strong> Production-ready persistence, backup strategies, and availability patterns</div>
-                
-                <h3>Key Topics</h3>
-                <div class="bullet-point">RDB snapshots for point-in-time recovery and backup strategies</div>
-                <div class="bullet-point">AOF logging for transaction-level data protection and audit trails</div>
-                <div class="bullet-point">Hybrid persistence strategies for optimal business continuity</div>
-                <div class="bullet-point">Redis Sentinel for automated failover and high availability</div>
-                <div class="bullet-point">Basic clustering concepts for large-scale operations</div>
-                <div class="bullet-point">Backup automation and disaster recovery planning</div>
-            </section>
-
-            <!-- Data Persistence Fundamentals -->
-            <section>
-                <div class="session-header">
-                    <h2>Data Persistence Fundamentals</h2>
-                </div>
-                
-                <h3>Why Persistence Matters for Business Applications</h3>
-                <div class="bullet-point">Protection against server failures and unexpected shutdowns</div>
-                <div class="bullet-point">Regulatory compliance and audit trail requirements</div>
-                <div class="bullet-point">Business continuity and disaster recovery capabilities</div>
-                <div class="bullet-point">Point-in-time recovery for data corruption scenarios</div>
-                
-                <h3>Redis Persistence Options</h3>
-                <div class="two-column">
-                    <div>
-                        <h4>RDB (Redis Database)</h4>
-                        <div class="bullet-point">Binary snapshots at specific intervals</div>
-                        <div class="bullet-point">Compact file format for storage efficiency</div>
-                        <div class="bullet-point">Fast restart and recovery times</div>
-                        <div class="bullet-point">Minimal performance impact during normal operations</div>
-                    </div>
-                    <div>
-                        <h4>AOF (Append Only File)</h4>
-                        <div class="bullet-point">Command-by-command transaction log</div>
-                        <div class="bullet-point">Better durability with configurable sync policies</div>
-                        <div class="bullet-point">Human-readable format for debugging</div>
-                        <div class="bullet-point">Point-in-time recovery precision</div>
-                    </div>
-                </div>
-                
-                <div class="info-box">
-                    <strong>Best Practice:</strong> Use both RDB and AOF together (hybrid approach) for maximum data protection in business-critical applications.
-                </div>
-            </section>
-
-            <!-- RDB Snapshots Deep Dive -->
-            <section>
-                <div class="session-header">
-                    <h2>RDB Snapshots for Business Data Protection</h2>
-                </div>
-                
-                <h3>RDB Configuration Strategy</h3>
+                <div class="bullet-point"><strong>What:</strong> Point-in-time binary snapshots at configured intervals</div>
+                <div class="bullet-point"><strong>Strengths:</strong> Compact files, fast restart, low ongoing overhead &mdash; ideal for backups &amp; DR</div>
+                <div class="bullet-point"><strong>Trade-off:</strong> Data between snapshots can be lost on crash</div>
                 <div class="code-snippet">
-# Business-optimized RDB configuration
-save 900 1      # Low activity: save if 1+ changes in 15 minutes
-save 300 10     # Medium activity: save if 10+ changes in 5 minutes  
-save 60 10000   # High activity: save if 10k+ changes in 1 minute
+# Runtime: configure snapshot thresholds
+CONFIG SET save "900 1 300 10 60 10000"
+# Save after: 900s if &gt;=1 change, 300s if &gt;=10, 60s if &gt;=10000
 
-# File management
-dbfilename business-data.rdb
-rdbcompression yes
-rdbchecksum yes
-</div>
-                
-                <div class="two-column">
-                    <div>
-                        <h4>Advantages for Business Use</h4>
-                        <div class="bullet-point">Minimal ongoing performance impact</div>
-                        <div class="bullet-point">Compact backup files for storage efficiency</div>
-                        <div class="bullet-point">Fast restart times for quick recovery</div>
-                        <div class="bullet-point">Ideal for point-in-time backups</div>
-                        <div class="bullet-point">Easy to copy for backup replication</div>
-                    </div>
-                    <div>
-                        <h4>Business Considerations</h4>
-                        <div class="bullet-point">Potential data loss between snapshots</div>
-                        <div class="bullet-point">Memory spike during snapshot creation</div>
-                        <div class="bullet-point">Temporary I/O increase during save</div>
-                        <div class="bullet-point">Configuration tuning for business needs</div>
-                        <div class="bullet-point">Backup validation and testing required</div>
-                    </div>
+# Trigger a non-blocking snapshot
+BGSAVE
+
+# Check last successful save
+LASTSAVE
+INFO persistence
                 </div>
-                
-                <h3>Automated Backup Strategy</h3>
+                <div class="success"><strong>Insurance example:</strong> Policy-quote cache &mdash; 60/10000 catches renewal-cycle bursts, 900/1 guarantees at least one snapshot overnight.</div>
+            </section>
+
+            <!-- AOF Basics + Command -->
+            <section>
+                <div class="session-header">
+                    <h2>AOF (Append-Only File)</h2>
+                </div>
+                <div class="bullet-point"><strong>What:</strong> Log of every write command (replayable)</div>
+                <div class="bullet-point"><strong>Strengths:</strong> Near-zero data loss with <code>everysec</code>; audit trail; human-readable</div>
+                <div class="bullet-point"><strong>Trade-off:</strong> File grows; requires periodic rewrite</div>
                 <div class="code-snippet">
-# Automated backup script example
-#!/bin/bash
-BACKUP_DIR="/backups/redis/$(date +%Y%m%d)"
-mkdir -p $BACKUP_DIR
-redis-cli BGSAVE
-cp /data/business-data.rdb $BACKUP_DIR/
-gzip $BACKUP_DIR/business-data.rdb
-</div>
+# Enable AOF at runtime
+CONFIG SET appendonly yes
+CONFIG SET appendfsync everysec      # balanced durability/perf
+CONFIG SET aof-use-rdb-preamble yes  # hybrid RDB+AOF
+
+# Compact the log
+BGREWRITEAOF
+
+# Check AOF status
+INFO persistence
+                </div>
+                <div class="info"><strong>Best practice:</strong> Use hybrid persistence (RDB + AOF with preamble) for business-critical insurance workloads &mdash; fast restart from RDB, minimal data loss from AOF.</div>
             </section>
 
-            <!-- AOF Transaction Logging -->
+            <!-- Memory Management & Eviction -->
             <section>
                 <div class="session-header">
-                    <h2>AOF for Transaction-Level Data Protection</h2>
+                    <h2>Memory &amp; Eviction Policies</h2>
                 </div>
-                
-                <h3>AOF Configuration for Business Applications</h3>
                 <div class="code-snippet">
-# Production AOF configuration
-appendonly yes
-appendfilename "business-transactions.aof"
-appendfsync everysec    # Balance between performance and durability
-auto-aof-rewrite-percentage 100
-auto-aof-rewrite-min-size 64mb
-aof-use-rdb-preamble yes    # Hybrid approach
-</div>
-                
-                <div class="two-column">
-                    <div>
-                        <h4>Sync Policy Options</h4>
-                        <table class="comparison-table">
-                            <thead>
-                                <tr>
-                                    <th>Policy</th>
-                                    <th>Durability</th>
-                                    <th>Performance</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><strong>always</strong></td>
-                                    <td class="pros">Highest</td>
-                                    <td class="cons">Slowest</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>everysec</strong></td>
-                                    <td>Balanced</td>
-                                    <td>Good</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>no</strong></td>
-                                    <td class="cons">OS-dependent</td>
-                                    <td class="pros">Fastest</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                        <h4>Business Benefits</h4>
-                        <div class="bullet-point">Near-zero data loss potential</div>
-                        <div class="bullet-point">Audit trail for compliance</div>
-                        <div class="bullet-point">Incremental backup capability</div>
-                        <div class="bullet-point">Granular recovery options</div>
-                        <div class="bullet-point">Debugging and analysis support</div>
-                    </div>
+# Set maxmemory and eviction policy
+CONFIG SET maxmemory 2gb
+CONFIG SET maxmemory-policy allkeys-lru
+INFO memory
                 </div>
-                
-                <div class="warning-box">
-                    <strong>Production Note:</strong> AOF files grow continuously. Implement rewrite policies and monitoring to manage disk space and performance.
-                </div>
+                <table class="command-table">
+                    <thead>
+                        <tr><th>Policy</th><th>Behavior</th><th>Typical Use</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>noeviction</strong></td><td>Errors when full</td><td>Persistent-only stores</td></tr>
+                        <tr><td><strong>allkeys-lru</strong></td><td>Evict any LRU key</td><td>General caching</td></tr>
+                        <tr><td><strong>volatile-lru</strong></td><td>Evict TTL keys, LRU</td><td>Mixed cache + persistent</td></tr>
+                        <tr><td><strong>volatile-ttl</strong></td><td>Evict shortest TTL</td><td>Time-sensitive data</td></tr>
+                    </tbody>
+                </table>
+                <div class="success"><strong>Insurance example:</strong> Quote cache with 24h TTL &mdash; <code>volatile-lru</code> aggressively evicts stale quotes while preserving long-lived policy reference data.</div>
             </section>
 
-            <!-- Hybrid Persistence Strategy -->
+            <!-- Production Security Hardening -->
             <section>
                 <div class="session-header">
-                    <h2>Hybrid Persistence for Maximum Protection</h2>
+                    <h2>Production Security Hardening</h2>
                 </div>
-                
-                <h3>Combining RDB + AOF for Enterprise Applications</h3>
-                <div class="architecture-diagram">
-                    <h4>Hybrid Persistence Architecture</h4>
-                    <p>RDB Snapshots (Fast Recovery) + AOF Logs (Durability)</p>
-                    <p>↓</p>
-                    <p>Optimal Balance: Speed + Data Protection</p>
-                </div>
-                
-                <div class="two-column">
-                    <div>
-                        <h4>Configuration Strategy</h4>
-                        <div class="code-snippet">
-# Hybrid configuration
-# RDB for periodic snapshots
-save 900 1
-save 300 10
-save 60 10000
+                <div class="code-snippet">
+# Authentication
+CONFIG SET requirepass "strong_password_here"
 
-# AOF for transaction logging
-appendonly yes
-appendfsync everysec
-aof-use-rdb-preamble yes
-</div>
-                        <div class="bullet-point">RDB provides fast startup times</div>
-                        <div class="bullet-point">AOF ensures minimal data loss</div>
-                        <div class="bullet-point">Combined approach optimizes both speed and safety</div>
-                    </div>
-                    <div>
-                        <h4>Recovery Scenarios</h4>
-                        <div class="bullet-point"><strong>Normal Restart:</strong> Loads RDB first, then replays AOF</div>
-                        <div class="bullet-point"><strong>Corruption Recovery:</strong> Use RDB if AOF is corrupted</div>
-                        <div class="bullet-point"><strong>Point-in-Time:</strong> Restore specific RDB snapshot</div>
-                        <div class="bullet-point"><strong>Latest Data:</strong> AOF provides most recent transactions</div>
-                        
-                        <div class="highlight-box">
-                            <strong>Enterprise Advantage:</strong> Multiple recovery options provide flexibility for different failure scenarios.
-                        </div>
-                    </div>
+# ACLs (Redis 6+) &mdash; per-user credentials
+ACL SETUSER claims_svc on &gt;svc_pwd ~claim:* +@read +hset
+
+# Disable or rename dangerous commands
+CONFIG SET rename-command FLUSHALL ""
+CONFIG SET rename-command CONFIG "CONFIG_abc123"
+
+# Bind to private interfaces &mdash; never 0.0.0.0 in production
+CONFIG SET bind "127.0.0.1 192.168.1.100"
+CONFIG SET maxclients 10000
+
+# Persist runtime changes to redis.conf
+CONFIG REWRITE
                 </div>
+                <div class="warning"><strong>Defense in depth:</strong> Combine <code>requirepass</code>/ACLs, renamed dangerous commands, bound interfaces, firewall rules, and TLS for insurance workloads handling PII/PHI.</div>
             </section>
 
-            <!-- High Availability Introduction -->
+            <!-- Backup & Recovery -->
             <section>
                 <div class="session-header">
-                    <h2>High Availability Fundamentals</h2>
+                    <h2>Backup Automation</h2>
                 </div>
-                
-                <h3>Business Continuity Requirements</h3>
-                <div class="bullet-point"><strong>Uptime Targets:</strong> 99.9% (8.76 hours downtime/year) to 99.99% (52.56 minutes/year)</div>
-                <div class="bullet-point"><strong>RTO (Recovery Time Objective):</strong> Maximum acceptable downtime</div>
-                <div class="bullet-point"><strong>RPO (Recovery Point Objective):</strong> Maximum acceptable data loss</div>
-                <div class="bullet-point"><strong>Service Dependencies:</strong> Critical vs non-critical system components</div>
-                
-                <h3>Redis High Availability Options</h3>
-                <div class="two-column">
-                    <div>
-                        <h4>Redis Sentinel</h4>
-                        <div class="bullet-point">Automated monitoring and failover</div>
-                        <div class="bullet-point">Master-replica configuration management</div>
-                        <div class="bullet-point">Client notification of topology changes</div>
-                        <div class="bullet-point">Suitable for single-master workloads</div>
-                    </div>
-                    <div>
-                        <h4>Redis Cluster (Advanced)</h4>
-                        <div class="bullet-point">Distributed data across multiple nodes</div>
-                        <div class="bullet-point">Automatic partitioning and sharding</div>
-                        <div class="bullet-point">Built-in failure detection and recovery</div>
-                        <div class="bullet-point">Horizontal scaling capabilities</div>
-                    </div>
-                </div>
-                
-                <div class="architecture-diagram">
-                    <h4>Basic HA Architecture</h4>
-                    <p>Application → Sentinel → Master/Replica Redis Nodes</p>
-                    <p>Automatic failover maintains service availability</p>
-                </div>
-            </section>
-
-            <!-- Redis Sentinel Overview -->
-            <section>
-                <div class="session-header">
-                    <h2>Redis Sentinel for Automated Failover</h2>
-                </div>
-                
-                <h3>Sentinel Responsibilities</h3>
-                <div class="bullet-point"><strong>Monitoring:</strong> Continuously checks master and replica health</div>
-                <div class="bullet-point"><strong>Notification:</strong> Alerts administrators and applications of issues</div>
-                <div class="bullet-point"><strong>Automatic Failover:</strong> Promotes replicas to master when needed</div>
-                <div class="bullet-point"><strong>Configuration Provider:</strong> Supplies current master information to clients</div>
-                
-                <div class="two-column">
-                    <div>
-                        <h4>Basic Sentinel Setup</h4>
-                        <div class="code-snippet">
-# sentinel.conf
-port 26379
-sentinel monitor businessdb 127.0.0.1 6379 2
-sentinel down-after-milliseconds businessdb 5000
-sentinel failover-timeout businessdb 10000
-sentinel parallel-syncs businessdb 1
-</div>
-                        <div class="bullet-point">Monitor master with quorum requirements</div>
-                        <div class="bullet-point">Configure failure detection timeouts</div>
-                        <div class="bullet-point">Set failover coordination parameters</div>
-                    </div>
-                    <div>
-                        <h4>Client Integration</h4>
-                        <div class="code-snippet">
-// JavaScript client example
-const Redis = require('ioredis');
-const client = new Redis({
-  sentinels: [
-    { host: 'sentinel1', port: 26379 },
-    { host: 'sentinel2', port: 26379 }
-  ],
-  name: 'businessdb'
-});
-</div>
-                        <div class="bullet-point">Applications connect through Sentinel</div>
-                        <div class="bullet-point">Automatic master discovery and failover</div>
-                        <div class="bullet-point">Transparent reconnection handling</div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Backup and Disaster Recovery -->
-            <section>
-                <div class="session-header">
-                    <h2>Backup Automation & Disaster Recovery</h2>
-                </div>
-                
-                <h3>Enterprise Backup Strategy</h3>
-                <div class="two-column">
-                    <div>
-                        <h4>Backup Automation</h4>
-                        <div class="code-snippet">
+                <div class="code-snippet">
 #!/bin/bash
 # Daily backup script
 DATE=$(date +%Y%m%d_%H%M)
 BACKUP_DIR="/backups/redis/$DATE"
 mkdir -p $BACKUP_DIR
 
-# Create backup
 redis-cli BGSAVE
 cp /data/business-data.rdb $BACKUP_DIR/
 gzip $BACKUP_DIR/business-data.rdb
 
-# Retention policy (keep 30 days)
+# 30-day retention
 find /backups/redis -mtime +30 -delete
-</div>
-                        <div class="bullet-point">Automated daily/weekly/monthly schedules</div>
-                        <div class="bullet-point">Compression for storage efficiency</div>
-                        <div class="bullet-point">Retention policies for compliance</div>
-                    </div>
-                    <div>
-                        <h4>Multi-Region Strategy</h4>
-                        <div class="bullet-point">Primary region with local replicas</div>
-                        <div class="bullet-point">Secondary region for disaster recovery</div>
-                        <div class="bullet-point">Cross-region backup replication</div>
-                        <div class="bullet-point">Network partitioning considerations</div>
-                        
-                        <div class="warning-box">
-                            <strong>Critical:</strong> Regularly test backup restoration procedures. Untested backups are not true backups.
-                        </div>
-                    </div>
                 </div>
-                
-                <h3>Recovery Procedures</h3>
-                <div class="bullet-point"><strong>RDB Recovery:</strong> Stop Redis, replace RDB file, restart service</div>
-                <div class="bullet-point"><strong>AOF Recovery:</strong> Stop Redis, repair/replace AOF file, restart service</div>
-                <div class="bullet-point"><strong>Point-in-Time:</strong> Restore specific backup and replay transactions</div>
-                <div class="bullet-point"><strong>Failover Testing:</strong> Regular drills to validate recovery procedures</div>
-            </section>
-
-            <!-- Production Considerations -->
-            <section>
-                <div class="session-header">
-                    <h2>Production Deployment Considerations</h2>
-                </div>
-                
-                <h3>Memory and Performance Impact</h3>
-                <div class="two-column">
-                    <div>
-                        <h4>RDB Performance</h4>
-                        <div class="bullet-point">Memory usage spikes during BGSAVE operations</div>
-                        <div class="bullet-point">Disk I/O impact during snapshot creation</div>
-                        <div class="bullet-point">CPU usage for compression operations</div>
-                        <div class="bullet-point">Network impact for backup transfers</div>
-                    </div>
-                    <div>
-                        <h4>AOF Performance</h4>
-                        <div class="bullet-point">Continuous disk writes for command logging</div>
-                        <div class="bullet-point">File size growth and rewrite operations</div>
-                        <div class="bullet-point">Sync policy impact on write latency</div>
-                        <div class="bullet-point">Recovery time proportional to AOF size</div>
-                    </div>
-                </div>
-                
-                <h3>Monitoring and Alerting</h3>
-                <div class="bullet-point">Monitor backup completion and file sizes</div>
-                <div class="bullet-point">Alert on failed persistence operations</div>
-                <div class="bullet-point">Track memory usage during snapshots</div>
-                <div class="bullet-point">Monitor replication lag in HA setups</div>
-                
-                <table class="comparison-table">
-                    <thead>
-                        <tr>
-                            <th>Metric</th>
-                            <th>Warning Threshold</th>
-                            <th>Critical Threshold</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Last Save Time</td>
-                            <td>> 1 hour</td>
-                            <td>> 4 hours</td>
-                        </tr>
-                        <tr>
-                            <td>AOF File Size</td>
-                            <td>> 1GB</td>
-                            <td>> 5GB</td>
-                        </tr>
-                        <tr>
-                            <td>Replication Lag</td>
-                            <td>> 10 seconds</td>
-                            <td>> 60 seconds</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="bullet-point"><strong>RDB recovery:</strong> Stop Redis, replace RDB, restart</div>
+                <div class="bullet-point"><strong>AOF recovery:</strong> Stop Redis, repair/replace AOF, restart</div>
+                <div class="bullet-point"><strong>Cross-region:</strong> Replicate compressed backups to a secondary region</div>
+                <div class="warning"><strong>Critical:</strong> Untested backups are not backups. Schedule restore drills.</div>
             </section>
 
             <!-- Lab Callout -->
             <section data-background="#e8f5e8">
                 <div class="lab-callout">
                     <h2>🧪 Hands-On Practice</h2>
-                    <h3>Next: Lab 13</h3>
-                    <h3>Production Configuration</h3>
+                    <h3>Next: Lab 14 - Production Monitoring &amp; Configuration</h3>
                     <p><strong>Duration: 45 minutes</strong></p>
                     <br>
                     <div style="font-size: 0.9em;">
-                        <p>• Configure RDB persistence for business data backup</p>
-                        <p>• Set up AOF logging for transaction-level protection</p>
-                        <p>• Implement memory management and security settings</p>
-                        <p>• Create automated backup scripts and monitoring</p>
-                        <p>• Practice production deployment with Redis Insight</p>
+                        <p>- Configure RDB and AOF persistence via Redis Insight Workbench</p>
+                        <p>- Apply memory limits and eviction policies for insurance workloads</p>
+                        <p>- Harden Redis with passwords, renamed commands, and bind restrictions</p>
+                        <p>- Build automated backup scripts and test recovery procedures</p>
+                        <p>- Persist runtime configuration with <code>CONFIG REWRITE</code></p>
                     </div>
                 </div>
             </section>
@@ -707,29 +443,18 @@ find /backups/redis -mtime +30 -delete
                 <div class="session-header">
                     <h2>Session Summary</h2>
                 </div>
-                
-                <h3>Key Takeaways</h3>
-                <div class="bullet-point"><strong>Persistence Strategy:</strong> Use hybrid RDB + AOF approach for maximum data protection</div>
-                <div class="bullet-point"><strong>High Availability:</strong> Implement Sentinel for automated failover and business continuity</div>
-                <div class="bullet-point"><strong>Backup Automation:</strong> Create robust, tested backup and recovery procedures</div>
-                <div class="bullet-point"><strong>Monitoring:</strong> Implement comprehensive monitoring for persistence and availability</div>
-                <div class="bullet-point"><strong>Testing:</strong> Regularly validate backup and recovery processes</div>
-                
-                <h3>Production Readiness Checklist</h3>
-                <div class="bullet-point">✅ RDB and AOF persistence configured appropriately</div>
-                <div class="bullet-point">✅ Automated backup scripts with retention policies</div>
-                <div class="bullet-point">✅ High availability strategy (Sentinel) implemented</div>
-                <div class="bullet-point">✅ Monitoring and alerting for persistence operations</div>
-                <div class="bullet-point">✅ Disaster recovery procedures documented and tested</div>
-                
+                <div class="bullet-point"><strong>Hybrid persistence:</strong> RDB + AOF (<code>aof-use-rdb-preamble yes</code>) gives fast restart &amp; minimal data loss</div>
+                <div class="bullet-point"><strong>Memory:</strong> Set <code>maxmemory</code> and match eviction policy to access patterns</div>
+                <div class="bullet-point"><strong>Security essentials:</strong> <code>requirepass</code>, ACLs, renamed commands, <code>bind</code>, <code>CONFIG REWRITE</code></div>
+                <div class="bullet-point"><strong>Backups:</strong> Automated, retained, and regularly restored</div>
                 <div class="highlight-box">
-                    <strong>Next Steps:</strong> Apply these persistence concepts in Lab 13 where you'll configure production Redis with RDB, AOF, memory management, and automated backup scripts.
+                    <strong>Next:</strong> Monitoring &amp; observability (content 9), then Lab 14 applies all of this in Redis Insight Workbench.
                 </div>
             </section>
 
         </div>
     </div>
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
     <script>
         Reveal.initialize({

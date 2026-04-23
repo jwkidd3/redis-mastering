@@ -1,5 +1,9 @@
 # Lab 10: Advanced Caching Patterns
 
+> **📌 Optional / Take-Home Lab**
+>
+> This lab is not part of the core 3-day in-class schedule. The caching-patterns theory is covered in **Presentation 6: Streams, Event Sourcing & Caching Patterns**. Complete this lab as homework to practice cache-aside, write-through, and event-driven invalidation.
+
 **Duration:** 45 minutes  
 **Focus:** Multi-level caching, intelligent invalidation, and performance optimization  
 

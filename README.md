@@ -1,8 +1,9 @@
 # Redis Mastering Course
 
-A comprehensive 3-day intensive Redis training course focused on insurance industry applications, covering Redis fundamentals through advanced production deployment patterns.
+A focused 3-day intensive Redis training course focused on insurance industry applications, covering Redis fundamentals through advanced production deployment patterns.
 
-**Duration:** 3 days (21 hours total)
+**Schedule:** 3 days, 9:00 AM – 4:00 PM (7 hours/day with 1-hour lunch + two 15-min breaks)
+**Teaching time:** 5.5 hours/day × 3 = 16.5 hours of instruction and labs
 **Format:** 30% theory, 70% hands-on labs
 **Industry Focus:** Insurance applications (Claims, Policies, Customer Management)
 **Platform:** Docker + JavaScript/Node.js + Redis Insight + Visual Studio Code
@@ -87,8 +88,8 @@ npm install
 
 ## Course Structure
 
-### Day 1: Redis CLI & Core Operations (7 hours)
-**Labs 1-5:** Foundation and CLI mastery - **NO JavaScript required**
+### Day 1: Redis CLI & Core Operations (5.5 hrs teaching)
+**Labs 1-5:** Foundation and CLI mastery — **NO JavaScript required**
 
 | Lab | Title | Key Topics |
 |-----|-------|------------|
@@ -98,8 +99,8 @@ npm install
 | **Lab 4** | Key Management & TTL Strategies | Key naming, TTL strategies, SCAN, memory optimization |
 | **Lab 5** | Advanced CLI & Production Monitoring | Monitoring, benchmarking, slow queries, alerts |
 
-### Day 2: JavaScript Integration (7 hours)
-**Labs 6-10:** Application development patterns
+### Day 2: JavaScript Integration (5.5 hrs teaching)
+**Labs 6-9:** Application development patterns. **Lab 10 is optional / take-home.**
 
 | Lab | Title | Key Topics |
 |-----|-------|------------|
@@ -107,168 +108,115 @@ npm install
 | **Lab 7** | Customer Profiles with Hashes | Hash operations, nested structures, customer management |
 | **Lab 8** | Claims Event Sourcing with Streams | Event sourcing, producer/consumer groups, audit trails |
 | **Lab 9** | Insurance Analytics with Sets & Sorted Sets | Segmentation, leaderboards, rankings, analytics |
-| **Lab 10** | Advanced Caching Patterns | Cache-aside, write-through, event-driven invalidation |
+| **Lab 10** *(optional)* | Advanced Caching Patterns | Cache-aside, write-through, event-driven invalidation |
 
-### Day 3: Production & Advanced Topics (7 hours)
-**Labs 11-15:** Enterprise deployment
+### Day 3: Production & Advanced Topics (5.5 hrs teaching)
+**Labs 11, 12, 14, 15:** Enterprise deployment. **Lab 13's config exercises are folded into Lab 14.**
 
 | Lab | Title | Key Topics |
 |-----|-------|------------|
 | **Lab 11** | Session Management & Security | JWT tokens, RBAC, session cleanup, security monitoring |
 | **Lab 12** | Rate Limiting & API Protection | Token bucket, sliding window, DDoS protection |
-| **Lab 13** | Production Configuration | RDB/AOF persistence, backups, security hardening |
-| **Lab 14** | Production Monitoring & Health Checks | Metrics collection, alerting, dashboards |
+| **Lab 14** | Production Configuration & Monitoring | RDB/AOF, backups, metrics collection, alerting, dashboards |
 | **Lab 15** | Redis Cluster & High Availability | 6-node cluster, sharding, failover, replication |
 
 ---
 
 ## Detailed Course Flow
 
-This section shows the exact order of presentations and labs for each day.
+Each day runs 9:00 AM – 4:00 PM with a 1-hour lunch and two 15-minute breaks, leaving **5.5 hours (330 min) of teaching/lab time per day**.
 
-### Day 1: Redis CLI & Core Operations (7 hours)
+### Day 1: Redis CLI & Core Operations (330 min — 27% pres / 73% lab)
 
-**Morning Session (3.5 hours)**
+**Morning (9:00 – 12:05)**
 
-1. **Presentation 1: Introduction to Redis** (50 min)
-   - File: `presentations/content1_presentation.html`
-   - Topics: Redis overview, architecture, use cases, installation, CLI basics, SETEX
+| Time | Item | File / Directory |
+|------|------|------------------|
+| 9:00 – 9:30 (30 min) | **Presentation 1: Introduction to Redis** — Redis overview, architecture, use cases, installation, CLI basics | `presentations/content1_presentation.html` |
+| 9:30 – 10:15 (45 min) | **Lab 1: Redis Environment & CLI Basics** — Docker setup, CLI navigation, Redis Insight | `lab1-redis-cli-basics/` |
+| 10:15 – 10:30 | **Break** (15 min) | |
+| 10:30 – 11:00 (30 min) | **Presentation 2: RESP Protocol & CLI Operations** — RESP protocol, CLI debugging, hash basics | `presentations/content2_presentation.html` |
+| 11:00 – 11:50 (50 min) | **Lab 2: RESP Protocol Deep Dive** — Protocol monitoring, raw format analysis, CLIENT/MONITOR/SLOWLOG/CONFIG | `lab2-resp-protocol/` |
+| 11:50 – 12:05 | Buffer / Q&A | |
 
-2. **Presentation 2: RESP Protocol & CLI Operations** (45 min)
-   - File: `presentations/content2_presentation.html`
-   - Topics: RESP protocol, CLI debugging, hash basics (HSET/HGET), sorted set basics (ZADD/ZRANGE)
+**Lunch (12:05 – 1:05)**
 
-3. **Lab 1: Redis Environment & CLI Basics** (45 min)
-   - Directory: `lab1-redis-cli-basics/`
-   - Activities: Docker setup, CLI navigation, Redis Insight, basic commands
+**Afternoon (1:05 – 4:00)**
 
-4. **Lab 2: RESP Protocol Deep Dive** (45 min)
-   - Directory: `lab2-resp-protocol/`
-   - Activities: Protocol monitoring, raw format analysis, debugging
-
-**Break** (15 min)
-
-**Afternoon Session (3.5 hours)**
-
-5. **Presentation 3: String Operations & Key Management** (45 min)
-   - File: `presentations/content3_presentation.html`
-   - Topics: String operations, TTL management, SETEX/PSETEX, LASTSAVE, SADD introduction
-
-6. **Lab 3: String Operations & Data Management** (45 min)
-   - Directory: `lab3-data-operations-strings/`
-   - Activities: String ops, INCR/DECR, MSET/MGET, performance testing
-
-7. **Lab 4: Key Management & TTL Strategies** (45 min)
-   - Directory: `lab4-key-management-ttl/`
-   - Activities: Key naming, TTL strategies, SCAN, memory optimization
-
-8. **Lab 5: Advanced CLI & Production Monitoring** (45 min)
-   - Directory: `lab5-advanced-cli-monitoring/`
-   - Activities: Monitoring, benchmarking, slow queries, alerts
+| Time | Item | File / Directory |
+|------|------|------------------|
+| 1:05 – 1:35 (30 min) | **Presentation 3: String Operations & Key Management** — String ops, TTL, SETEX/PSETEX | `presentations/content3_presentation.html` |
+| 1:35 – 2:25 (50 min) | **Lab 3: String Operations & Data Management** — INCR/DECR, MSET/MGET, SCAN, performance | `lab3-data-operations-strings/` |
+| 2:25 – 2:40 | **Break** (15 min) | |
+| 2:40 – 3:30 (50 min) | **Lab 4: Key Management & TTL Strategies** — Key naming, EXPIREAT/PEXPIRE/PTTL/PSETEX, SCAN, RENAME | `lab4-key-management-ttl/` |
+| 3:30 – 4:00 (30 min) | **Lab 5: Advanced CLI & Production Monitoring** — MONITOR, SLOWLOG, CLIENT KILL, CONFIG SET | `lab5-advanced-cli-monitoring/` |
 
 ---
 
-### Day 2: JavaScript Integration (7 hours)
+### Day 2: JavaScript Integration (330 min — 29% pres / 71% lab)
 
-**Morning Session (3.5 hours)**
+**Morning (9:00 – 12:25)**
 
-1. **Presentation 4: JavaScript Redis Client Fundamentals** (50 min)
-   - File: `presentations/content4_presentation.html`
-   - Topics: Node.js client setup, connection pooling, async/await patterns
+| Time | Item | File / Directory |
+|------|------|------------------|
+| 9:00 – 9:30 (30 min) | **Presentation 4: JavaScript Redis Client Fundamentals** — Node.js client, connection pooling, async/await | `presentations/content4_presentation.html` |
+| 9:30 – 10:25 (55 min) | **Lab 6: JavaScript Redis Client Setup** — Client, pooling, async patterns, error handling | `lab6-javascript-redis-client/` |
+| 10:25 – 10:40 | **Break** (15 min) | |
+| 10:40 – 11:15 (35 min) | **Presentation 5: Hash, List, Set & Sorted Set Data Structures** — Comprehensive data structures module preparing for Labs 7 & 9 | `presentations/content5_presentation.html` |
+| 11:15 – 12:05 (50 min) | **Lab 7: Customer Profiles with Hashes** — Hash ops, nested structures | `lab7-customer-policy-hashes/` |
+| 12:05 – 12:25 | Buffer / Q&A | |
 
-2. **Presentation 5: Hash, List, Set & Sorted Set Data Structures** (60 min)
-   - File: `presentations/content5.html`
-   - Topics: Hashes (HSET/HGET/HMSET/HGETALL), Lists, **Sets (SADD/SMEMBERS/SINTER/SUNION/SDIFF)**, **Sorted Sets (ZADD/ZRANGE/ZRANGEBYSCORE/ZSCORE/ZRANK)**
-   - **Note:** This is the comprehensive data structures module preparing for Lab 9
+**Lunch (12:25 – 1:25)**
 
-3. **Lab 6: JavaScript Redis Client Setup** (45 min)
-   - Directory: `lab6-javascript-redis-client/`
-   - Activities: Node.js client, connection pooling, async/await patterns
+**Afternoon (1:25 – 4:00)**
 
-4. **Lab 7: Customer Profiles with Hashes** (45 min)
-   - Directory: `lab7-customer-policy-hashes/`
-   - Activities: Hash operations, nested structures, customer management
+| Time | Item | File / Directory |
+|------|------|------------------|
+| 1:25 – 1:55 (30 min) | **Presentation 6: Streams, Event Sourcing & Caching Patterns** — XADD/XREAD, consumer groups, cache-aside, write-through | `presentations/content6_presentation.html` |
+| 1:55 – 3:10 (75 min) | **Lab 8: Claims Event Sourcing with Streams** — Producer/consumer, XACK, XPENDING, XINFO, audit trails | `lab8-claims-event-sourcing/` |
+| 3:10 – 3:25 | **Break** (15 min) | |
+| 3:25 – 4:00 (35 min) | **Lab 9: Insurance Analytics with Sets & Sorted Sets** — Segmentation, leaderboards, SREM/ZREM/ZREVRANK | `lab9-sets-analytics/` |
 
-**Break** (15 min)
-
-**Afternoon Session (3.5 hours)**
-
-5. **Presentation 6: Redis Streams & Event Sourcing** (45 min)
-   - File: `presentations/content6-presentation.html`
-   - Topics: Redis Streams, XADD/XREAD, consumer groups, event sourcing patterns
-
-6. **Lab 8: Claims Event Sourcing with Streams** (60 min)
-   - Directory: `lab8-claims-event-sourcing/`
-   - Activities: Event sourcing, producer/consumer groups, audit trails
-
-7. **Lab 9: Insurance Analytics with Sets & Sorted Sets** (60 min)
-   - Directory: `lab9-sets-analytics/`
-   - Activities: Customer segmentation, leaderboards, rankings, analytics
-   - **Uses:** All SET and SORTED SET commands taught in Presentation 5
-
-8. **Lab 10: Advanced Caching Patterns** (45 min)
-   - Directory: `lab10-advanced-caching-patterns/`
-   - Activities: Cache-aside, write-through, event-driven invalidation
+> **Lab 10 (Advanced Caching Patterns)** is optional / take-home. The core caching material is covered in Presentation 6.
 
 ---
 
-### Day 3: Production & Advanced Topics (7 hours)
+### Day 3: Production & Advanced Topics (330 min — 30% pres / 70% lab)
 
-**Morning Session (3.5 hours)**
+**Morning (9:00 – 12:30)**
 
-1. **Presentation 7: Production Security & Best Practices** (50 min)
-   - File: `presentations/content7_presentation.html`
-   - Topics: Authentication, encryption, access control, monitoring
-   - **Includes:** Review of SMEMBERS (for Lab 11) and ZRANGE (for Lab 12)
+| Time | Item | File / Directory |
+|------|------|------------------|
+| 9:00 – 9:35 (35 min) | **Presentation 7: Security, Sessions & Rate Limiting** — Auth, ACL, TLS, JWT/RBAC, token bucket, sliding window | `presentations/content7_presentation.html` |
+| 9:35 – 10:30 (55 min) | **Lab 11: Session Management & Security** — JWT, RBAC, EVAL/Lua, LPUSH/LRANGE audit logs | `lab11-session-management/` |
+| 10:30 – 10:45 | **Break** (15 min) | |
+| 10:45 – 11:40 (55 min) | **Lab 12: Rate Limiting & API Protection** — Token bucket, sliding window, DDoS | `lab12-rate-limiting-api-protection/` |
+| 11:40 – 12:15 (35 min) | **Presentation 8 + 9: Persistence, Configuration & Monitoring** — RDB/AOF, backups, metrics, alerting | `presentations/content8_presentation.html` + `content9_presentation.html` |
+| 12:15 – 12:30 | Buffer / Q&A | |
 
-2. **Presentation 8: Production Configuration & Persistence** (45 min)
-   - File: `presentations/content8_presentation.html`
-   - Topics: RDB/AOF persistence, backup strategies, replication
+**Lunch (12:30 – 1:30)**
 
-3. **Lab 11: Session Management & Security** (45 min)
-   - Directory: `lab11-session-management/`
-   - Activities: JWT tokens, RBAC, session cleanup, security monitoring
+**Afternoon (1:30 – 4:00)**
 
-4. **Lab 12: Rate Limiting & API Protection** (45 min)
-   - Directory: `lab12-rate-limiting-api-protection/`
-   - Activities: Token bucket, sliding window, DDoS protection
-
-**Break** (15 min)
-
-**Afternoon Session (3.5 hours)**
-
-5. **Presentation 9: Production Monitoring & Observability** (45 min)
-   - File: `presentations/content9_presentation.html`
-   - Topics: Metrics collection, alerting, health checks, dashboards
-
-6. **Lab 13: Production Configuration** (45 min)
-   - Directory: `lab13-production-configuration/`
-   - Activities: RDB/AOF setup, backups, security hardening
-
-7. **Lab 14: Production Monitoring & Health Checks** (45 min)
-   - Directory: `lab14-production-monitoring/`
-   - Activities: Metrics collection, alerting, dashboards
-
-8. **Presentation 10: Redis Cluster & High Availability** (45 min)
-   - File: `presentations/lab15-presentation.html`
-   - Topics: Clustering fundamentals, sharding, failover, replication
-
-9. **Lab 15: Redis Cluster & High Availability** (45 min)
-   - Directory: `lab15-redis-cluster-ha/`
-   - Activities: 6-node cluster setup, sharding, failover testing, replication
+| Time | Item | File / Directory |
+|------|------|------------------|
+| 1:30 – 2:35 (65 min) | **Lab 14: Production Configuration & Monitoring** — BGSAVE, BGREWRITEAOF, AUTH, ACL SETUSER, health checks *(includes former Lab 13 config exercises)* | `lab14-production-monitoring/` |
+| 2:35 – 3:05 (30 min) | **Presentation 10: Redis Cluster & High Availability** — Clustering fundamentals, sharding, failover | `presentations/content15_presentation.html` |
+| 3:05 – 3:20 | **Break** (15 min) | |
+| 3:20 – 4:00 (55 min) | **Lab 15: Redis Cluster & High Availability** — 6-node cluster, CLUSTER SLOTS/KEYSLOT, failover testing | `lab15-redis-cluster-ha/` |
 
 ---
 
 ## Course Timing Summary
 
-| Day | Presentations | Labs | Total Teaching Time |
-|-----|---------------|------|---------------------|
-| **Day 1** | 3 presentations (140 min) | 5 labs (225 min) | 6 hours 5 min |
-| **Day 2** | 3 presentations (155 min) | 5 labs (255 min) | 6 hours 50 min |
-| **Day 3** | 4 presentations (185 min) | 5 labs (225 min) | 6 hours 50 min |
-| **Total** | **10 presentations** | **15 labs** | **~20 hours** |
+| Day | Presentations | Labs | Teaching Time | Lab/Pres Ratio |
+|-----|---------------|------|---------------|----------------|
+| **Day 1** | 3 (90 min) | 5 (225 min + 15 buffer) | 330 min | 73 / 27 |
+| **Day 2** | 3 (95 min) | 4 core + 1 optional (215 min + 20 buffer) | 330 min | 71 / 29 |
+| **Day 3** | 3 (100 min) | 4 (215 min + 15 buffer) | 330 min | 70 / 30 |
+| **Total** | **10 presentations (285 min)** | **13 core labs (705 min incl. buffer)** | **16.5 hours** | **~71 / 29** |
 
-**Note:** Breaks and Q&A add approximately 1 hour per day, bringing total to 21 hours over 3 days.
+**Note:** Each day runs 9:00 AM – 4:00 PM with a 1-hour lunch and two 15-minute breaks. Labs occupy ~70% of teaching time; presentations ~30%.
 
 ---
 
@@ -365,20 +313,9 @@ code --version
 
 ## Platform Support
 
-### 🎉 100% Cross-Platform Script Coverage
+The course supports both Mac/Linux and Windows. Most labs use Node.js scripts (`npm` commands) that run unchanged on either platform. A few labs — notably **Lab 15 (Redis Cluster)** — include platform-specific shell scripts.
 
-All lab scripts are available for both Mac/Linux and Windows platforms!
-
-```
-Total Scripts:
-  Mac/Linux (bash):    57 scripts ✅
-  Windows (PowerShell): 57 scripts ✅
-  Coverage:            100%
-```
-
-### Script Organization
-
-All scripts are organized by platform:
+### Script Organization (where present)
 
 ```
 lab{n}/
@@ -387,25 +324,21 @@ lab{n}/
 │   └── win/          # PowerShell scripts (.ps1) for Windows
 ```
 
-### Running Scripts by Platform
+### Running platform-specific scripts
 
 **Mac/Linux:**
 ```bash
-cd lab6-javascript-redis-client
-bash scripts/mac/setup-lab.sh
+cd lab15-redis-cluster-ha
+bash scripts/mac/init-cluster.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-cd lab6-javascript-redis-client
-.\scripts\win\setup-lab.ps1
+cd lab15-redis-cluster-ha
+.\scripts\win\init-cluster.ps1
 ```
 
-**Windows (Git Bash or WSL):**
-```bash
-# Can still use Mac scripts
-bash scripts/mac/setup-lab.sh
-```
+**Windows (Git Bash or WSL):** the Mac scripts run directly.
 
 ### Windows-Specific Setup
 
@@ -480,9 +413,7 @@ cat README.md
 # 3. For JavaScript labs (Day 2-3), install dependencies
 npm install
 
-# 4. Run setup scripts if provided
-bash scripts/mac/setup-lab.sh      # Mac/Linux
-.\scripts\win\setup-lab.ps1         # Windows
+# 4. Run any platform-specific setup scripts the lab provides (see lab README)
 
 # 5. Follow lab-specific instructions in README.md
 ```
@@ -528,15 +459,11 @@ cd lab5-advanced-cli-monitoring
 # Lab 6: JavaScript Client Setup
 cd lab6-javascript-redis-client
 npm install
-bash scripts/mac/setup-lab.sh      # Mac/Linux
-.\scripts\win\setup-lab.ps1         # Windows
 node test-connection.js
 
 # Lab 7: Hashes (Customer Profiles)
 cd lab7-customer-policy-hashes
 npm install
-bash scripts/mac/setup-lab.sh      # Mac/Linux
-.\scripts\win\setup-lab.ps1         # Windows
 node src/customer-service.js
 
 # Lab 8: Streams (Claims Event Sourcing) ⭐
@@ -554,7 +481,7 @@ npm install
 npm run segments              # Customer segmentation
 npm run leaderboard           # Agent rankings
 
-# Lab 10: Caching Patterns
+# Lab 10 (optional / take-home): Caching Patterns
 cd lab10-advanced-caching-patterns
 npm install
 node test-cache-aside.js
@@ -566,8 +493,6 @@ node test-cache-aside.js
 # Lab 11: Session Management
 cd lab11-session-management
 npm install
-bash scripts/mac/setup-lab.sh      # Mac/Linux
-.\scripts\win\setup-lab.ps1         # Windows
 node test-session.js
 
 # Lab 12: Rate Limiting
@@ -576,19 +501,10 @@ npm install
 node src/server.js            # Start API server
 node examples/test-rate-limits.js
 
-# Lab 13: Production Configuration
-cd lab13-production-configuration
-docker-compose up -d
-bash scripts/mac/backup-redis.sh           # Mac/Linux
-.\scripts\win\backup-redis.ps1             # Windows
-bash scripts/mac/health-check.sh           # Mac/Linux
-.\scripts\win\health-check.ps1             # Windows
-
-# Lab 14: Production Monitoring
+# Lab 14: Production Configuration & Monitoring
+# (Includes the former Lab 13 RDB/AOF config exercises)
 cd lab14-production-monitoring
 npm install
-bash scripts/mac/setup.sh              # Mac/Linux
-.\scripts\win\setup.ps1                # Windows
 node health-check.js
 
 # Lab 15: Redis Cluster ⭐
@@ -637,11 +553,15 @@ npm run test:day3  # Production & Advanced (Labs 11-15)
 
 ### Current Test Status
 
-- **Total Tests:** 179
-- **Pass Rate:** 100% ✅
-- **Day 1:** 100% passing ✅
-- **Day 2:** 100% passing ✅
-- **Day 3:** 100% passing ✅
+- **Default run (13 core labs):** 132 tests — **100% passing ✅**
+  - Day 1: 38/38 ✅ (Labs 1–5)
+  - Day 2: 48/48 ✅ (Labs 6–9)
+  - Day 3: 46/46 ✅ (Labs 11, 12, 14, 15)
+- **Optional labs (run individually):**
+  - `npm run test:lab -- --lab=10` — Lab 10 (optional/take-home): 12 tests, 100% ✅
+  - `npm run test:lab -- --lab=13` — Lab 13 (legacy, content folded into Lab 14): 8 tests, 100% ✅
+
+Every Redis operation taught in the course is covered by at least one test, including admin/ops commands (MONITOR, SLOWLOG, CLIENT, CONFIG), stream lifecycle (XACK, XPENDING, XINFO), Lua scripting (EVAL), persistence (BGSAVE, BGREWRITEAOF), and security (AUTH, ACL SETUSER).
 
 ---
 
@@ -828,15 +748,14 @@ redis-mastering/
 ├── lab7-customer-policy-hashes/
 ├── lab8-claims-event-sourcing/      # ⭐ Event Sourcing
 ├── lab9-sets-analytics/
-├── lab10-advanced-caching-patterns/
+├── lab10-advanced-caching-patterns/ # Optional / take-home
 ├── lab11-session-management/        # Day 3: Production
 ├── lab12-rate-limiting-api-protection/
-├── lab13-production-configuration/
-├── lab14-production-monitoring/
+├── lab13-production-configuration/  # Content folded into Lab 14
+├── lab14-production-monitoring/     # Config + Monitoring
 ├── lab15-redis-cluster-ha/          # ⭐ Cluster HA
 ├── presentations/                    # Course slides (Reveal.js)
 ├── tests/                           # Integration tests
-├── CROSS-PLATFORM-SCRIPTS-COMPLETE.md  # Script platform docs
 └── README.md                        # This file
 ```
 
@@ -858,22 +777,22 @@ lab{n}-{name}/
 
 ## Presentations
 
-Course includes 9 Reveal.js HTML presentations in the `presentations/` folder:
+Course includes 10 Reveal.js single-file HTML presentations in the `presentations/` folder:
 
 ### Day 1 Presentations
-- `content1_presentation.html` - Introduction to Redis (50 min)
-- `content2_presentation.html` - String Operations (45 min)
-- `content3_presentation.html` - Advanced CLI (45 min)
+- `content1_presentation.html` — Introduction to Redis (30 min)
+- `content2_presentation.html` — RESP Protocol & CLI Operations (30 min)
+- `content3_presentation.html` — String Operations & Key Management (30 min)
 
 ### Day 2 Presentations
-- `content4_presentation.html` - JavaScript Integration (50 min)
-- `content5.html` - Hash & List Structures (45 min)
-- `content6-presentation.html` - Advanced Patterns (45 min)
+- `content4_presentation.html` — JavaScript Redis Client Fundamentals (30 min)
+- `content5_presentation.html` — Hash, List, Set & Sorted Set Data Structures (35 min)
+- `content6_presentation.html` — Streams, Event Sourcing & Caching Patterns (30 min)
 
 ### Day 3 Presentations
-- `content7_presentation.html` - Production Deployment (50 min)
-- `content8_presentation.html` - Persistence & HA (45 min)
-- `content9_presentation.html` - Performance & Monitoring (45 min)
+- `content7_presentation.html` — Security, Sessions & Rate Limiting (35 min)
+- `content8_presentation.html` + `content9_presentation.html` — Persistence, Configuration & Monitoring (35 min combined)
+- `content15_presentation.html` — Redis Cluster & High Availability (30 min)
 
 **To view presentations:** Open any HTML file in a browser. Use arrow keys to navigate.
 
@@ -914,18 +833,17 @@ Course includes 9 Reveal.js HTML presentations in the `presentations/` folder:
 - [ ] Lab 7 - Hash operations for customer and policy management
 - [ ] Lab 8 - Event sourcing with Redis Streams (producer/consumer)
 - [ ] Lab 9 - Analytics with sets and sorted sets
-- [ ] Lab 10 - Advanced caching patterns implementation
+- [ ] Lab 10 *(optional/take-home)* - Advanced caching patterns implementation
 
 ### Day 3: Production & Advanced ✅
 - [ ] Lab 11 - Session management with JWT and RBAC
 - [ ] Lab 12 - Rate limiting and API protection
-- [ ] Lab 13 - Production configuration (RDB/AOF, backups)
-- [ ] Lab 14 - Production monitoring and health checks
+- [ ] Lab 14 - Production configuration & monitoring (RDB/AOF, backups, health checks)
 - [ ] Lab 15 - Redis Cluster with high availability
 
 ### Final Deliverables
 - [ ] Pass all lab tests (`npm test`)
-- [ ] Review all 9 presentations
+- [ ] Review all 10 presentations
 - [ ] Build a sample insurance application using Redis
 - [ ] Deploy Redis in production configuration
 - [ ] Implement monitoring and alerting
@@ -961,7 +879,6 @@ By the end of this course, you will be able to:
 - **Docker Desktop:** https://www.docker.com/products/docker-desktop/
 
 ### Course Files
-- **CROSS-PLATFORM-SCRIPTS-COMPLETE.md** - Complete script documentation
 - **Lab-specific READMEs** - Detailed instructions in each lab directory
 - **Architecture docs** - In `docs/` subdirectories
 - **Code examples** - In `examples/` subdirectories
@@ -972,9 +889,8 @@ By the end of this course, you will be able to:
 
 For questions or issues:
 1. Check lab-specific README files in each lab directory
-2. Review the CROSS-PLATFORM-SCRIPTS-COMPLETE.md for script usage
-3. Consult the presentations in `presentations/` folder
-4. Run tests to verify setup: `npm test`
+2. Consult the presentations in `presentations/` folder
+3. Run tests to verify setup: `npm test`
 
 ---
 

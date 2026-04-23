@@ -163,6 +163,77 @@ async function testLab11() {
             failed++;
         }
 
+        // --- Part 6: Atomic analytics & audit logging ---
+
+        // Test 10: EVAL — atomic "count active sessions per role"
+        try {
+            // Seed portal session hashes with a userRole field
+            await testUtils.redisClient.hSet('portal:session:s1', 'userRole', 'admin');
+            await testUtils.redisClient.hSet('portal:session:s2', 'userRole', 'agent');
+            await testUtils.redisClient.hSet('portal:session:s3', 'userRole', 'agent');
+            await testUtils.redisClient.hSet('portal:session:s4', 'userRole', 'customer');
+
+            const script = "local keys = redis.call('KEYS', 'portal:session:*') " +
+                           "local counts = {} " +
+                           "for i=1,#keys do " +
+                           "  local r = redis.call('HGET', keys[i], 'userRole') " +
+                           "  if r then counts[r] = (counts[r] or 0) + 1 end " +
+                           "end " +
+                           "local out = {} " +
+                           "for r, n in pairs(counts) do " +
+                           "  table.insert(out, r) table.insert(out, tostring(n)) " +
+                           "end " +
+                           "return out";
+
+            const result = await testUtils.redisClient.eval(script, { keys: [], arguments: [] });
+            // result is an array like ['admin','1','agent','2','customer','1']
+            const flat = Array.isArray(result) ? result : [];
+            const roleMap = {};
+            for (let i = 0; i < flat.length; i += 2) {
+                roleMap[flat[i]] = parseInt(flat[i + 1], 10);
+            }
+            if (roleMap.admin === 1 && roleMap.agent === 2 && roleMap.customer === 1) {
+                testUtils.logTest('Lab 11', 'Part 6: EVAL (atomic role-based session count)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 11', 'Part 6: EVAL', false, `roleMap=${JSON.stringify(roleMap)}`);
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 11', 'Part 6: EVAL', false, error.message);
+            failed++;
+        }
+
+        // Test 11: LPUSH + LRANGE + LTRIM — capped audit log
+        try {
+            const auditKey = 'audit:user:CUST-AUDIT-001';
+            await testUtils.redisClient.del(auditKey);
+
+            // Push 10 audit entries
+            for (let i = 1; i <= 10; i++) {
+                await testUtils.redisClient.lPush(auditKey, `2026-04-23T10:00:${i}Z event_${i}`);
+            }
+
+            // Cap to most recent 5 entries (indexes 0..4)
+            await testUtils.redisClient.lTrim(auditKey, 0, 4);
+
+            const llen = await testUtils.redisClient.lLen(auditKey);
+            const entries = await testUtils.redisClient.lRange(auditKey, 0, -1);
+
+            // Newest-first: head should be event_10 (last LPUSH)
+            if (llen === 5 && entries.length === 5 && entries[0].includes('event_10')) {
+                testUtils.logTest('Lab 11', 'Part 6: LPUSH + LRANGE + LTRIM (capped audit log)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 11', 'Part 6: LPUSH/LRANGE/LTRIM', false,
+                    `llen=${llen}, head=${entries[0]}`);
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 11', 'Part 6: LPUSH/LRANGE/LTRIM', false, error.message);
+            failed++;
+        }
+
     } catch (error) {
         testUtils.logTest('Lab 11', 'Lab execution', false, error.message);
         failed++;
@@ -333,6 +404,91 @@ async function testLab12() {
             passed++;
         } else {
             testUtils.logTest('Lab 12', 'Rate limit exceeded tracking', false);
+            failed++;
+        }
+
+        // Test 10: Token bucket refill (consume + elapsed-time refill)
+        try {
+            const id = 'lab12-tb-001';
+            const tokensKey = `rl:tb:${id}:tokens`;
+            const lastKey = `rl:tb:${id}:last`;
+            const capacity = 10;
+            const rate = 2; // tokens / sec
+
+            // Init: 10 tokens at now
+            const start = Date.now();
+            await testUtils.redisClient.set(tokensKey, '10');
+            await testUtils.redisClient.set(lastKey, String(start));
+
+            // Consume 5 — tokens drop to 5
+            await testUtils.redisClient.set(tokensKey, '5');
+
+            // Sleep ~1100ms
+            await testUtils.wait(1100);
+
+            // Refill step: add floor(elapsed_sec * rate) tokens, cap at capacity
+            const now = Date.now();
+            const last = parseInt(await testUtils.redisClient.get(lastKey), 10);
+            const elapsedSec = (now - last) / 1000;
+            const refill = Math.floor(elapsedSec * rate);
+            const current = parseInt(await testUtils.redisClient.get(tokensKey), 10);
+            const next = Math.min(capacity, current + refill);
+            await testUtils.redisClient.set(tokensKey, String(next));
+            await testUtils.redisClient.set(lastKey, String(now));
+
+            const final = parseInt(await testUtils.redisClient.get(tokensKey), 10);
+
+            // Cleanup
+            await testUtils.redisClient.del([tokensKey, lastKey]);
+
+            if (final >= 7 && final <= 10) {
+                testUtils.logTest('Lab 12', 'Token bucket refill (5 + ~2s worth, capped)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 12', 'Token bucket refill', false,
+                    `final=${final}, elapsedSec=${elapsedSec}, refill=${refill}`);
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 12', 'Token bucket refill', false, error.message);
+            failed++;
+        }
+
+        // Test 11: Sliding-window cleanup via ZREMRANGEBYSCORE
+        try {
+            const key = 'rl:sw:test';
+            await testUtils.redisClient.del(key);
+
+            const now = Date.now();
+            const windowMs = 60000; // 60-second window
+            const windowStart = now - windowMs;
+
+            // 3 older than window, 2 inside
+            await testUtils.redisClient.zAdd(key, [
+                { score: now - 120000, value: 'old-1' },
+                { score: now - 90000,  value: 'old-2' },
+                { score: now - 70000,  value: 'old-3' },
+                { score: now - 30000,  value: 'fresh-1' },
+                { score: now - 10000,  value: 'fresh-2' }
+            ]);
+
+            // Prune anything strictly older than window
+            await testUtils.redisClient.zRemRangeByScore(key, '-inf', windowStart - 1);
+
+            const remaining = await testUtils.redisClient.zCard(key);
+
+            // Cleanup
+            await testUtils.redisClient.del(key);
+
+            if (remaining === 2) {
+                testUtils.logTest('Lab 12', 'Sliding-window cleanup (ZREMRANGEBYSCORE prunes 3, keeps 2)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 12', 'Sliding-window cleanup', false, `ZCARD=${remaining}`);
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 12', 'Sliding-window cleanup', false, error.message);
             failed++;
         }
 
@@ -614,6 +770,269 @@ async function testLab14() {
             failed++;
         }
 
+        // --- Part D: Runtime Operations Deep-Dive ---
+
+        // Test 12: BGSAVE — manual RDB snapshot
+        try {
+            const before = await testUtils.redisClient.sendCommand(['LASTSAVE']);
+            let bgsaveOk = false;
+            try {
+                const result = await testUtils.redisClient.sendCommand(['BGSAVE']);
+                // Typical reply: "Background saving started"
+                if (typeof result === 'string' && result.toLowerCase().includes('background')) {
+                    bgsaveOk = true;
+                }
+            } catch (e) {
+                // If a BGSAVE is already in progress, Redis returns an error — treat as pass
+                if (e.message && e.message.includes('in progress')) bgsaveOk = true;
+            }
+            if (bgsaveOk) {
+                testUtils.logTest('Lab 14', 'Part D: BGSAVE (manual RDB snapshot)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 14', 'Part D: BGSAVE', false, `lastsave-before=${before}`);
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 14', 'Part D: BGSAVE', false, error.message);
+            failed++;
+        }
+
+        // Test 13: BGREWRITEAOF — manual AOF rewrite
+        try {
+            let ok = false;
+            try {
+                const result = await testUtils.redisClient.sendCommand(['BGREWRITEAOF']);
+                if (typeof result === 'string' && result.toLowerCase().includes('append only')) {
+                    ok = true;
+                }
+            } catch (e) {
+                // Acceptable if a rewrite is already running or AOF is disabled
+                if (e.message && (e.message.includes('in progress') || e.message.includes('scheduled'))) {
+                    ok = true;
+                }
+            }
+            if (ok) {
+                testUtils.logTest('Lab 14', 'Part D: BGREWRITEAOF (manual AOF rewrite)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 14', 'Part D: BGREWRITEAOF', false, 'Unexpected response');
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 14', 'Part D: BGREWRITEAOF', false, error.message);
+            failed++;
+        }
+
+        // Test 14: LASTSAVE — Unix timestamp of last successful RDB save
+        try {
+            const ls = await testUtils.redisClient.sendCommand(['LASTSAVE']);
+            // LASTSAVE returns a numeric Unix timestamp (possibly as string)
+            const tsNum = typeof ls === 'number' ? ls : parseInt(ls, 10);
+            if (Number.isFinite(tsNum) && tsNum > 0) {
+                testUtils.logTest('Lab 14', 'Part D: LASTSAVE (returns Unix timestamp)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 14', 'Part D: LASTSAVE', false, `ls=${ls}`);
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 14', 'Part D: LASTSAVE', false, error.message);
+            failed++;
+        }
+
+        // Test 15: CONFIG SET round-trip on persistence/security knobs
+        try {
+            const origSave = await testUtils.redisClient.configGet('save');
+            const origAppendonly = await testUtils.redisClient.configGet('appendonly');
+            const origFsync = await testUtils.redisClient.configGet('appendfsync');
+            const origRdbcompression = await testUtils.redisClient.configGet('rdbcompression');
+
+            // Apply temporary values
+            await testUtils.redisClient.configSet('save', '900 1 300 10');
+            await testUtils.redisClient.configSet('appendfsync', 'everysec');
+            await testUtils.redisClient.configSet('rdbcompression', 'yes');
+
+            const verifySave = await testUtils.redisClient.configGet('save');
+            const verifyFsync = await testUtils.redisClient.configGet('appendfsync');
+            const verifyRdbc = await testUtils.redisClient.configGet('rdbcompression');
+
+            // Restore originals
+            await testUtils.redisClient.configSet('save', origSave.save);
+            await testUtils.redisClient.configSet('appendonly', origAppendonly.appendonly);
+            await testUtils.redisClient.configSet('appendfsync', origFsync.appendfsync);
+            await testUtils.redisClient.configSet('rdbcompression', origRdbcompression.rdbcompression);
+
+            if (verifySave.save === '900 1 300 10' &&
+                verifyFsync.appendfsync === 'everysec' &&
+                verifyRdbc.rdbcompression === 'yes') {
+                testUtils.logTest('Lab 14', 'Part D: CONFIG SET round-trip (save/appendfsync/rdbcompression)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 14', 'Part D: CONFIG SET round-trip', false,
+                    `save=${verifySave.save}, fsync=${verifyFsync.appendfsync}, rdbc=${verifyRdbc.rdbcompression}`);
+                failed++;
+            }
+        } catch (error) {
+            testUtils.logTest('Lab 14', 'Part D: CONFIG SET round-trip', false, error.message);
+            failed++;
+        }
+
+        // Test 16: AUTH workflow — set requirepass, fail without AUTH, pass with AUTH, unset
+        // Use a separate ioredis connection so we do not poison the main testUtils client.
+        {
+            const Redis = require('ioredis');
+            const TEST_PASS = 'LabTestPass_2026!';
+            let authOk = false;
+            let failedWithoutAuth = false;
+            let authedOk = false;
+            let unsetOk = false;
+
+            // Step 1: set requirepass via the main (already authenticated-free) client
+            try {
+                await testUtils.redisClient.configSet('requirepass', TEST_PASS);
+                authOk = true;
+            } catch (e) {
+                testUtils.logTest('Lab 14', 'Part D: AUTH workflow (set requirepass)', false, e.message);
+                failed++;
+            }
+
+            // Step 2: open a brand-new connection with NO password — must fail on any command
+            if (authOk) {
+                const unauth = new Redis({
+                    host: 'localhost', port: 6379,
+                    lazyConnect: true,
+                    maxRetriesPerRequest: 1,
+                    enableOfflineQueue: false
+                });
+                // Swallow the unhandled-error event that ioredis emits on NOAUTH;
+                // we handle the rejection explicitly below.
+                unauth.on('error', (err) => {
+                    if (err && err.message && err.message.toUpperCase().includes('NOAUTH')) {
+                        failedWithoutAuth = true;
+                    }
+                });
+                try {
+                    await unauth.connect();
+                    try {
+                        await unauth.ping();
+                        // PING should NOT succeed — if it does, NOAUTH isn't enforced
+                    } catch (err) {
+                        if (err.message && err.message.toUpperCase().includes('NOAUTH')) {
+                            failedWithoutAuth = true;
+                        }
+                    }
+                } catch (err) {
+                    if (err.message && err.message.toUpperCase().includes('NOAUTH')) {
+                        failedWithoutAuth = true;
+                    }
+                } finally {
+                    try { await unauth.quit(); } catch (e) { unauth.disconnect(); }
+                }
+
+                // Step 3: open a new connection WITH the password — must succeed
+                const authed = new Redis({
+                    host: 'localhost', port: 6379,
+                    password: TEST_PASS,
+                    lazyConnect: true,
+                    maxRetriesPerRequest: 1
+                });
+                try {
+                    await authed.connect();
+                    const pong = await authed.ping();
+                    if (pong === 'PONG') authedOk = true;
+                } catch (err) {
+                    // authedOk stays false
+                } finally {
+                    try { await authed.quit(); } catch (e) { authed.disconnect(); }
+                }
+            }
+
+            // Step 4: CRITICAL cleanup — unset requirepass using the main client (which
+            // already opened its connection before requirepass was set, so it is still
+            // authenticated-free in legacy-compat mode). If that fails, try via a
+            // freshly AUTH'd ioredis connection as a fallback.
+            try {
+                await testUtils.redisClient.configSet('requirepass', '');
+                unsetOk = true;
+            } catch (e) {
+                // Fallback: use an authed connection to remove the password
+                const cleanup = new Redis({
+                    host: 'localhost', port: 6379,
+                    password: TEST_PASS,
+                    lazyConnect: true,
+                    maxRetriesPerRequest: 1
+                });
+                try {
+                    await cleanup.connect();
+                    await cleanup.config('SET', 'requirepass', '');
+                    unsetOk = true;
+                } catch (ee) {
+                    // leave unsetOk = false
+                } finally {
+                    try { await cleanup.quit(); } catch (e) { cleanup.disconnect(); }
+                }
+            }
+
+            if (authOk && failedWithoutAuth && authedOk && unsetOk) {
+                testUtils.logTest('Lab 14', 'Part D: AUTH workflow (set→fail→pass→unset)', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 14', 'Part D: AUTH workflow', false,
+                    `set=${authOk}, failedNoAuth=${failedWithoutAuth}, authedOk=${authedOk}, unset=${unsetOk}`);
+                failed++;
+                // Defensive: if we somehow didn't unset, try one more time so the suite continues
+                if (!unsetOk) {
+                    try {
+                        const rescue = new Redis({
+                            host: 'localhost', port: 6379,
+                            password: TEST_PASS,
+                            lazyConnect: true,
+                            maxRetriesPerRequest: 1
+                        });
+                        await rescue.connect();
+                        await rescue.config('SET', 'requirepass', '');
+                        try { await rescue.quit(); } catch (e) { rescue.disconnect(); }
+                    } catch (e) { /* best-effort */ }
+                }
+            }
+        }
+
+        // Test 17: ACL SETUSER — create a read-only monitoring user, then delete it
+        try {
+            const username = 'testmonitor';
+            // Clean slate
+            try { await testUtils.redisClient.sendCommand(['ACL', 'DELUSER', username]); } catch (e) {}
+
+            await testUtils.redisClient.sendCommand([
+                'ACL', 'SETUSER', username, 'on', '>TestMon_2026!',
+                '~*', '+INFO', '+PING'
+            ]);
+
+            const getUser = await testUtils.redisClient.sendCommand(['ACL', 'GETUSER', username]);
+            // Response is a flat array: ['flags', [...], 'passwords', [...], 'commands', '...', ...]
+            const asStr = JSON.stringify(getUser).toLowerCase();
+            const hasInfo = asStr.includes('info');
+            const hasPing = asStr.includes('ping');
+
+            // Clean up
+            const del = await testUtils.redisClient.sendCommand(['ACL', 'DELUSER', username]);
+            const delCount = typeof del === 'number' ? del : parseInt(del, 10);
+
+            if (getUser && hasInfo && hasPing && delCount === 1) {
+                testUtils.logTest('Lab 14', 'Part D: ACL SETUSER / GETUSER / DELUSER', true);
+                passed++;
+            } else {
+                testUtils.logTest('Lab 14', 'Part D: ACL SETUSER', false,
+                    `hasInfo=${hasInfo}, hasPing=${hasPing}, del=${delCount}`);
+                failed++;
+            }
+        } catch (error) {
+            // Older Redis builds without ACL — report as skip/fail with context
+            testUtils.logTest('Lab 14', 'Part D: ACL SETUSER', false, error.message);
+            failed++;
+        }
+
     } catch (error) {
         testUtils.logTest('Lab 14', 'Lab execution', false, error.message);
         failed++;
@@ -766,7 +1185,7 @@ async function testLab15() {
 async function runDay3Tests() {
     console.log('\n╔════════════════════════════════════════════════════════════════════════════╗');
     console.log('║                          DAY 3 INTEGRATION TESTS                           ║');
-    console.log('║                Production & Advanced Topics (Labs 11-15)                   ║');
+    console.log('║            Production & Advanced Topics (Labs 11, 12, 14, 15)              ║');
     console.log('╚════════════════════════════════════════════════════════════════════════════╝\n');
 
     const results = {
@@ -775,7 +1194,7 @@ async function runDay3Tests() {
         labs: []
     };
 
-    // Run all Day 3 lab tests
+    // Run all Day 3 core lab tests (Lab 13 folded into Lab 14; run with --lab=13 for the legacy suite)
     const lab11 = await testLab11();
     results.labs.push({ lab: 11, ...lab11 });
     results.totalPassed += lab11.passed;
@@ -785,11 +1204,6 @@ async function runDay3Tests() {
     results.labs.push({ lab: 12, ...lab12 });
     results.totalPassed += lab12.passed;
     results.totalFailed += lab12.failed;
-
-    const lab13 = await testLab13();
-    results.labs.push({ lab: 13, ...lab13 });
-    results.totalPassed += lab13.passed;
-    results.totalFailed += lab13.failed;
 
     const lab14 = await testLab14();
     results.labs.push({ lab: 14, ...lab14 });

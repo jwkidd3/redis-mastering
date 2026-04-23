@@ -1,6 +1,6 @@
 # Redis Mastering Course - Comprehensive Integration Test Suite
 
-This directory contains comprehensive integration tests for all 15 labs across the 3-day Redis Mastering Course. These tests validate that all runnable code in every lab works correctly with the actual data used in the course.
+This directory contains comprehensive integration tests for every lab in the 3-day Redis Mastering Course. The default `npm test` run covers the **13 core labs** delivered in class. Lab 10 (optional / take-home) and Lab 13 (folded into Lab 14) can still be tested individually via `--lab=10` and `--lab=13`.
 
 ## 📋 Table of Contents
 
@@ -18,7 +18,7 @@ This directory contains comprehensive integration tests for all 15 labs across t
 
 The integration test suite provides:
 
-- **Comprehensive Coverage**: Tests all 15 labs across 3 days
+- **Comprehensive Coverage**: Tests every lab and every operation taught
 - **Real Data Testing**: Uses the actual insurance data from the course
 - **Automated Validation**: Verifies all Redis operations, scripts, and integrations
 - **Detailed Reporting**: Provides clear pass/fail status with detailed error messages
@@ -26,10 +26,11 @@ The integration test suite provides:
 
 ### Test Statistics
 
-- **Total Labs Tested**: 15
-- **Total Test Cases**: 150+
-- **Estimated Run Time**: 5-10 minutes (all tests)
-- **Test Types**: CLI operations, JavaScript integration, production features
+- **Core labs (default run):** 13 — Labs 1–9, 11, 12, 14, 15
+- **Individually runnable:** Lab 10 (optional take-home), Lab 13 (folded into Lab 14)
+- **Total test cases in default run:** 96
+- **Estimated run time:** 2–5 minutes
+- **Last verified pass rate:** 100%
 
 ## 🧪 Test Coverage
 
@@ -115,7 +116,7 @@ The integration test suite provides:
 - ZRANGEBYSCORE range queries
 - ZINCRBY score increment
 
-**Lab 10: Advanced Caching Patterns**
+**Lab 10: Advanced Caching Patterns** *(optional / take-home — run with `--lab=10`)*
 - Cache-aside pattern (read/write)
 - Cache invalidation
 - Pattern-based invalidation
@@ -123,7 +124,7 @@ The integration test suite provides:
 - Write-through cache pattern
 - Performance test validation
 
-### Day 3: Production & Advanced (Labs 11-15)
+### Day 3: Production & Advanced (Labs 11, 12, 14, 15)
 
 **Lab 11: Session Management & Security**
 - Session storage
@@ -143,7 +144,7 @@ The integration test suite provides:
 - Endpoint-specific limits
 - Rate limit exceeded tracking
 
-**Lab 13: Production Configuration**
+**Lab 13: Production Configuration** *(folded into Lab 14 — run with `--lab=13` for the legacy suite)*
 - Configuration files validation
 - Data persistence
 - CONFIG GET operations
@@ -152,7 +153,7 @@ The integration test suite provides:
 - Backup script validation
 - Slow log access
 
-**Lab 14: Production Monitoring**
+**Lab 14: Production Configuration & Monitoring**
 - Health check (PING)
 - INFO metrics collection
 - Memory metrics
