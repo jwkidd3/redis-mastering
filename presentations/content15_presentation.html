@@ -544,21 +544,15 @@ const cluster = new Redis.Cluster([
     { port: 9000, host: '127.0.0.1' },
     { port: 9002, host: '127.0.0.1' },
     { port: 9004, host: '127.0.0.1' }
-], {
-    enableReadyCheck: true,
-    maxRetriesPerRequest: 3,
-    retryDelayOnFailover: 100,
-    retryDelayOnClusterDown: 300,
-    enableOfflineQueue: true
-});
+], { maxRetriesPerRequest: 3, retryDelayOnFailover: 100 });
 
 // Insurance example: co-locate a customer's related keys
 async function createCustomerWithPolicies(customerId) {
-    const pipeline = cluster.pipeline();
-    pipeline.hset(`{customer:${customerId}}:profile`, userData);
-    pipeline.sadd(`{customer:${customerId}}:policies`, policyIds);
-    pipeline.hset(`{customer:${customerId}}:claims`, claimData);
-    await pipeline.exec();  // atomic on a single slot
+    const p = cluster.pipeline();
+    p.hset(`{customer:${customerId}}:profile`, userData);
+    p.sadd(`{customer:${customerId}}:policies`, policyIds);
+    p.hset(`{customer:${customerId}}:claims`, claimData);
+    await p.exec();  // atomic on a single slot
 }
                 </div>
                 <div class="info">Good clients handle <code>MOVED</code> and <code>ASK</code> redirections automatically and cache the slot map.</div>

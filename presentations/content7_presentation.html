@@ -289,7 +289,7 @@ HGETALL session:abc123
             <!-- Slide 6: Session Manager Implementation -->
             <section>
                 <div class="session-header">
-                    <h2>Session Manager Implementation</h2>
+                    <h2>Session Manager: Structure</h2>
                 </div>
                 <div class="code-block">
 class SessionManager {
@@ -301,7 +301,6 @@ class SessionManager {
     async createSession(userId, userData) {
         const sessionId = crypto.randomUUID();
         const key = `session:${sessionId}`;
-
         await this.redis.hSet(key, {
             userId,
             role: userData.role,
@@ -310,30 +309,37 @@ class SessionManager {
             lastActivity: new Date().toISOString()
         });
         await this.redis.expire(key, this.SESSION_TTL);
-
-        // Track user's active sessions for multi-device
         await this.redis.sAdd(`user:${userId}:sessions`, sessionId);
         return sessionId;
     }
-
-    async getSession(sessionId) {
-        const key = `session:${sessionId}`;
-        const session = await this.redis.hGetAll(key);
-        if (!session || Object.keys(session).length === 0) return null;
-
-        await this.redis.hSet(key, 'lastActivity', new Date().toISOString());
-        await this.redis.expire(key, this.SESSION_TTL); // sliding TTL
-        return session;
-    }
-
-    async destroySession(sessionId) {
-        const session = await this.getSession(sessionId);
-        if (!session) return;
-        await this.redis.sRem(`user:${session.userId}:sessions`, sessionId);
-        await this.redis.del(`session:${sessionId}`);
-    }
 }
                 </div>
+            </section>
+
+            <!-- Slide 6b: Session Manager Lifecycle -->
+            <section>
+                <div class="session-header">
+                    <h2>Session Manager: Lifecycle</h2>
+                </div>
+                <div class="code-block">
+async getSession(sessionId) {
+    const key = `session:${sessionId}`;
+    const session = await this.redis.hGetAll(key);
+    if (!session || Object.keys(session).length === 0) return null;
+
+    await this.redis.hSet(key, 'lastActivity', new Date().toISOString());
+    await this.redis.expire(key, this.SESSION_TTL); // sliding TTL
+    return session;
+}
+
+async destroySession(sessionId) {
+    const session = await this.getSession(sessionId);
+    if (!session) return;
+    await this.redis.sRem(`user:${session.userId}:sessions`, sessionId);
+    await this.redis.del(`session:${sessionId}`);
+}
+                </div>
+                <div class="info">Sliding TTL on <code>getSession</code> keeps active users logged in; <code>destroySession</code> also cleans the multi-device index.</div>
             </section>
 
             <!-- Slide 7: Multi-Device Sessions -->
@@ -365,33 +371,24 @@ DEL user:456:sessions
                     <h2>Role-Based Access Control (RBAC)</h2>
                 </div>
                 <div class="bullet-point"><strong>Customer:</strong> view own policies, submit claims</div>
-                <div class="bullet-point"><strong>Agent:</strong> view customer data, process claims, update policies</div>
+                <div class="bullet-point"><strong>Agent:</strong> view customer data, process claims</div>
                 <div class="bullet-point"><strong>Admin:</strong> full access, user management, audits</div>
                 <div class="code-block">
 class RBACManager {
     constructor(redis) {
         this.redis = redis;
         this.permissions = {
-            customer: ['view_own_policy', 'submit_claim', 'view_own_claims'],
-            agent:    ['view_customer_data', 'process_claims', 'update_policy'],
+            customer: ['view_own_policy', 'submit_claim'],
+            agent:    ['view_customer_data', 'process_claims'],
             admin:    ['*']
         };
     }
-
     async hasPermission(sessionId, permission) {
-        const session = await this.redis.hGetAll(`session:${sessionId}`);
-        if (!session || !session.role) return false;
-        const perms = this.permissions[session.role] || [];
+        const s = await this.redis.hGetAll(`session:${sessionId}`);
+        const perms = this.permissions[s?.role] || [];
         return perms.includes('*') || perms.includes(permission);
     }
 }
-
-// Express endpoint
-app.get('/api/customer/:id', async (req, res) => {
-    if (!(await rbac.hasPermission(req.sessionId, 'view_customer_data')))
-        return res.status(403).json({ error: 'Forbidden' });
-    // ... process request
-});
                 </div>
             </section>
 
@@ -407,25 +404,21 @@ class SecurityMonitor {
         this.MAX_ATTEMPTS = 5;
         this.LOCKOUT = 900; // 15 min
     }
-
-    async recordFailedLogin(userId, ip) {
+    async recordFailedLogin(userId) {
         const key = `failed_login:${userId}`;
         const attempts = await this.redis.incr(key);
         if (attempts === 1) await this.redis.expire(key, 300);
-
         if (attempts &gt;= this.MAX_ATTEMPTS) {
-            await this.redis.set(`account_locked:${userId}`, 'true',
-                'EX', this.LOCKOUT);
+            await this.redis.set(`locked:${userId}`,'1','EX',this.LOCKOUT);
         }
         return attempts;
     }
-
     async isLocked(userId) {
-        return (await this.redis.get(`account_locked:${userId}`)) === 'true';
+        return !!(await this.redis.get(`locked:${userId}`));
     }
 }
                 </div>
-                <div class="info"><strong>Pattern:</strong> counter + TTL for attempts, lock key + TTL for lockouts, sorted set for the audit trail.</div>
+                <div class="info"><strong>Pattern:</strong> counter + TTL for attempts, lock key + TTL for lockouts.</div>
             </section>
 
             <!-- Slide 10: Lab 11 Callout -->
@@ -478,42 +471,52 @@ ZREMRANGEBYSCORE requests:u123 0 (now-60000)
                 <div class="warning"><strong>Fixed-window burst problem:</strong> 100 calls at 0:59 + 100 at 1:00 = 200 calls in 2 seconds &mdash; bypasses a naive per-minute counter.</div>
             </section>
 
-            <!-- Slide 13: Sliding Window Implementation -->
+            <!-- Slide 13a: Sliding Window Algorithm -->
             <section>
                 <div class="session-header">
-                    <h2>Sliding Window Rate Limiter</h2>
+                    <h2>Sliding Window: Algorithm</h2>
+                </div>
+                <div class="bullet-point"><strong>Key:</strong> sorted set <code>ratelimit:&lt;user&gt;</code>, score = request timestamp.</div>
+                <div class="bullet-point"><strong>Step 1:</strong> <code>ZREMRANGEBYSCORE</code> drops entries older than <code>now - window</code>.</div>
+                <div class="bullet-point"><strong>Step 2:</strong> <code>ZCARD</code> returns the count in the current window.</div>
+                <div class="bullet-point"><strong>Step 3:</strong> if under limit, <code>ZADD</code> the new timestamp; else reject.</div>
+                <div class="bullet-point"><strong>Step 4:</strong> <code>EXPIRE</code> the key to prevent leaks for idle users.</div>
+                <div class="info">All four commands run in a single pipeline so they're effectively atomic per request.</div>
+            </section>
+
+            <!-- Slide 13b: Sliding Window Code -->
+            <section>
+                <div class="session-header">
+                    <h2>Sliding Window: Code</h2>
                 </div>
                 <div class="code-block">
 class RateLimiter {
     constructor(redis, { limit, window }) {
         this.redis = redis;
-        this.limit = limit;         // max requests
-        this.window = window;       // seconds
+        this.limit = limit;
+        this.window = window;   // seconds
     }
-
     async checkLimit(userId) {
         const key = `ratelimit:${userId}`;
         const now = Date.now();
         const windowStart = now - this.window * 1000;
 
-        const pipeline = this.redis.pipeline();
-        pipeline.zRemRangeByScore(key, 0, windowStart); // drop old
-        pipeline.zCard(key);                            // current count
-        pipeline.zAdd(key, { score: now, value: `${now}` });
-        pipeline.expire(key, this.window);              // prevent leak
-
-        const results = await pipeline.exec();
+        const p = this.redis.pipeline();
+        p.zRemRangeByScore(key, 0, windowStart);
+        p.zCard(key);
+        p.zAdd(key, { score: now, value: `${now}` });
+        p.expire(key, this.window);
+        const results = await p.exec();
         const count = results[1][1];
 
         if (count &gt;= this.limit) {
-            await this.redis.zRem(key, `${now}`); // roll back the add
+            await this.redis.zRem(key, `${now}`);
             return { allowed: false, retryAfter: this.window };
         }
         return { allowed: true, remaining: this.limit - count - 1 };
     }
 }
                 </div>
-                <div class="info">Pipelining makes the four operations effectively atomic per request.</div>
             </section>
 
             <!-- Slide 14: Tier-Based Limits -->
@@ -523,10 +526,8 @@ class RateLimiter {
                 </div>
                 <div class="code-block">
 const RATE_LIMITS = {
-    trial:      { limit: 20,    window: 60 },
-    basic:      { limit: 50,    window: 60 },
-    standard:   { limit: 100,   window: 60 },
-    premium:    { limit: 500,   window: 60 },
+    trial: { limit: 20, window: 60 },      basic:   { limit: 50,  window: 60 },
+    standard: { limit: 100, window: 60 },  premium: { limit: 500, window: 60 },
     enterprise: { limit: 10000, window: 60 }
 };
 
@@ -534,17 +535,12 @@ app.post('/api/quote', async (req, res) =&gt; {
     const user = await getUser(req.userId);
     const limiter = new RateLimiter(redis, RATE_LIMITS[user.tier]);
     const result = await limiter.checkLimit(req.userId);
-
-    if (!result.allowed) {
-        return res.status(429).json({
-            error: 'Too many requests',
-            retryAfter: result.retryAfter
-        });
-    }
+    if (!result.allowed) return res.status(429)
+        .json({ error: 'Too many requests', retryAfter: result.retryAfter });
     // ... generate insurance quote
 });
                 </div>
-                <div class="info"><strong>Insurance use case:</strong> Trial customers get 20 quotes/min; enterprise integrators (call centers, partner portals) get 10,000/min.</div>
+                <div class="info"><strong>Insurance use case:</strong> Trial users get 20 quotes/min; enterprise partners get 10,000/min.</div>
             </section>
 
             <!-- Slide 15: Abuse Detection & DDoS -->

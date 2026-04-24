@@ -308,29 +308,24 @@ async function getCustomerDashboard(customerId) {
                 <div class="session-header">
                     <h3>Connection Pooling for Production</h3>
                 </div>
-                <p>Node.js apps typically share a single client across the process. For high-throughput services, use a pool so independent requests don't serialize on one socket.</p>
+                <p>For high-throughput services, use a pool so independent requests don't serialize on one socket.</p>
                 <div class="code-block">
 const { createPool } = require('generic-pool');
 const redis = require('redis');
 
 const pool = createPool({
     create: async () =&gt; {
-        const client = redis.createClient({
-            url: 'redis://your-redis-host:6379'
-        });
+        const client = redis.createClient({ url: 'redis://host:6379' });
         await client.connect();
         return client;
     },
-    destroy: async (client) =&gt; client.quit()
+    destroy: async (c) =&gt; c.quit()
 }, { min: 2, max: 20 });
 
 async function getCustomer(id) {
     const client = await pool.acquire();
-    try {
-        return await client.hGetAll(`customer:${id}`);
-    } finally {
-        pool.release(client);
-    }
+    try { return await client.hGetAll(`customer:${id}`); }
+    finally { pool.release(client); }
 }
 </div>
                 <div class="info"><strong>Guideline:</strong> Pool size should match expected concurrent Redis operations, not total requests.</div>
