@@ -36,7 +36,8 @@ start-redis.bat
 
 **Mac/Linux:**
 ```bash
-docker run -d -p 6379:6379 --name redis redis/redis-stack:latest
+cd scripts
+bash start-redis.sh
 ```
 
 📖 **See `scripts/README.md` for detailed Redis server management**

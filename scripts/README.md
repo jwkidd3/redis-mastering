@@ -6,6 +6,29 @@ This directory contains utility scripts for managing Redis and course setup.
 
 ## Mac/Linux Scripts
 
+| Script | Purpose |
+|---|---|
+| `start-redis.sh` | Start (or create) the Redis container on port 6379 |
+| `stop-redis.sh` | Stop the Redis container (preserves data) |
+| `cleanup-redis.sh` | Remove Redis container + image (deletes data) |
+| `update_course.sh` | `git pull` latest course materials |
+| `install-redis-cli.sh` | Install `redis-cli` via the system package manager |
+
+**Usage:**
+
+```bash
+cd scripts
+bash start-redis.sh    # or ./start-redis.sh after chmod +x
+bash stop-redis.sh
+bash cleanup-redis.sh
+bash update_course.sh
+bash install-redis-cli.sh
+```
+
+These mirror the Windows `.bat` scripts in this folder one-for-one.
+
+---
+
 ### 📥 install-redis-cli.sh
 
 **Purpose:** Install redis-cli on Mac and Linux
@@ -239,14 +262,16 @@ stop-redis.bat
 
 **Mac/Linux:**
 ```bash
-# Start of day (if not running)
-docker start redis
+# Start of day
+cd scripts
+bash start-redis.sh
 
 # Work with Redis
 redis-cli -h localhost -p 6379
 
 # End of day
-docker stop redis
+cd scripts
+bash stop-redis.sh
 ```
 
 ### Clean Start
@@ -260,9 +285,9 @@ start-redis.bat
 
 **Mac/Linux:**
 ```bash
-docker stop redis
-docker rm redis
-docker run -d --name redis -p 6379:6379 redis/redis-stack:latest
+cd scripts
+bash cleanup-redis.sh
+bash start-redis.sh
 ```
 
 ---
@@ -381,11 +406,16 @@ All scripts are in the course root `scripts/` directory:
 redis-mastering/
 ├── scripts/
 │   ├── README.md (this file)
-│   ├── install-redis-cli-windows.ps1
-│   ├── start-redis.bat
-│   ├── stop-redis.bat
-│   ├── cleanup-redis.bat
-│   └── update_course.bat
+│   ├── install-redis-cli.sh    # Mac/Linux
+│   ├── install-redis-cli.bat   # Windows
+│   ├── start-redis.sh          # Mac/Linux
+│   ├── start-redis.bat         # Windows
+│   ├── stop-redis.sh           # Mac/Linux
+│   ├── stop-redis.bat          # Windows
+│   ├── cleanup-redis.sh        # Mac/Linux
+│   ├── cleanup-redis.bat       # Windows
+│   ├── update_course.sh        # Mac/Linux
+│   └── update_course.bat       # Windows
 ```
 
 Lab-specific scripts are in individual lab directories:

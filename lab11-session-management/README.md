@@ -28,10 +28,13 @@ By the end of this lab, you will be able to:
 
 **Setup Lab Environment:**
 ```bash
-# Setup lab environment
-./scripts/setup-lab.sh
+# Mac/Linux: install deps, verify Redis, create config/.env
+bash scripts/setup-lab.sh
 
-# Update environment with Redis connection details
+# Or via npm
+npm run setup
+
+# (Optional) Edit Redis host/port for non-local instances
 nano config/.env
 ```
 

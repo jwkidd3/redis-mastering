@@ -2,10 +2,10 @@
   "name": "lab11-session-management",
   "version": "1.0.0",
   "description": "Customer portal session management with Redis",
-  "main": "src/app.js",
+  "main": "examples/basic-session-demo.js",
   "scripts": {
-    "start": "node src/app.js",
-    "dev": "node src/app.js",
+    "setup": "bash scripts/setup-lab.sh",
+    "demo": "node examples/basic-session-demo.js",
     "test": "node tests/session-tests.js",
     "test-rbac": "node tests/rbac-tests.js",
     "test-security": "node tests/security-tests.js"
